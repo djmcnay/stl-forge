@@ -79,6 +79,20 @@ module bead_string_hole(
     }
 }
 
+// ---- bead_string_hole_plain(): just a hole ---------------------------------
+//
+// A straight throat bore along X and nothing else — no scoop, no ball,
+// no fillet, no well. The caller passes the bore radius and a
+// half-length that clears both walls; everything else about the mouth
+// belongs to templates that opt into a fancier cut.
+module bead_string_hole_plain(
+    R_throat,      // throat bore radius = hole_diameter / 2
+    hole_len       // straight-bore half-length: clears both walls
+) {
+    rotate([0, 90, 0])
+        cylinder(h = 2 * hole_len, r = R_throat, center = true);
+}
+
 // ---- bead_string_hole_well(): the fillet-well mouth (shared) ----------------
 //
 // PROVENANCE - SolidCraft rebuild (6 Nov 2026): David settled the definition

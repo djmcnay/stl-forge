@@ -534,16 +534,11 @@ scoop_dx = -k_scoop * n_out[0];
 scoop_dy = -k_scoop * n_out[1];
 echo(star_hole_entry_x = hole_entry_x, star_wall_normal = n_out, star_hole_len = hole_len);
 
-// Shared mouth: v2 sphere countersink is the default for this oblique wall
-// (well revolve grazes it and fins). Geometry cut lives in bead_common.scad.
+// Shared mouth: just a hole (bead_common.scad).
 module string_hole() {
     translate([0, 0, height / 2])
-        bead_string_hole(
-            hole_entry_x = hole_entry_x,
-            n_out = n_out,
+        bead_string_hole_plain(
             R_throat = R_throat,
-            R_open = R_open,
-            k = k_scoop,
             hole_len = hole_len);
 }
 

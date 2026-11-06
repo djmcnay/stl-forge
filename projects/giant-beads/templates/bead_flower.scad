@@ -286,15 +286,12 @@ module flower_body() {
     }
 }
 
-// ---- shared mouth, forwarded values exactly as bead_star does -----------
+// ---- shared mouth, just a hole ---------------------------------------------
 module string_hole() {
     translate([0, 0, height / 2])
-        bead_string_hole(hole_entry_x = hole_entry_x,
-                         n_out = n_out,
-                         R_throat = hole_diameter / 2,
-                         R_open = hole_opening_diameter / 2,
-                         k = k_scoop,
-                         hole_len = hole_len);
+        bead_string_hole_plain(
+            R_throat = hole_diameter / 2,
+            hole_len = hole_len);
 }
 
 // ---- deliverable: the flower bead with the string hole, z = 0 base ------

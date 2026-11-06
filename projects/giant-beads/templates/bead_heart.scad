@@ -45,11 +45,8 @@ $fn = 128;
 // bead.scad default: fillet_radius = width / 12  ->  10 mm at width 120.
 fillet_radius = width / 12;
 
-// Mouth default for this template is the SPHERE countersink
-// (bead_string_hole, sunk along the local wall normal) — the well revolve
-// cannot be tangent to this oblique heart flank and wedges a fin into the
-// rim (see bead_common.scad wall-normal constraint). The well remains the
-// letter-bead (bead.scad) default where the wall is flat/perpendicular.
+// Mouth: JUST A HOLE (bead_string_hole_plain: straight bore, no
+// fillet, no ball, no scoop, no well). Added later only if asked.
 
 // ---- mathematical helpers (verbatim from reference) --------------------
 function clamp01(x) = max(0, min(1, x));
@@ -132,25 +129,19 @@ assert(hole_opening_diameter < height, "hole opening must fit vertically within 
 assert(fillet_radius > 0, "fillet_radius must be positive");
 assert(fillet_radius <= height / 2, "fillet_radius must be <= height/2 so fillets never overlap");
 
-// ---- String hole: spherical countersink on the LOCAL wall normal (v2) -------
-// Ported from bead_star (43db29b, 17 Oct 2026) at David's request: every bead
-// family now shares the same mouth procedure. The heart flank is an oblique,
-// overhanging tip flank, so the countersink is a sphere sunk along the LOCAL
-// wall normal at the y=0 crossing, NOT a revolve about the bore axis (that
-// was the bead_star v1 defect: a bore-axis countersink wedges a fin into the
-// rim on an oblique wall). A sphere meets any smooth wall in smooth curves,
-// so the rim cannot grow a fin. Rim radius = hole_opening_diameter exactly.
-// The heart outline is mirror-symmetric about the y axis, so the -x scoop is
-// the yz-mirror of the +x one. The crossing uses the same scale-invariant
+// ---- String hole: just a hole ----------------------------------------------
+// Straight throat through the bead, nothing else
+// (bead_string_hole_plain, bead_common.scad). The bore half-length is
+// derived from the outline so it clears both walls; see below.
 // interpolated rule as bead_star (band-style max-x measurement is scale
 // dependent and would drift the rim by up to ~0.55 mm).
-// bore_fillet_radius is retained as a bead-family parameter; its bell-flare
-// role is played by the spherical scoop.
+// bore_fillet_radius is retained as a bead-family parameter, unused:
+// the hole is just a hole.
 assert(hole_opening_diameter > hole_diameter, "hole_opening_diameter must exceed hole_diameter");
 assert(hole_opening_diameter < width, "hole opening must fit within the face");
 assert(hole_diameter < width, "hole throat must fit within the face");
 
-extra = 5;                                   // mm scoop sink and bore overshoot
+extra = 5;                                   // mm bore overshoot past both walls
 R_throat = hole_diameter / 2;
 R_open = hole_opening_diameter / 2;
 
@@ -169,33 +160,17 @@ hole_entry_x = max([
                        : p0[0] + (p1[0] - p0[0]) * (0 - p0[1]) / (p1[1] - p0[1])
 ]);
 assert(hole_entry_x > 0, "hole_entry_x must be positive: no +x outline crossing of y=0 found");
-hz_tan = hz_pts[(hz_cross_i + 2) % hz_L] - hz_pts[(hz_cross_i + hz_L - 2) % hz_L];
-hz_mag = sqrt(hz_tan[0] * hz_tan[0] + hz_tan[1] * hz_tan[1]);
-n_tan = [hz_tan[1] / hz_mag, -hz_tan[0] / hz_mag];
-n_out = n_tan[0] > 0 ? n_tan : [-n_tan[0], -n_tan[1]];
-half = hole_entry_x;
-k_scoop = extra;
-R_ball = sqrt(R_open * R_open + k_scoop * k_scoop); // rim radius exactly R_open
-assert(R_ball <= height / 2, "countersink sphere must fit within the bead height");
-assert(k_scoop > 0, "scoop sink must be positive");
-// the straight bore must clear every wall the opening disc can reach (the
+// the straight bore must clear every wall it can reach (the
 // oblique flank pokes beyond the centre-line crossing):
 hz_wall_span_x = max([for (p = hz_pts) if (abs(p[1]) <= R_open) p[0]]);
 hole_len = hz_wall_span_x + extra;
-scoop_dx = -k_scoop * n_out[0];
-scoop_dy = -k_scoop * n_out[1];
-echo(bead_heart_entry_x = hole_entry_x, bead_heart_normal = n_out, bead_heart_hole_len = hole_len);
+echo(bead_heart_entry_x = hole_entry_x, bead_heart_hole_len = hole_len);
 
-// Shared mouth: v2 sphere countersink is the default for this oblique wall
-// (well revolve grazes it and fins). Geometry cut lives in bead_common.scad.
+// Shared mouth: just a hole (bead_common.scad).
 module string_hole() {
     translate([0, 0, height / 2])
-        bead_string_hole(
-            hole_entry_x = hole_entry_x,
-            n_out = n_out,
+        bead_string_hole_plain(
             R_throat = R_throat,
-            R_open = R_open,
-            k = k_scoop,
             hole_len = hole_len);
 }
 
