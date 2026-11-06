@@ -151,6 +151,7 @@ assert(hole_opening_diameter < width, "hole opening must fit within the face");
 assert(hole_diameter < width, "hole throat must fit within the face");
 
 extra = 5;                                   // mm scoop sink and bore overshoot
+R_throat = hole_diameter / 2;
 R_open = hole_opening_diameter / 2;
 
 // crossing + local wall frame from the outline vertices (recomputed per
