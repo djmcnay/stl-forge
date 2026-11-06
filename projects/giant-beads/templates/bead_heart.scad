@@ -45,7 +45,7 @@ $fn = 128;
 // bead.scad default: fillet_radius = width / 12  ->  10 mm at width 120.
 fillet_radius = width / 12;
 
-// Mouth: a rolling-ball fillet of `mouth_fillet` mm (3 mm at defaults)
+// Mouth: a rolling-ball fillet of `mouth_fillet` mm (5 mm at defaults)
 // follows the heart's actual wall - see the "String hole" section below.
 
 // ---- mathematical helpers (verbatim from reference) --------------------
@@ -147,11 +147,12 @@ assert(hole_diameter < width, "hole throat must fit within the face");
 extra = 5;                                   // mm bore overshoot past both walls
 R_throat = hole_diameter / 2;
 R_open = hole_opening_diameter / 2;
-// Rim fillet radius: the ball that rolls the bore/wall edge. 3 mm at the
-// default width; the clamp keeps the swept ball inside the straight wall
-// band, clear of the face fillets, and floors at a token radius so tiny
-// test widths still render.
-mouth_fillet = max(0.05, min(3, (height / 2 - fillet_radius - R_throat) / 2));
+// Rim fillet radius: the ball that rolls the bore/wall edge. 5 mm at the
+// default width (a less pronounced version of the letter bead's 6.667 mm
+// well); the clamp keeps the swept rim inside the straight wall band,
+// clear of the face fillets, and floors at a token radius so tiny test
+// widths still render.
+mouth_fillet = max(0.05, min(5, height / 2 - fillet_radius - R_throat));
 
 // crossing + local wall frame from the outline vertices (recomputed per
 // bubble): scalar two-pass argmin because max() over vectors is not portable
@@ -211,6 +212,7 @@ function vmul(a, s) = [a[0] * s, a[1] * s, a[2] * s];
 function vdot(a, b) = a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 
 mf_r = mouth_fillet;
+mf_overlap = 0.2;                            // mm the sliver reaches into the bore
 mf_n = 240;                                  // samples around the mouth edge
 mf_arc = 16;                                 // samples across the fillet arc
 mf_th = [for (i = [0 : mf_n - 1]) 360 * i / mf_n];
@@ -226,15 +228,19 @@ mf_e2 = [for (i = [0 : mf_n - 1])
     vmul(vsub(mf_nw[i], vmul(mf_nb[i], mf_c0[i])), 1 / mf_s0[i])];
 
 // One cross-section, perpendicular to the mouth edge: the edge point,
-// then the ball arc from the bore tangency (phi = 180) to the wall
-// tangency (phi = acos(c0)). The polygon (edge point + arc) is exactly
-// the sliver the fillet removes.
+// a small strip that reaches into the bore (so the sliver and the bore
+// cutter overlap instead of sharing a coplanar face), then the ball arc
+// from the bore tangency (phi = 180) to the wall tangency
+// (phi = acos(c0)). The polygon is exactly the sliver the fillet removes.
 function mf_sec(i) =
     let(c0 = mf_c0[i], s0 = mf_s0[i], e1 = mf_nb[i], e2 = mf_e2[i],
         th = acos(max(-1, min(1, c0))),
-        b_c = -mf_r * (1 + c0) / s0)
+        b_c = -mf_r * (1 + c0) / s0,
+        tb = vadd(mf_E[i], vmul(e2, b_c)),
+        e_in = vsub(mf_E[i], vmul(e1, mf_overlap)),
+        tb_in = vsub(tb, vmul(e1, mf_overlap)))
     concat(
-        [mf_E[i]],
+        [mf_E[i], e_in, tb_in],
         [for (k = [0 : mf_arc])
             let(phi = 180 - (180 - th) * k / mf_arc)
                 vadd(mf_E[i],
@@ -242,7 +248,7 @@ function mf_sec(i) =
                           vmul(e2, b_c + mf_r * sin(phi))))]
     );
 
-mf_w = mf_arc + 2;                           // vertices per cross-section
+mf_w = mf_arc + 4;                           // vertices per cross-section
 mf_pts = [for (i = [0 : mf_n - 1]) each mf_sec(i)];
 // the cross-section is CCW in (e1, e2) while e1 x e2 = -T, so the sweep
 // winding is reversed from the usual (P, P+1, next P+1, next P) order
