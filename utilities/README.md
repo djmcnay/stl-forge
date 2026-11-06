@@ -10,16 +10,18 @@ shell out to these paths; projects must not copy them.
 | `presets.json` | Box-family presets only (`drawer_organiser`, `cable_tidy`, `screw_tray`, `pencil_cup`). Bead presets live with their project. |
 | `core/stl_probe.py` | Format-agnostic STL inspector (bbox, slice-z; reads binary and ASCII). |
 | `core/annotate_preview.py` | Delivery verification overlay (needs Pillow). |
-| `references/` | `alt-cad-routes.md`, `bambu-3mf.md`, `disc-golf.md`, `shape-acceptance.md`. |
+| `references/` | `alt-cad-routes.md`, `bambu-3mf.md`, `shape-acceptance.md` (generic CAD / Bambu / shape notes). |
 | `scripts/` | One-off maintenance scripts. |
-| `app/` | Gradio generation app (renders to `utilities/app/.render-scratch/` only). |
+
+Project-specific apps (e.g. a Gradio panel) live under
+`projects/<project>/app/` — see `projects/giant-beads/app/`.
 
 ## Run from the repo root
 
 ```bash
 python3 utilities/forge.py --out <scratch>/stl-check          # all box presets
 python3 utilities/forge.py --only drawer_organiser --out <dir>
-python3 utilities/forge.py --presets projects/giant-pony-beads/presets.json --out <dir>
+python3 utilities/forge.py --presets projects/giant-beads/presets.json --out <dir>
 ```
 
 `forge.py` base is the `utilities/` directory (`HERE`), project templates

@@ -52,6 +52,12 @@ $fn = 128;
 // bead.scad default: fillet_radius = width / 12  ->  10 mm at width 120.
 fillet_radius = width / 12;
 
+// ---- fillet-well mouth dial (family default, matches bead.scad) ----------
+// Well entrance (bead_string_hole_well, letter-bead "gravitational well" /
+// fillet-well) is now the DEFAULT mouth for all beads. Sphere remains explicit opt-out in bead_common.scad.
+r_mouth_max = height / 2.25 - fillet_radius - hole_diameter / 2;
+r_mouth     = max(0.5, min(0.5 * hole_diameter, r_mouth_max)); // clamp to 0.5 when dial collapses at small width/hole combos
+
 // ==================================================
 // 1. MATHEMATICAL HELPERS
 // ==================================================
@@ -528,18 +534,17 @@ scoop_dx = -k_scoop * n_out[0];
 scoop_dy = -k_scoop * n_out[1];
 echo(star_hole_entry_x = hole_entry_x, star_wall_normal = n_out, star_hole_len = hole_len);
 
-// Shared mouth: the geometry cut lives in bead_common.scad (see its
-// provenance block). The local values above (hole_entry_x, n_out, half,
-// k_scoop, hole_len ...) forward unchanged to the shared module call.
+// Shared mouth: the fillet-well (bead_common.scad bead_string_hole_well) is
+// the DEFAULT mouth for every bead (letter-bead well, 6 Nov 2026).
+// Sphere (bead_string_hole) remains available in bead_common.scad as explicit
+// opt-out.
 module string_hole() {
     translate([0, 0, height / 2])
-        bead_string_hole(
+        bead_string_hole_well(
             hole_entry_x = hole_entry_x,
-            n_out = n_out,
             R_throat = R_throat,
-            R_open = R_open,
-            k = k_scoop,
-            hole_len = hole_len);
+            r_mouth = r_mouth,
+            extra = k_scoop);
 }
 
 // ---- Fillet geometry: bead.scad's quarter arc, carried in z-slices -------

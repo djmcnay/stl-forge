@@ -1,7 +1,7 @@
 ---
 title: Star face fillets
 date: 2026-10-22
-tags: [bead, star, fillets, openscad, giant-pony-beads]
+tags: [bead, star, fillets, openscad, giant-beads]
 ---
 
 # FINDINGS: star face fillets (feat/star-face-fillets)

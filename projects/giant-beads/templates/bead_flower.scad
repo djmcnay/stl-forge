@@ -88,6 +88,8 @@ $fn = 128;
 // ---- face fillets (mirrored from templates/bead.scad) --------------------
 // Quarter-round where each flat face meets the side wall (NOT a chamfer).
 // Family default: fillet_radius = width / 12  ->  10 mm at width 120.
+
+// mouth dial is defined after the fillet radii below (stigma fillet drives the well).
 // PETAL fillet TRIPLED to width / 4 (30 mm at 120): 2x at width / 6 in
 // step 3, 3x at width / 4 in step 4, principal-ordered 22 Oct 2026,
 // FLOWER-ONLY; the family default stays width / 12 in bead.scad /
@@ -100,6 +102,12 @@ $fn = 128;
 // enlarged 54.545 mm disc ends in a 17.27 mm flat top face, NOT a dome.
 fillet_radius = width / 4;           // petals: tripled (3x), principal order 22 Oct 2026
 stigma_fillet_radius = width / 12;   // stigma: family default, ordinary top fillet
+// ---- fillet-well mouth dial (family default, matches bead.scad) ----------
+// Well entrance (bead_string_hole_well, letter-bead "gravitational well" /
+// fillet-well) is now the DEFAULT mouth for all beads. Sphere remains explicit opt-out in bead_common.scad.
+// Stigma fillet (10 mm) drives the mouth dial, not the tripled petal fillet (30 mm).
+r_mouth_max = height / 2.25 - stigma_fillet_radius - hole_diameter / 2;
+r_mouth     = max(0.5, min(0.5 * hole_diameter, r_mouth_max)); // clamp to 0.5 when dial collapses
 
 // ---- geometry gates -----------------------------------------------------
 assert(width > 0, "width must be positive");
@@ -286,12 +294,10 @@ module flower_body() {
 // ---- shared mouth, forwarded values exactly as bead_star does -----------
 module string_hole() {
     translate([0, 0, height / 2])
-        bead_string_hole(hole_entry_x = hole_entry_x,
-                         n_out = n_out,
+        bead_string_hole_well(hole_entry_x = hole_entry_x,
                          R_throat = hole_diameter / 2,
-                         R_open = hole_opening_diameter / 2,
-                         k = k_scoop,
-                         hole_len = hole_len);
+                         r_mouth = r_mouth,
+                         extra = k_scoop);
 }
 
 // ---- deliverable: the flower bead with the string hole, z = 0 base ------

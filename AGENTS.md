@@ -30,7 +30,10 @@ Code shared between projects (or generic tooling). Current files:
 - `templates/box.scad` + `presets.json` — the open-top box example family.
 - `references/` — CAD-route / Bambu / shape-acceptance references.
 - `scripts/` — one-off scripts (`.gitkeep` if empty).
-- `app/` — Gradio generation app (renders to `utilities/app/.render-scratch/` only).
+
+App panels are per-project, not master utilities: a project may add
+`projects/<project>/app/` (e.g. `projects/giant-beads/app/`, renders
+only to its own `.render-scratch/`).
 
 Rule: anything used by TWO projects goes in `utilities/`, not copied per
 project. A template used by one project only lives under that project.
@@ -49,6 +52,7 @@ projects/<project>/
 ├── templates/         # completed .scad templates (SKILL.md references these)
 ├── tests/             # project-specific unit tests
 ├── tools/             # project-specific helpers
+├── app/               # optional per-project app (e.g. Gradio panel; .render-scratch ignored)
 ├── solidcraft/        # SolidCraft models (DO NOT DELETE; never clean these)
 ├── stl/               # generated STLs, GITIGNORED (never commit .stl)
 └── .tmp/              # WIP / scratch, GITIGNORED and purged regularly

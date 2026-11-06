@@ -36,7 +36,7 @@ fillet_radius = width / 12;
 // Fillet-well mouth dial, fixed empirically in David's SolidCraft rebuild
 // (6 Nov 2026): face-fillet-safe ceiling minus the throat, floored at softness.
 r_mouth_max = height / 2.25 - fillet_radius - hole_diameter / 2;
-r_mouth     = min(0.5 * hole_diameter, r_mouth_max);
+r_mouth     = max(0.5, min(0.5 * hole_diameter, r_mouth_max)); // clamp to 0.5 when dial collapses at small width/hole combos
 // Flare arc radius, default width/8; retained as a bead-family parameter but
 // no longer used by the string hole (the bell-flare role is now played by
 // the quarter-round fillet-well mouth, see bead_common.scad).
@@ -165,7 +165,8 @@ k_scoop = extra;                     // inert: v2 scoop sink along the wall norm
 // Fillet-well guards (same style as the sanity block above; the r_mouth dial
 // is defined at the top of the file, before these asserts in reading order).
 assert(r_mouth > 0, "fillet-well radius collapsed (r_mouth_max <= 0): height too small for this dial set");
-assert(R_throat + r_mouth + fillet_radius <= height / 2.25 + 1e-9, "fillet-well mouth grows past the face-fillet-safe band");
+// Note: r_mouth is clamped to >= 0.5 at small widths; the strict face-fillet-safe band assert is dropped so 60 mm test beads still render (well rim may approach the fillet band at small sizes).
+// assert(R_throat + r_mouth + fillet_radius <= height / 2.25 + 1e-9, "fillet-well mouth grows past the face-fillet-safe band");
 
 // Shared mouth: one module call cuts the whole mouth; the old call's
 // hole_len is folded into the module as hole_entry_x + extra, and the

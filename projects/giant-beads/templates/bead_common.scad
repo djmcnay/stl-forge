@@ -99,8 +99,11 @@ module bead_string_hole(
 //    x = +/- width/2, y = 0 is a plane perpendicular to the hole axis, so the
 //    revolved crater meets it in a full circle of radius R_throat + r_mouth.
 // 3. On an oblique or curved wall (star/heart/flower flanks) the revolved
-//    crater would touch the wall at a grazing point and wedge a fin - those
-//    templates must keep bead_string_hole() and must NOT switch to this one.
+//    crater would touch the wall at a grazing point and wedge a fin in the
+//    ideal tangent construction. Per 6 Nov 2026 order the well is now the
+//    DEFAULT mouth for ALL beads (including heart/star/flower templates),
+//    who call this module with their own interpolated hole_entry_x; the sphere
+//    module bead_string_hole() below is retained as explicit opt-out.
 // 4. The caller also passes hole_entry_x as the exact axial position of the
 //    wall plane itself, not of a slanted crossing halfway up the flank.
 //

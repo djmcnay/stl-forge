@@ -40,7 +40,7 @@ threshold calibration, vector measurement, known-answer self-tests),
 read `utilities/references/shape-acceptance.md`.
 When changing or re-parameterising the heart-bead family (the bubble dial
 mapping, the bead-spec bell-mouth string hole, face fillets, or its
-measured verification bands), read `projects/giant-pony-beads/references/heart-bead.md`.
+measured verification bands), read `projects/giant-beads/references/heart-bead.md`.
 
 ## Finished project families (adding one)
 
@@ -53,7 +53,7 @@ literal dial sentences; transcribe them faithfully and never silently add
 entanglements (a second fillet, a dome) he has not mentioned.
 
 Completed one-command projects live under `projects/` - currently
-`projects/giant-pony-beads/`: a self-contained builder (`main.py`), its own
+`projects/giant-beads/`: a self-contained builder (`main.py`), its own
 `presets.json`, `templates/` (bead, bead_heart, bead_star, bead_flower,
 sharing the common mouth module `bead_common.scad`) and an input-contract
 test suite. NOTE: the legacy `--parts flower` flag still drives
@@ -63,10 +63,10 @@ explicit later step, not a given. It renders a word row plus
 heart/star/flower artefacts in one call:
 
 ```bash
-python3 projects/giant-pony-beads/main.py --width 120 --letters "C A M I L A" --parts heart
+python3 projects/giant-beads/main.py --width 120 --letters "C A M I L A" --parts heart
 ```
 
-read `projects/giant-pony-beads/README.md` for the full contract. The
+read `projects/giant-beads/README.md` for the full contract. The
 template-direct pipeline below remains the library; a finished project is
 generated from it and owns its parameters afterwards.
 
@@ -260,7 +260,7 @@ non-circular family (heart, star, flower), not just the heart:
   width, so the band returns a point up to ~0.55 mm proud of the true
   wall and that error shrinks toward zero only at large widths - not
   scale invariant. MOUTH LINEAGE (approved by the principal, so this is canon,
-  full recipe in projects/giant-pony-beads/README.md "Approved mouth recipe"):
+  full recipe in projects/giant-beads/README.md "Approved mouth recipe"):
   bead.scad ships the FILLET-WELL mouth - the shared `bead_string_hole_well`
   module in bead_common.scad, a straight throat bore + a revolved
   quarter-round crater, G1 to the bore and the flat wall, dial
@@ -269,11 +269,11 @@ non-circular family (heart, star, flower), not just the heart:
   `rotate([0,90,0]) rotate_extrude(angle=360) polygon(...)` with the arc
   sampled from -90 to 0 degrees (slope 0 at the bore, vertical at the wall,
   centre at (R_throat + r_mouth, hole_entry_x - r_mouth)), mirrored internally
-  to cut both mouths in one module call. bead_heart.scad and bead_star.scad
-  KEEP the v2 mouth: a straight throat bore + a spherical countersink sunk
-  along the LOCAL wall normal at the interpolated crossing (sphere radius
-  sqrt(R_open^2 + k^2), k = extra; rim radius = R_open exactly) - a revolved
-  well cannot be tangent to their oblique walls, same verdict both kernels. SUNK MEANS INTO THE MATERIAL: bead_common's `scoop_dx = -k *
+  to cut both mouths in one module call. bead_heart.scad, bead_star.scad and
+  bead_flower.scad now also use the well as default (6 Nov 2026 order: well
+  is default for all beads) with the template's own interpolated
+  hole_entry_x + r_mouth; the sphere mouth (bead_string_hole, sunk along
+  the LOCAL wall normal at the interpolated crossing) is opt-out. SUNK MEANS INTO THE MATERIAL: bead_common's `scoop_dx = -k *
   n_out[0]` puts the sphere centre at `hole_entry_x - k`, i.e. INSIDE the
   wall (x = 55, not 65, for a +x mouth at width 120), so the bowl is deep and
   runs well inboard of the throat. A re-model that centres the sphere OUTSIDE
@@ -414,7 +414,7 @@ nothing about whether the geometry works.
 
 Domain depth for disc golf discs, including the free generators, their
 verification status, flight numbers and TPU print settings:
-`utilities/references/disc-golf.md`.
+`archive/disc-golf.md` (archived research — no disc project in the repo).
 
 ## Booleans against IMPORTED STL meshes
 
@@ -442,7 +442,7 @@ from template work - do not reuse template gates here:
 
 ## Generation app (Gradio, in-skill)
 
-`app/` is the principal's interactive builder: master `app.py` (port
+`projects/giant-beads/app/` is the principal's interactive builder: master `app.py` (port
 7863) composes the STL Forge tab (template dropdown, controls parsed
 from each template's own parameter block with the file's comments as
 text; a 1/3 : 2/3 column split, parameters
@@ -455,10 +455,10 @@ boot line, bounded at the last 200 entries; the page H1 is literally
 Playground tab (live
 star/petal sketch dials rendered face-on through the real OpenSCAD
 functions - never re-implement those maths in Python). Run from the
-skill root with `utilities/app/.venv/bin/python utilities/app/app.py`; when that venv\'s
+skill root with `projects/giant-beads/app/.venv/bin/python projects/giant-beads/app/app.py`; when that venv\'s
 python dies with `dyld ... Library not loaded libpython` (concurrent
 dispatches re-break this venv), launch instead with the Hermes venv
-python (`~/.hermes/hermes-agent/venv/bin/python utilities/app/app.py`, gradio
+python (`~/.hermes/hermes-agent/venv/bin/python projects/giant-beads/app/app.py`, gradio
 already installed) and repair the app venv in a quiet moment.
 The orbit viewer's only colour knob is `clear_color`; it is set dark
 violet `(0.10, 0.02, 0.16)` because the mesh material colour is NOT
@@ -472,7 +472,7 @@ Render button (renders are change-driven; selecting a template
 auto-renders its defaults so the view is never empty), a Reset button
 below the parameters restoring the template's file defaults, native
 Gradio components only (no custom HTML/CSS, no theming), renders ONLY
-into gitignored `app/.render-scratch/`. Only literal-valued parameters
+into gitignored `projects/giant-beads/app/.render-scratch/`. Only literal-valued parameters
 become controls: driving a derived one (`height = width / 2`) would
 trip the template asserts, so defaults always round-trip. EVERY
 declared control carries explicit `interactive=True`: Gradio 6.30
@@ -560,7 +560,7 @@ dispatching - a brief left in a scratch dir elsewhere is invisible to the
 - Two entry points, two flag sets: the `utilities/forge.py` (library suite,
   `--out`/`--only`/`--word`, also called for `.3mf` composition) sits at
   the SKILL ROOT, while the finished project's builder is
-  `projects/giant-pony-beads/main.py` (`--save-to`/`--parts`/`--preset`/`--previews`,
+  `projects/giant-beads/main.py` (`--save-to`/`--parts`/`--preset`/`--previews`,
   NO `--out`). Never assume the project directory contains forge.py or
   that main.py accepts --out; check the entry point's own help before the
   first run in a session.

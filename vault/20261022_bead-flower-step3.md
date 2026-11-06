@@ -1,7 +1,7 @@
 ---
 title: bead_flower.scad step 3 — salvage-completed
 date: 2026-10-22
-tags: [bead, flower, giant-pony-beads, openscad]
+tags: [bead, flower, giant-beads, openscad]
 ---
 
 # FINDINGS: bead flower step 3 (salvage-completed)

@@ -1,9 +1,9 @@
 # stl-forge generation app
 
-A native-Gradio control panel over the `projects/giant-pony-beads` templates.
+A native-Gradio control panel over the `projects/giant-beads` templates.
 Two tabs:
 
-- **STL Forge** - pick a template from `projects/giant-pony-beads/templates/*.scad`;
+- **STL Forge** - pick a template from `projects/giant-beads/templates/*.scad`;
   its top parameter block is parsed into one control per literal-valued
   parameter (`info=` from the file's own comments). Both tabs are live with
   no Render button: template selection rebuilds the controls and every
@@ -30,7 +30,7 @@ From the skill root (the app builds its own venv; the Hermes venv is not
 a dependency):
 
 ```
-utilities/app/.venv/bin/python utilities/app/app.py
+projects/giant-beads/app/.venv/bin/python projects/giant-beads/app/app.py
 ```
 
 Serves the master app at http://127.0.0.1:7863 (allowed_paths cover the

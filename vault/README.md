@@ -36,7 +36,7 @@ tags: [<tag>, <tag>, ...]
 - `title` is the one-line summary.
 - `date` is ISO `YYYY-MM-DD` (same date as the filename).
 - `tags` are relevant to the note (project / topic / tool, e.g.
-  `bead`, `flower`, `giant-pony-beads`, `openscad`, `gradio`).
+  `bead`, `flower`, `giant-beads`, `openscad`, `gradio`).
   Use at least the project and the tool.
 
 ## What goes here vs. elsewhere

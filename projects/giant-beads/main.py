@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""giant-pony-beads: one-command entry for the giant-bead family artefacts.
+"""giant-beads: one-command entry for the giant-bead family artefacts.
 
 Modes (combinable): --letters merges a word's unique letters into ONE
 row-layout STL; --parts renders heart/star/flower shapes; --preset renders

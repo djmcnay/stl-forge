@@ -1,6 +1,6 @@
 {
-  "project": "giant-pony-beads",
-  "note": "Canonical default snapshot. Update in the same commit as any template default change. Values mirror templates/*.scad parameter blocks and presets.json bead_default.",
+  "project": "giant-beads",
+  "note": "Canonical default snapshot. Mouth default is the fillet-well (bead_string_hole_well, letter-bead gravitational well) for ALL beads; bead_string_hole() (sphere) is explicit opt-out in bead_common.scad. Update with any template default change.",
   "bead_scad": {
     "part": "body",
     "width": 120,
@@ -24,7 +24,8 @@
     "letter_fillet": true,
     "letter_recess_fillet": 0.2,
     "letter_outline_width": 0.8,
-    "$fn": 128
+    "$fn": 128,
+    "mouth": "well (bead_string_hole_well, family default)"
   },
   "bead_heart_scad": {
     "width": 120,
@@ -32,7 +33,9 @@
     "bubble": 5,
     "hole_diameter": 20,
     "fillet_radius": 10,
-    "$fn": 128
+    "$fn": 128,
+    "r_mouth": 4.242,
+    "mouth": "well (bead_string_hole_well, family default)"
   },
   "bead_star_scad": {
     "width": 120,
@@ -42,7 +45,9 @@
     "petal_depth": 3,
     "hole_diameter": 20,
     "fillet_radius": 10,
-    "$fn": 128
+    "$fn": 128,
+    "r_mouth": 6.667,
+    "mouth": "well (bead_string_hole_well, family default)"
   },
   "bead_default": {
     "template": "bead.scad",
@@ -53,12 +58,19 @@
     "letter_top_rotate": 0,
     "letter_bottom_rotate": 0,
     "letter_space": 0.75,
-    "parts": ["body", "letter"],
+    "parts": [
+      "body",
+      "letter"
+    ],
     "preview": "assembly"
   },
   "main_defaults": {
     "width": 120,
     "word_gap": 10,
     "save_to": "$HOME/Downloads"
+  },
+  "bead_flower_scad": {
+    "r_mouth": 6.667,
+    "mouth": "well (bead_string_hole_well, family default)"
   }
 }

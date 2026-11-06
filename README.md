@@ -17,10 +17,9 @@ up and build from the templates.
 │   ├── forge.py         generic renderer/packager
 │   ├── templates/box.scad + presets.json   the box example family
 │   ├── core/            STL probe + preview annotation
-│   ├── references/      CAD routes, Bambu, shape acceptance
-│   └── app/             Gradio generation app
+│   └── references/      CAD routes, Bambu, shape acceptance
 ├── projects/
-│   └── giant-pony-beads/   giant pony / letter beads (see its README)
+│   └── giant-beads/   giant pony / letter beads (see its README; app/ is per-project)
 ├── vault/           Obsidian vault for learnings (YYYYMMDD + tags; see vault/README.md)
 ```
 
@@ -39,16 +38,16 @@ Rules (full contract in `AGENTS.md`):
 
 ## Projects
 
-- **`projects/giant-pony-beads/`** — giant beads for friendship bracelets
+- **`projects/giant-beads/`** — giant beads for friendship bracelets
   (letter bead with the fillet-well / "gravitational well" string hole,
   heart bead, star/flower bead). One-command builder:
 
   ```bash
-  python3 projects/giant-pony-beads/main.py \
+  python3 projects/giant-beads/main.py \
       --width 120 --letters "C A M I L A" --parts heart,star,flower
   ```
 
-  See `projects/giant-pony-beads/README.md` for the family, parameters
+  See `projects/giant-beads/README.md` for the family, parameters
   and mouth recipe.
 
 - **Box family (utilities example)** — open-top storage boxes via
@@ -58,7 +57,7 @@ Rules (full contract in `AGENTS.md`):
   python3 utilities/forge.py --out /tmp/stl-check              # all four box presets
   python3 utilities/forge.py --only drawer_organiser --out /tmp/boxes
   python3 utilities/forge.py \
-      --presets projects/giant-pony-beads/presets.json --out /tmp/beads-check
+      --presets projects/giant-beads/presets.json --out /tmp/beads-check
   ```
 
 ## Quick start
@@ -66,20 +65,20 @@ Rules (full contract in `AGENTS.md`):
 Prerequisites: OpenSCAD 2021.01+ on PATH (`openscad --version`);
 macOS `brew install openscad@snapshot`. Python 3 stdlib only
 (`core/annotate_preview.py` needs Pillow, the Gradio app needs its own
-venv — see `utilities/app/README.md`).
+venv — see `projects/giant-beads/app/README.md`).
 
 Build is headless through the OpenSCAD CLI (`--export-format=binstl`).
 The pipeline emits **binary STL by design** (80-byte header + uint32 facet
 count at offset 80 + 50 bytes/triangle; file size exactly `84 + 50*n`).
 Measure geometry from the STL vertex stream (`utilities/core/stl_probe.py`),
 never from preview proportions. The Gradio generation app is served with
-`utilities/app/.venv/bin/python utilities/app/app.py` at
+`projects/giant-beads/app/.venv/bin/python projects/giant-beads/app/app.py` at
 http://127.0.0.1:7863.
 
 Tests:
 
 ```bash
-python3 -m pytest projects/giant-pony-beads/tests -q
+python3 -m pytest projects/giant-beads/tests -q
 ```
 
 ## Delivery

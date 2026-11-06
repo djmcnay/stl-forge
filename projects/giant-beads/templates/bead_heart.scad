@@ -45,6 +45,15 @@ $fn = 128;
 // bead.scad default: fillet_radius = width / 12  ->  10 mm at width 120.
 fillet_radius = width / 12;
 
+// ---- fillet-well mouth dial (family default, matches bead.scad) ----------
+// The well entrance (bead_common.scad bead_string_hole_well, the letter-bead
+// "gravitational well" / fillet-well shape) is now the DEFAULT mouth for all
+// beads: r_mouth_max = H/2.25 - r_fillet - R_throat, r_mouth = min(0.5*d, ceiling).
+// bead_string_hole() (sphere) is retained in bead_common.scad as explicit opt-out.
+R_throat = hole_diameter / 2;
+r_mouth_max = height / 2.25 - fillet_radius - R_throat;
+r_mouth     = max(0.5, min(0.5 * hole_diameter, r_mouth_max)); // clamp to 0.5 when dial collapses
+
 // ---- mathematical helpers (verbatim from reference) --------------------
 function clamp01(x) = max(0, min(1, x));
 
@@ -145,7 +154,6 @@ assert(hole_opening_diameter < width, "hole opening must fit within the face");
 assert(hole_diameter < width, "hole throat must fit within the face");
 
 extra = 5;                                   // mm scoop sink and bore overshoot
-R_throat = hole_diameter / 2;
 R_open = hole_opening_diameter / 2;
 
 // crossing + local wall frame from the outline vertices (recomputed per
@@ -180,18 +188,18 @@ scoop_dx = -k_scoop * n_out[0];
 scoop_dy = -k_scoop * n_out[1];
 echo(bead_heart_entry_x = hole_entry_x, bead_heart_normal = n_out, bead_heart_hole_len = hole_len);
 
-// Shared mouth: the geometry cut lives in bead_common.scad (see its
-// provenance block). The local values above (hole_entry_x, n_out, half,
-// k_scoop, hole_len ...) forward unchanged to the shared module call.
+// Shared mouth: the fillet-well (bead_common.scad bead_string_hole_well) is
+// the DEFAULT mouth for every bead (letter-bead well, 6 Nov 2026).
+// Sphere (bead_string_hole) remains available in bead_common.scad as explicit
+// opt-out. The local values above (hole_entry_x, n_out, hole_len ...) still
+// come from this template; the well cut uses hole_entry_x + R_throat + r_mouth.
 module string_hole() {
     translate([0, 0, height / 2])
-        bead_string_hole(
+        bead_string_hole_well(
             hole_entry_x = hole_entry_x,
-            n_out = n_out,
             R_throat = R_throat,
-            R_open = R_open,
-            k = k_scoop,
-            hole_len = hole_len);
+            r_mouth = r_mouth,
+            extra = k_scoop);
 }
 
 // ---- Fillet geometry: bead.scad's quarter arc, carried in z-slices -------

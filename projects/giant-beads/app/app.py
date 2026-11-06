@@ -6,7 +6,7 @@ exporting create_tab(), per the sub-app contract) into one control
 panel and serves it on 127.0.0.1:7863 with allowed_paths for every
 served directory. Renders land only in app/.render-scratch/.
 
-Run:  utilities/app/.venv/bin/python utilities/app/app.py   (from the repo root)
+Run:  projects/giant-beads/app/.venv/bin/python projects/giant-beads/app/app.py   (from the repo root)
 """
 from __future__ import annotations
 
