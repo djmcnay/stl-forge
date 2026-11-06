@@ -1,0 +1,44 @@
+{
+  "presets": {
+    "cable_tidy": {
+      "corner_r": 5,
+      "depth": 90,
+      "div_m": 2,
+      "div_n": 2,
+      "floor": 2.4,
+      "height": 40,
+      "wall": 3,
+      "width": 90
+    },
+    "drawer_organiser": {
+      "corner_r": 5,
+      "depth": 80,
+      "div_m": 2,
+      "div_n": 3,
+      "floor": 2.4,
+      "height": 30,
+      "wall": 2.4,
+      "width": 120
+    },
+    "pencil_cup": {
+      "corner_r": 5,
+      "depth": 25,
+      "div_m": 1,
+      "div_n": 1,
+      "floor": 2.4,
+      "height": 80,
+      "wall": 2.4,
+      "width": 25
+    },
+    "screw_tray": {
+      "corner_r": 5,
+      "depth": 45,
+      "div_m": 1,
+      "div_n": 2,
+      "floor": 2.4,
+      "height": 25,
+      "wall": 2,
+      "width": 60
+    }
+  }
+}

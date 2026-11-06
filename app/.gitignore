@@ -1,0 +1,5 @@
+# app-local scratch + venv: never commit renders or environments
+.venv/
+.render-scratch/
+__pycache__/
+*.pyc

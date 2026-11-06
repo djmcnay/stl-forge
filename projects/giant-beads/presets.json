@@ -1,0 +1,51 @@
+{
+  "presets": {
+    "bead_D": {
+      "hole_diameter": 20,
+      "letter_bottom": "D",
+      "letter_bottom_rotate": 0,
+      "letter_font": "Courier",
+      "letter_space": 0.75,
+      "letter_top": "D",
+      "letter_top_rotate": 0,
+      "parts": [
+        "body",
+        "letter"
+      ],
+      "preview": "assembly",
+      "template": "bead.scad",
+      "width": 120
+    },
+    "bead_default": {
+      "hole_diameter": 20,
+      "letter_bottom": "M",
+      "letter_bottom_rotate": 0,
+      "letter_space": 0.75,
+      "letter_top": "M",
+      "letter_top_rotate": 0,
+      "parts": [
+        "body",
+        "letter"
+      ],
+      "preview": "assembly",
+      "template": "bead.scad",
+      "width": 120
+    },
+    "bead_smooth": {
+      "fillet_radius": 30,
+      "hole_diameter": 20,
+      "letter_bottom": "M",
+      "letter_bottom_rotate": 0,
+      "letter_space": 0.45,
+      "letter_top": "M",
+      "letter_top_rotate": 0,
+      "parts": [
+        "body",
+        "letter"
+      ],
+      "preview": "assembly",
+      "template": "bead.scad",
+      "width": 120
+    }
+  }
+}
