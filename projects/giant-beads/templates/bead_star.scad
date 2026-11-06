@@ -1,7 +1,7 @@
 /*
     BEAD STAR - fresh parametric start (17 Oct 2026)
     =================================================
-    Star/flower cross-section bead with a bell-mouth string hole and
+    Star/flower cross-section bead with a plain string hole and
     quarter-round face fillets (width/12). No letters, no rim, no
     preview colouring.
 
@@ -23,10 +23,9 @@
                  `depth = petal_depth`.
     height       extrusion height = width / 2 (computed)
 
-    Shared mouth: the v2 construction is one common subtractive module in
-    bead_common.scad (see its provenance block); this file keeps only its
-    local values (hole_entry_x, n_out, hole_len, ...) and forwards them to
-    the call. The flank recompute below stays per-template.
+    Shared mouth: the plain bore is one common subtractive module in
+    bead_common.scad; this file keeps only its local values
+    (hole_entry_x, hole_len, ...) and forwards them to the call.
 */
 use <bead_common.scad>
 
@@ -52,11 +51,9 @@ $fn = 128;
 // bead.scad default: fillet_radius = width / 12  ->  10 mm at width 120.
 fillet_radius = width / 12;
 
-// Mouth default for this template is the SPHERE countersink
-// (bead_string_hole, sunk along the local wall normal) — the well revolve
-// cannot be tangent to this oblique star flank and wedges a fin into the
-// rim (see bead_common.scad wall-normal constraint). The well remains the
-// letter-bead (bead.scad) default where the wall is flat/perpendicular.
+// Mouth: JUST A HOLE (bead_string_hole_plain, bead_common.scad): a
+// straight throat bore, no scoop, no fillet, no well. Added later only
+// if asked.
 
 // ==================================================
 // 1. MATHEMATICAL HELPERS
@@ -476,7 +473,7 @@ assert(height == width / 2, "height must compute to width / 2 exactly");
 assert(fillet_radius > 0, "fillet_radius must be positive");
 assert(fillet_radius <= height / 2, "fillet_radius must be <= height/2 so fillets never overlap");
 
-// ---- Bell-mouth string hole along X, centred on the cylinder (y=0, z=height/2) --
+// ---- Plain string hole along X, centred on the cylinder (y=0, z=height/2) --
 // hole_entry_x is the exact x where the outline crosses the hole centre line
 // y=0 on the +x side, by linear interpolation between the outline vertices
 // straddling it (or a vertex sitting exactly on y=0). Interpolating the true
@@ -485,21 +482,10 @@ assert(fillet_radius <= height / 2, "fillet_radius must be <= height/2 so fillet
 // At defaults (width 120, roundness 12, points 5, petal_depth 3) it is
 // x = 49.7114, NOT 60.
 //
-// MOUTH CONSTRUCTION (v2 - spherical countersink along the LOCAL wall normal).
-// The star flank at y=0 is an OBLIQUE, overhanging tip flank: it tilts sharply
-// away from the crossing on the valley side, so a countersink revolved about
-// the BORE axis touches the wall at one grazing point and wedges a sharp fin
-// into the mouth rim (the teardrop-with-fin defect seen in the first render).
-// Instead each mouth is countersunk the machinist's way: a sphere sunk along
-// the LOCAL wall normal at the crossing, so the opening rim is smooth on the
-// wall (a sphere meets any smooth wall in smooth curves - no fin can exist),
-// the 30 mm scoop rim scales with hole_opening_diameter exactly, and the
-// funnel blends continuously into the 20 mm throat bore along X.
-//   rim radius = R_open exactly: sphere sqrt(R_open^2 + k^2) sunk k along n_out
-//   scoop centre = crossing plane minus k * outward wall normal
-// bore_fillet_radius is retained as a bead-family parameter; its bell role is
-// played here by the spherical scoop.
-extra = 5;                                   // mm scoop sink and bore overshoot
+// MOUTH: just a hole (bead_string_hole_plain, bead_common.scad) — a
+// straight 20 mm bore through both walls. The old spherical scoop,
+// ball rollover, fillet, and well cuts are all out.
+extra = 5;                                   // mm bore overshoot past both walls
 star_pts = star_vertices(width, points, roundness, petal_depth);
 L_pts = len(star_pts);
 // index of the outline vertex nearest the hole axis on the +x side
@@ -514,25 +500,13 @@ hole_entry_x = max([
                        : p0[0] + (p1[0] - p0[0]) * (0 - p0[1]) / (p1[1] - p0[1])
 ]);
 assert(hole_entry_x > 0, "hole_entry_x must be positive: no +x outline crossing of y=0 found");
-tangent_v = star_pts[(cross_i + 2) % L_pts] - star_pts[(cross_i + L_pts - 2) % L_pts];
-// unit wall normal (this OpenSCAD build has no normalize(); sign fixed +x):
-t_mag = sqrt(tangent_v[0] * tangent_v[0] + tangent_v[1] * tangent_v[1]);
-n_tan = [tangent_v[1] / t_mag, -tangent_v[0] / t_mag];
-n_out = n_tan[0] > 0 ? n_tan : [-n_tan[0], -n_tan[1]];
 R_throat = hole_diameter / 2;
 R_open = hole_opening_diameter / 2;
-half = hole_entry_x;
-k_scoop = extra;
-R_ball = sqrt(R_open * R_open + k_scoop * k_scoop); // rim radius exactly R_open
-assert(k_scoop > 0, "scoop depth must be positive");
-assert(R_ball <= height / 2, "scoop sphere must fit within the bead height");
-// the straight bore must clear every wall the opening disc can reach (the
+// the straight bore must clear every wall it can reach (the
 // oblique flank pokes beyond the centre-line crossing):
 wall_span_x = max([for (p = star_pts) if (abs(p[1]) <= R_open) p[0]]);
 hole_len = wall_span_x + extra;
-scoop_dx = -k_scoop * n_out[0];
-scoop_dy = -k_scoop * n_out[1];
-echo(star_hole_entry_x = hole_entry_x, star_wall_normal = n_out, star_hole_len = hole_len);
+echo(star_hole_entry_x = hole_entry_x, star_hole_len = hole_len);
 
 // Shared mouth: just a hole (bead_common.scad).
 module string_hole() {

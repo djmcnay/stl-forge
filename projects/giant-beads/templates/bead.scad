@@ -151,8 +151,8 @@ module bead_solid() {
 // same difference()-safe subtractive geometry as the old module. This file's
 // wall at the hole centre line is the plane x = +/- width/2, perpendicular to
 // the hole axis (local outward normal exactly [1, 0]), which is the only wall
-// shape the revolve is valid on; the star/heart/flower keep bead_string_hole()
-// on their oblique flanks.
+// shape the revolve is valid on; the star/heart/flower use the plain
+// bore (bead_string_hole_plain) on their oblique flanks.
 // Sphere machinery leaves this file with the mouth: R_ball, hole_len and the
 // sphere-fit asserts were countersink-only and are deleted; the new dial
 // (r_mouth_max / r_mouth, right after fillet_radius above) replaces them.

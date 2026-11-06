@@ -48,19 +48,17 @@
                        boss order 22 Oct 2026; flat top face radius
                        width_stigma / 2 - 10 = 17.27 mm at the defaults)
 
-    Shared mouth: the common v2 string-hole module in bead_common.scad
-    (same recipe the whole family carries from the start). This file keeps
-    only its local values (hole_entry_x, n_out, hole_len, ...) and
-    forwards them to the call, EXACTLY as bead_star.scad does. Local rule:
-    hole_entry_x and the wall normal are computed from THIS template's own
-    UNION outline crossing at y = 0, never a pinned number, by scanning BOTH
-    outlines (star polygon and the $fn-matched stigma circle) and taking
-    the outermost interpolated crossing. At the defaults the petal valley
-    on the +x axis dips inside the stigma, so the crossing is the stigma's
-    own wall at width_stigma/2 with normal exactly [1, 0]; on dial settings
-    where the petal flank reaches past the stigma the crossing is the
-    star's oblique flank and the bead_star flank recompute supplies the
-    normal instead.
+    Shared mouth: the plain bore module in bead_common.scad (just a
+    hole). This file keeps only its local values (hole_entry_x,
+    hole_len, ...) and forwards them to the call, EXACTLY as
+    bead_star.scad does. Local rule: hole_entry_x is computed from
+    THIS template's own UNION outline crossing at y = 0, never a
+    pinned number, by scanning BOTH outlines (star polygon and the
+    $fn-matched stigma circle) and taking the outermost interpolated
+    crossing. At the defaults the petal valley on the +x axis dips
+    inside the stigma, so the crossing is the stigma's own wall at
+    width_stigma/2; on dial settings where the petal flank reaches
+    past the stigma the crossing is the star's oblique flank.
 */
 
 use <bead_star.scad>
@@ -80,7 +78,7 @@ height = width / 2;       // extrusion height, mm (family rule)
 // Throat diameter at the centre plane (mm)
 // Bell-mouth diameter at the two entrances (mm): greater of throat*1.2 or height/2
 hole_opening_diameter = max(hole_diameter * 1.2, height / 2);
-// Flare arc radius (mm), family rule width/8 (bell role played by the scoop)
+// Flare arc radius (mm), family rule width/8 (unused: the hole is plain)
 bore_fillet_radius = width / 8;
 // Smooth bore surfaces; the petal outline is polygonal and unaffected by $fn
 $fn = 128;
@@ -89,7 +87,7 @@ $fn = 128;
 // Quarter-round where each flat face meets the side wall (NOT a chamfer).
 // Family default: fillet_radius = width / 12  ->  10 mm at width 120.
 
-// Mouth defaults to sphere countersink (oblique petal flank) — well remains letter-bead default.
+// Mouth: JUST A HOLE (bead_string_hole_plain, bead_common.scad).
 // PETAL fillet TRIPLED to width / 4 (30 mm at 120): 2x at width / 6 in
 // step 3, 3x at width / 4 in step 4, principal-ordered 22 Oct 2026,
 // FLOWER-ONLY; the family default stays width / 12 in bead.scad /
@@ -102,7 +100,7 @@ $fn = 128;
 // enlarged 54.545 mm disc ends in a 17.27 mm flat top face, NOT a dome.
 fillet_radius = width / 4;           // petals: tripled (3x), principal order 22 Oct 2026
 stigma_fillet_radius = width / 12;   // stigma: family default, ordinary top fillet
-// No r_mouth dial: this template uses the sphere mouth (oblique flank).
+// No r_mouth dial: this template's mouth is a plain bore.
 
 // ---- geometry gates -----------------------------------------------------
 assert(width > 0, "width must be positive");
@@ -121,7 +119,7 @@ assert(stigma_fillet_radius <= width_stigma / 2, "stigma_fillet_radius must be <
 assert(stigma_fillet_radius <= height / 2, "stigma_fillet_radius must be <= height/2 so the stigma fillets never overlap");
 
 // ---- union outline y=0 (+x) crossing: outermost of both outlines wins ----
-extra = 5;   // mm scoop sink and bore overshoot (family value)
+extra = 5;   // mm bore overshoot past both walls (family value)
 R_stigma = width_stigma / 2;
 
 // petals: the generator's outline vertices, reused verbatim
@@ -154,32 +152,14 @@ cross_circ = outline_crossing(circle_pts);
 hole_entry_x = max(cross_star, cross_circ);
 assert(hole_entry_x > 0, "hole_entry_x must be positive: no +x union crossing of y=0 found");
 
-// which wall the crossing lands on: the stigma cylinder wall (normal
-// exactly [1, 0]) whenever it reaches at least as far as the star flank;
-// otherwise the star's oblique tip flank, with bead_star's tangent
-// recompute for the local outward wall normal
-min_y = min([for (i = [0 : L_star - 1]) if (star_pts[i][0] > 0) abs(star_pts[i][1])]);
-cross_i = [for (i = [0 : L_star - 1])
-           if (star_pts[i][0] > 0 && abs(star_pts[i][1]) == min_y) i][0];
-tangent_v = star_pts[(cross_i + 2) % L_star] - star_pts[(cross_i + L_star - 2) % L_star];
-t_mag = sqrt(tangent_v[0] * tangent_v[0] + tangent_v[1] * tangent_v[1]);
-n_tan = [tangent_v[1] / t_mag, -tangent_v[0] / t_mag];
-n_star_out = n_tan[0] > 0 ? n_tan : [-n_tan[0], -n_tan[1]];
-n_out = cross_circ >= cross_star ? [1, 0] : n_star_out;
-
-// the straight bore must clear every wall the opening disc can reach
+// the straight bore must clear every wall it can reach
 R_open = hole_opening_diameter / 2;
-k_scoop = extra;
-R_ball = sqrt(R_open * R_open + k_scoop * k_scoop);  // rim radius exactly R_open
-assert(k_scoop > 0, "scoop depth must be positive");
-assert(R_ball <= height / 2, "scoop sphere must fit within the bead height");
 wall_span_x = max(
     max([for (p = star_pts)   if (abs(p[1]) <= R_open) p[0]]),
     max([for (p = circle_pts) if (abs(p[1]) <= R_open) p[0]]));
 hole_len = wall_span_x + extra;
 echo(flower_hole_entry_x = hole_entry_x, flower_cross_star = cross_star,
-     flower_cross_stigma = cross_circ, flower_wall_normal = n_out,
-     flower_hole_len = hole_len);
+     flower_cross_stigma = cross_circ, flower_hole_len = hole_len);
 
 // ---- fillet geometry: bead.scad's quarter arc, carried in z-slices -------
 // bead.scad revolves one profile whose corners hold a 32-segment quarter arc.
