@@ -1,0 +1,64 @@
+{
+  "project": "giant-pony-beads",
+  "note": "Canonical default snapshot. Update in the same commit as any template default change. Values mirror templates/*.scad parameter blocks and presets.json bead_default.",
+  "bead_scad": {
+    "part": "body",
+    "width": 120,
+    "height": 60,
+    "hole_diameter": 20,
+    "hole_opening_diameter": 30,
+    "fillet_radius": 10,
+    "r_mouth": 6.667,
+    "r_mouth_max": 6.667,
+    "bore_fillet_radius": 15,
+    "letter_top": "M",
+    "letter_bottom": "M",
+    "letter_top_rotate": 0,
+    "letter_bottom_rotate": 0,
+    "letter_space": 0.75,
+    "letter_bold": 1,
+    "letter_font": "Arial Rounded MT Bold",
+    "letter_recess_top": 4,
+    "letter_bite_bottom": 1,
+    "letter_insert_t": 1,
+    "letter_fillet": true,
+    "letter_recess_fillet": 0.2,
+    "letter_outline_width": 0.8,
+    "$fn": 128
+  },
+  "bead_heart_scad": {
+    "width": 120,
+    "height": 54.545,
+    "bubble": 5,
+    "hole_diameter": 20,
+    "fillet_radius": 10,
+    "$fn": 128
+  },
+  "bead_star_scad": {
+    "width": 120,
+    "height": 60,
+    "roundness": 12,
+    "points": 5,
+    "petal_depth": 3,
+    "hole_diameter": 20,
+    "fillet_radius": 10,
+    "$fn": 128
+  },
+  "bead_default": {
+    "template": "bead.scad",
+    "width": 120,
+    "hole_diameter": 20,
+    "letter_top": "M",
+    "letter_bottom": "M",
+    "letter_top_rotate": 0,
+    "letter_bottom_rotate": 0,
+    "letter_space": 0.75,
+    "parts": ["body", "letter"],
+    "preview": "assembly"
+  },
+  "main_defaults": {
+    "width": 120,
+    "word_gap": 10,
+    "save_to": "$HOME/Downloads"
+  }
+}

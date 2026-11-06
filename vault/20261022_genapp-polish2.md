@@ -1,3 +1,9 @@
+---
+title: Generation app polish round 2 — layout, download, interactivity fix
+date: 2026-10-22
+tags: [genapp, gradio, polish, app]
+---
+
 # FINDINGS: generation app polish round 2 (layout, download, interactivity fix)
 
 Branch `feat/genapp-polish2` (cut from main checkout). Three labelled

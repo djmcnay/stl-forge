@@ -1,3 +1,9 @@
+---
+title: Generation app — Gradio two tabs
+date: 2026-10-22
+tags: [genapp, gradio, app, stl-forge]
+---
+
 # FINDINGS: stl-forge generation app (Gradio, two tabs)
 
 Run: 22 Oct 2026, branch `feat/generation-app` (cut from `main`, working

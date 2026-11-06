@@ -218,3 +218,14 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# --- stl-forge layout contract (see AGENTS.md) --------------------------
+# Generated meshes never commit; only templates + params commit.
+*.stl
+*.3mf
+**/.tmp/
+regr-*/
+stl-forge-*/
+# Gradio app scratch (renders only)
+**/.render-scratch/
+# Note: *.log is already ignored above (Django section).

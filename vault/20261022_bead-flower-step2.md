@@ -1,3 +1,9 @@
+---
+title: bead_flower.scad step 2 — petal fillets before union
+date: 2026-10-22
+tags: [bead, flower, giant-pony-beads, openscad]
+---
+
 # FINDINGS: bead_flower.scad step 2 (petal fillets before union, stigma width/3)
 
 Branch: `feat/bead-flower-step2` (cut from the current checkout at main

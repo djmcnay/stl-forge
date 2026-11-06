@@ -1,3 +1,9 @@
+---
+title: Shared v2 string-hole countersink — one common SCAD module
+date: 2026-10-22
+tags: [bead, hole, mouth, openscad, giant-pony-beads]
+---
+
 # FINDINGS: shared v2 string-hole countersink — one common SCAD module
 
 Branch: `refactor/shared-hole-mouth` (cut from current `main` checkout;

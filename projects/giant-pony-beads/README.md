@@ -1,4 +1,4 @@
-# projects/giant-beads — the giant-bead family
+# projects/giant-pony-beads — the giant-bead family
 
 A finished stl-forge project that generates parameterised, print-ready
 bead artefacts. Owned templates: `templates/bead.scad` (cylinder letter
@@ -10,19 +10,19 @@ copies sit beside them verbatim:
 
 ## One command, all artefacts
 
-Run these from the skill directory `skills/stl-forge/` (the paths below
+Run these from the skill directory `` (the paths below
 are skill-root-relative):
 
 ```bash
 # The one-liner: word row + heart + star + flower
-python3 projects/giant-beads/main.py \
+python3 projects/giant-pony-beads/main.py \
     --width 120 --letters "C A M I L A" --parts heart,star,flower
 
 # One bead preset (body + letter + assembly STLs plus the Bambu .3mf)
-python3 projects/giant-beads/main.py --preset bead_D
+python3 projects/giant-pony-beads/main.py --preset bead_D
 
 # Alternate dict input; spec fields first, explicit flags override
-python3 projects/giant-beads/main.py \
+python3 projects/giant-pony-beads/main.py \
     --spec '{"letters":"CAMILA","parts":"heart","width":100,"save_to":"/tmp/out","preset":"bead_D"}'
 ```
 
@@ -62,7 +62,7 @@ document), a facet count `n` > 0 at offset 80, and a file size of exactly
 run exits nonzero. Letter rows additionally self-assert from the binary
 (facet sum == sum of sources, symmetric x-span, z base == 0).
 
-Run the tests: `python3 -m pytest projects/giant-beads/tests -q`
+Run the tests: `python3 -m pytest projects/giant-pony-beads/tests -q`
 (processing tests always run; renders are skipif-gated on
 `/Applications/OpenSCAD.app` and use a 60 mm width for speed).
 
@@ -225,5 +225,5 @@ tip). Keep them in sync if outline maths ever changes.
 ## References
 
 - `references/heart-bead.md` — heart-bead verification bands.
-- Root `skills/stl-forge/README.md` — pipeline, validation rules,
-  delivery policy; `skills/stl-forge/SKILL.md` — agent contract.
+- Root `README.md` — pipeline, validation rules,
+  delivery policy; `SKILL.md` — agent contract.

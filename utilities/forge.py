@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 """forge.py: headless parametric STL pipeline around the OpenSCAD CLI.
 
-Reads templates/box.scad + presets.json (default: the root file; override
-with --presets PATH) relative to this script, renders one STL plus preview
-PNGs per preset, validates outputs, prints a table. For multi-part presets
-(e.g. beads with parts ["body","letter"]) it also emits a Bambu-native
-project .3mf: one object, two parts, each part pre-assigned to an extruder
-via Metadata/model_settings.config (<metadata key="extruder" .../> INSIDE
-each <part>). No colour painting. Templates may also live inside
-projects/<name>/templates/ - a preset's "template" key is resolved against
-the root templates/ dir first, then every project's templates/ dir.
+Reads templates/box.scad + presets.json (default: the file beside this
+script, under utilities/; override with --presets PATH) relative to this
+script, renders one STL plus preview PNGs per preset, validates outputs,
+prints a table. For multi-part presets (e.g. beads with parts
+["body","letter"]) it also emits a Bambu-native project .3mf: one object,
+two parts, each part pre-assigned to an extruder via
+Metadata/model_settings.config (<metadata key="extruder" .../> INSIDE each
+<part>). No colour painting. Templates may also live inside
+projects/<name>/templates/ under the repo root - a preset's "template" key
+is resolved against the utilities templates/ dir first, then every
+project's templates/ dir.
 Stdlib only. All OpenSCAD invocations use subprocess list args (no shell).
 """
 import argparse
@@ -27,18 +29,20 @@ from xml.sax.saxutils import escape as _xml_escape
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+REPO_ROOT = HERE.parent
 TEMPLATES_DIR = HERE / "templates"
 DEFAULT_TEMPLATE_NAME = "box.scad"
 TEMPLATE = TEMPLATES_DIR / DEFAULT_TEMPLATE_NAME
 PRESETS_FILE = HERE / "presets.json"
+PROJECTS_DIR = REPO_ROOT / "projects"
 TEMPLATES_FALLBACK_DIRS = sorted(
-    (p / "templates") for p in (HERE / "projects").iterdir() if p.is_dir()
+    (p / "templates") for p in PROJECTS_DIR.iterdir() if p.is_dir()
     and (p / "templates").is_dir()
-) if (HERE / "projects").is_dir() else []
+) if PROJECTS_DIR.is_dir() else []
 PROJECTS_PRESETS_FILES = sorted(
-    (p / "presets.json") for p in (HERE / "projects").iterdir() if p.is_dir()
+    (p / "presets.json") for p in PROJECTS_DIR.iterdir() if p.is_dir()
     and (p / "presets.json").is_file()
-) if (HERE / "projects").is_dir() else []
+) if PROJECTS_DIR.is_dir() else []
 
 
 def resolve_template(name: str) -> Path:
@@ -482,7 +486,7 @@ def parse_args(argv=None):
     p = argparse.ArgumentParser(description="Render parametric box STLs + previews.")
     p.add_argument("--presets", default=None,
                    help="Path to a presets JSON file"
-                        " (default: root presets.json)")
+                        " (default: utilities/presets.json)")
     p.add_argument("--only", default=None,
                    help="Comma-separated subset of preset names, e.g. 'a,b'")
     p.add_argument("--out", default="./out",

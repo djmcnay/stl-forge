@@ -1,3 +1,9 @@
+---
+title: bead_flower.scad step 4 — consolidated petal fillet, stigma
+date: 2026-10-22
+tags: [bead, flower, giant-pony-beads, openscad]
+---
+
 # FINDINGS: bead flower step 4 (consolidated: petal fillet 3x, stigma width/2.2, normal stigma fillet)
 
 Executed per `BRIEF_bead_flower_step4.md` on `feat/bead-flower-step4`

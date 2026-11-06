@@ -1,3 +1,9 @@
+---
+title: Star face fillets
+date: 2026-10-22
+tags: [bead, star, fillets, openscad, giant-pony-beads]
+---
+
 # FINDINGS: star face fillets (feat/star-face-fillets)
 
 Executed per `BRIEF_star_face_fillets.md`. Branch `feat/star-face-fillets`

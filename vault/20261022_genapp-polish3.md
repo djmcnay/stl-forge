@@ -1,3 +1,9 @@
+---
+title: Generation app polish round 3 — log stream, anvil H1, violet ground
+date: 2026-10-22
+tags: [genapp, gradio, polish, app]
+---
+
 # FINDINGS: genapp polish round 3 (log stream, anvil H1, violet ground)
 
 Branch `feat/genapp-polish3`, cut from main at c724728. Working dir

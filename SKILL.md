@@ -1,7 +1,7 @@
 ---
 name: stl-forge
 description: "Parametric STL generation from code via the OpenSCAD CLI: generic template pipeline plus finished project families."
-version: 0.8.8
+version: 0.9.0
 author: Araminta Milland-Wilde (araminta), Hermes Agent
 license: MIT
 platforms: [linux, macos, windows]
@@ -29,18 +29,18 @@ running Fusion session, and Autodesk's Automation API is a separate paid cloud
 service), so the OpenSCAD route is the one that automates cleanly.
 
 When weighing other CAD routes (Fusion headless attempts, TinkerCAD,
-CadQuery) or a manifold sanity probe, read `references/alt-cad-routes.md`.
+CadQuery) or a manifold sanity probe, read `utilities/references/alt-cad-routes.md`.
 When emitting or re-verifying the Bambu `.3mf` output (schema anatomy,
 headless load test against the installed slicer binary, composing a
 multi-object one-plate file from single-bead 3MFs), read
-`references/bambu-3mf.md`.
+`utilities/references/bambu-3mf.md`.
 When tuning a template's silhouette against reference images the
 principal supplied (metric choice vs defect class, region-aware
 threshold calibration, vector measurement, known-answer self-tests),
-read `references/shape-acceptance.md`.
+read `utilities/references/shape-acceptance.md`.
 When changing or re-parameterising the heart-bead family (the bubble dial
 mapping, the bead-spec bell-mouth string hole, face fillets, or its
-measured verification bands), read `references/heart-bead.md`.
+measured verification bands), read `projects/giant-pony-beads/references/heart-bead.md`.
 
 ## Finished project families (adding one)
 
@@ -53,7 +53,7 @@ literal dial sentences; transcribe them faithfully and never silently add
 entanglements (a second fillet, a dome) he has not mentioned.
 
 Completed one-command projects live under `projects/` - currently
-`projects/giant-beads/`: a self-contained builder (`main.py`), its own
+`projects/giant-pony-beads/`: a self-contained builder (`main.py`), its own
 `presets.json`, `templates/` (bead, bead_heart, bead_star, bead_flower,
 sharing the common mouth module `bead_common.scad`) and an input-contract
 test suite. NOTE: the legacy `--parts flower` flag still drives
@@ -63,10 +63,10 @@ explicit later step, not a given. It renders a word row plus
 heart/star/flower artefacts in one call:
 
 ```bash
-python3 projects/giant-beads/main.py --width 120 --letters "C A M I L A" --parts heart
+python3 projects/giant-pony-beads/main.py --width 120 --letters "C A M I L A" --parts heart
 ```
 
-read `projects/giant-beads/README.md` for the full contract. The
+read `projects/giant-pony-beads/README.md` for the full contract. The
 template-direct pipeline below remains the library; a finished project is
 generated from it and owns its parameters afterwards.
 
@@ -98,13 +98,13 @@ Through the `terminal` tool, from the skill directory:
 
 ```bash
 # Every preset at once, plus shaded previews for inspection
-python3 forge.py --out <output-dir>
+python3 utilities/forge.py --out <output-dir>
 
 # One or a few named presets only
-python3 forge.py --only cable_tidy --out <output-dir>
+python3 utilities/forge.py --only cable_tidy --out <output-dir>
 
 # One row-layout STL of a word's unique letters for manual colour painting
-python3 forge.py --word CAMILLA --out <output-dir>
+python3 utilities/forge.py --word CAMILLA --out <output-dir>
 ```
 
 It emits one row-layout STL of the word's unique letters plus wide iso/front
@@ -138,7 +138,7 @@ an old alias or a superseded variant, `cmp` it byte-for-byte against the
 copy that survives - a rename without the compare can drop distinct
 geometry, and two names for one file is folder clutter too. Ship the runnable
 recipe beside the STL on every delivery: `forge.py`, `presets.json`,
-`templates/*.scad` - the exact layout forge.py resolves relative to itself,
+`templates/*.scad` - the exact layout utilities/forge.py resolves relative to itself,
 so it runs from inside the folder - re-copied each time so the recipe
 always matches the STL next to it, and smoke-tested from the folder with
 `--out` pointed at scratch so the folder stays clean. Never delete or
@@ -151,7 +151,7 @@ carry `<name>.3mf` ONLY on explicit request (the principal is STL-only
 for the moment, and an unasked 3mf is a deliverable he did not want);
 still always ship an ANNOTATED
 VERIFICATION PNG of the delivered bead - spec circle, centre cross,
-letter bbox, labelled (draw it with `scripts/annotate_preview.py`, whose
+letter bbox, labelled (draw it with `utilities/core/annotate_preview.py`, whose
 stdout is the measurement record (the letter path for beads). Comparison images and proof renders meant for the principal's eyes go into the project folder too. Never
 hand him a path under `.hermes/` or scratch, hidden directories he does
 not browse - scratch is for internal verification only. When he is away
@@ -260,7 +260,7 @@ non-circular family (heart, star, flower), not just the heart:
   width, so the band returns a point up to ~0.55 mm proud of the true
   wall and that error shrinks toward zero only at large widths - not
   scale invariant. MOUTH LINEAGE (approved by the principal, so this is canon,
-  full recipe in projects/giant-beads/README.md "Approved mouth recipe"):
+  full recipe in projects/giant-pony-beads/README.md "Approved mouth recipe"):
   bead.scad ships the FILLET-WELL mouth - the shared `bead_string_hole_well`
   module in bead_common.scad, a straight throat bore + a revolved
   quarter-round crater, G1 to the bore and the flat wall, dial
@@ -414,7 +414,7 @@ nothing about whether the geometry works.
 
 Domain depth for disc golf discs, including the free generators, their
 verification status, flight numbers and TPU print settings:
-`references/disc-golf.md`.
+`utilities/references/disc-golf.md`.
 
 ## Booleans against IMPORTED STL meshes
 
@@ -455,10 +455,10 @@ boot line, bounded at the last 200 entries; the page H1 is literally
 Playground tab (live
 star/petal sketch dials rendered face-on through the real OpenSCAD
 functions - never re-implement those maths in Python). Run from the
-skill root with `app/.venv/bin/python app/app.py`; when that venv\'s
+skill root with `utilities/app/.venv/bin/python utilities/app/app.py`; when that venv\'s
 python dies with `dyld ... Library not loaded libpython` (concurrent
 dispatches re-break this venv), launch instead with the Hermes venv
-python (`~/.hermes/hermes-agent/venv/bin/python app/app.py`, gradio
+python (`~/.hermes/hermes-agent/venv/bin/python utilities/app/app.py`, gradio
 already installed) and repair the app venv in a quiet moment.
 The orbit viewer's only colour knob is `clear_color`; it is set dark
 violet `(0.10, 0.02, 0.16)` because the mesh material colour is NOT
@@ -521,7 +521,7 @@ dispatching - a brief left in a scratch dir elsewhere is invisible to the
    work done and salvageable, once empty), and the salvage pass costs more
    than the background wait.
 2. Verify on disk, never from the run's self-report: read the changed
-   source line by line, then run `python3 forge.py` with NO `--only` flag -
+   source line by line, then run `python3 utilities/forge.py` with NO `--only` flag -
    every shipped preset, old and new families alike, must exit 0.
    Completion criterion: summary table lists all presets, no FAILURES block.
    A dispatch may die on a session-lease failure a moment before its final
@@ -557,10 +557,10 @@ dispatching - a brief left in a scratch dir elsewhere is invisible to the
 ## Pitfalls
 
 - openscad dying with signal 6 and `libc++abi ... filesystem_error: call to getcwd failed` in the RENDER REPORT, or reported by the app's probe, means the PARENT process's working directory is dead (the server or shell that launched it had its dir renamed/removed underneath it), not an OpenSCAD defect. Verify cwd with `lsof -p <pid> | grep cwd` then `ls -d` that path; restart from a verified live path (see the gradio-subapp-composition skill's relaunch rule for the server pattern), and re-run the render before touching any template.
-- Two entry points, two flag sets: the ROOT `forge.py` (library suite,
+- Two entry points, two flag sets: the `utilities/forge.py` (library suite,
   `--out`/`--only`/`--word`, also called for `.3mf` composition) sits at
   the SKILL ROOT, while the finished project's builder is
-  `projects/giant-beads/main.py` (`--save-to`/`--parts`/`--preset`/`--previews`,
+  `projects/giant-pony-beads/main.py` (`--save-to`/`--parts`/`--preset`/`--previews`,
   NO `--out`). Never assume the project directory contains forge.py or
   that main.py accepts --out; check the entry point's own help before the
   first run in a session.
@@ -593,7 +593,7 @@ dispatching - a brief left in a scratch dir elsewhere is invisible to the
   forge.py counts facets from whichever arrives - binary via the 4-byte
   little-endian count at offset 80, ASCII via 'facet normal' lines. File
   size / 50 vs / ~250 tells you which one you have; awk/vertex probes
-  need `--export-format asciistl` forced, or use `core/stl_probe.py`
+  need `--export-format asciistl` forced, or use `utilities/core/stl_probe.py`
   (it lives in `core/`, not `scripts/`), which reads both flavours.
 - Stacked-offset fillets fail by STEP SIZE, not slice count: ~0.2 mm
   steps show a visible staircase in a cross-section and print as a ledge
@@ -649,7 +649,7 @@ Run this in a `terminal` call from the skill directory; exit 0 and a
 table listing every shipped preset means the skill is live:
 
 ```bash
-python3 forge.py --out <scratch-dir>/stl-check
+python3 utilities/forge.py --out <scratch-dir>/stl-check
 ```
 
 A NEW template must additionally render STANDALONE: `openscad -o
@@ -713,7 +713,7 @@ awk '/vertex/{for(i=2;i<=4;i++){if(!n||$i<m[i])m[i]=$i;if(!n||$i>M[i])M[i]=$i}n+
 
 A derivation rule is only proven when the override moves the box (width 100
 -> z 0..50 for `height = width/2`); at defaults expect the nominal bbox
-plus manifold `Status: NoError` from the probe in `references/alt-cad-routes.md`.
+plus manifold `Status: NoError` from the probe in `utilities/references/alt-cad-routes.md`.
 Prove internal geometry from the ARTIFACT, not the source model: cut a
 true cross-section of the exported STL -
 `intersection() { import("<out>/<name>.stl"); translate([-70,-2,-5]) cube([140,4,70]); }`
@@ -731,7 +731,7 @@ Nudge the slice plane a hair off the suspect height (+-0.01 mm), and when
 a null result would matter, corroborate with a `projection(cut=true)`
 render plus a raw-vertex scan before believing a feature is missing:
 absence claims from a single slicing method are the one measurement
-allowed no trust. `core/stl_probe.py <stl> [--slice-z Z]` prints
+allowed no trust. `utilities/core/stl_probe.py <stl> [--slice-z Z]` prints
 format, facet count and bbox for either STL flavour and does the
 off-plane nudge itself - prefer it over the awk recipe for binary files.
 
@@ -753,7 +753,7 @@ re-measuring yourself before accepting it - a gate written from intuition
 about a shape is a hypothesis, not a specification.
 
 For the delivery overlay run
-`scripts/annotate_preview.py <preview.png> <out.png> <circle-diameter-mm>`:
+`utilities/core/annotate_preview.py <preview.png> <out.png> <circle-diameter-mm>`:
 it draws the spec circle, centre cross and letter bbox, prints the margin,
 corner-in-circle and max-ink-radius measurements, and exits nonzero when the
 letter is missing, its ink leaves the circle, or its bbox corner lands

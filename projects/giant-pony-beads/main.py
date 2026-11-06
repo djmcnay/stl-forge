@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""giant-beads: one-command entry for the giant-bead family artefacts.
+"""giant-pony-beads: one-command entry for the giant-bead family artefacts.
 
 Modes (combinable): --letters merges a word's unique letters into ONE
 row-layout STL; --parts renders heart/star/flower shapes; --preset renders
@@ -20,8 +20,8 @@ string widths are rejected, never silently truncated); --spec field types
 are validated with named-field messages (bool 123-style values never
 crash with an AttributeError/TypeError).
 
-Stdlib only. Reuses the root renderer helpers: sys.path is set so
-`import forge` resolves to the skill root regardless of cwd.
+Stdlib only. Reuses the utilities renderer helpers: sys.path is set so
+`import forge` resolves to utilities/forge.py regardless of cwd.
 """
 import argparse
 import json
@@ -33,11 +33,12 @@ import tempfile
 from pathlib import Path
 
 PROJECT_DIR = Path(__file__).resolve().parent
-SKILL_DIR = PROJECT_DIR.parent.parent          # skills/stl-forge
-if str(SKILL_DIR) not in sys.path:
-    sys.path.insert(0, str(SKILL_DIR))
+REPO_ROOT = PROJECT_DIR.parent.parent         # repo root (utilities/ + projects/)
+UTILITIES_DIR = REPO_ROOT / "utilities"
+if str(UTILITIES_DIR) not in sys.path:
+    sys.path.insert(0, str(UTILITIES_DIR))
 
-import forge  # noqa: E402  (root renderer/packager)
+import forge  # noqa: E402  (utilities/ renderer/packager)
 
 TEMPLATES_DIR = PROJECT_DIR / "templates"
 PRESETS_FILE = PROJECT_DIR / "presets.json"
