@@ -146,10 +146,12 @@ assert(hole_diameter < width, "hole throat must fit within the face");
 extra = 5;                                   // mm bore overshoot past both walls
 R_throat = hole_diameter / 2;
 R_open = hole_opening_diameter / 2;
-// Fillet-well mouth dial, same rule as bead.scad: face-fillet-safe
-// ceiling minus the throat, floored at softness.
+// Fillet-well mouth dial, same rule as bead.scad, capped at 3 mm: a
+// 3 mm fillet radius is visible, and the crater (rim radius
+// R_throat + r_mouth) stays within the flat patch of the heart
+// flank instead of grazing the lobe curve above/below the axis.
 r_mouth_max = height / 2.25 - fillet_radius - R_throat;
-r_mouth     = max(0.5, min(0.5 * hole_diameter, r_mouth_max)); // clamp to 0.5 when dial collapses at small width/hole combos
+r_mouth     = min(3, max(0.5, min(0.5 * hole_diameter, r_mouth_max))); // clamp to 0.5 when dial collapses at small width/hole combos
 
 // crossing + local wall frame from the outline vertices (recomputed per
 // bubble): scalar two-pass argmin because max() over vectors is not portable
