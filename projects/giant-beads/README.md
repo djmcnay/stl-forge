@@ -193,7 +193,7 @@ slope and meets the flat wall tangentially - G1 at both ends, no rim
 crease). The old sphere-crater module `bead_string_hole` is retained
 untouched for the oblique-walled shapes (`bead_heart.scad`,
 `bead_star.scad`, `bead_flower.scad`), where a revolved well cannot be
-tangent to the wall; those now use the well by default; sphere retained as explicit opt-out.
+tangent to the wall; those keep the sphere countersink deliberately.
 
 Dial (parameters, exact):
 

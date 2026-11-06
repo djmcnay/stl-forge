@@ -269,11 +269,10 @@ non-circular family (heart, star, flower), not just the heart:
   `rotate([0,90,0]) rotate_extrude(angle=360) polygon(...)` with the arc
   sampled from -90 to 0 degrees (slope 0 at the bore, vertical at the wall,
   centre at (R_throat + r_mouth, hole_entry_x - r_mouth)), mirrored internally
-  to cut both mouths in one module call. bead_heart.scad, bead_star.scad and
-  bead_flower.scad now also use the well as default (6 Nov 2026 order: well
-  is default for all beads) with the template's own interpolated
-  hole_entry_x + r_mouth; the sphere mouth (bead_string_hole, sunk along
-  the LOCAL wall normal at the interpolated crossing) is opt-out. SUNK MEANS INTO THE MATERIAL: bead_common's `scoop_dx = -k *
+  to cut both mouths in one module call. bead_heart.scad, bead_star.scad and bead_flower.scad keep the v2 sphere mouth
+  (bead_string_hole, sunk along the LOCAL wall normal at the interpolated
+  crossing); the well revolve grazes their oblique walls and fins (seen on
+  the star, screenshot 6 Nov 2026). SUNK MEANS INTO THE MATERIAL: bead_common's `scoop_dx = -k *
   n_out[0]` puts the sphere centre at `hole_entry_x - k`, i.e. INSIDE the
   wall (x = 55, not 65, for a +x mouth at width 120), so the bowl is deep and
   runs well inboard of the throat. A re-model that centres the sphere OUTSIDE

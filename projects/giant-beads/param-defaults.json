@@ -1,6 +1,6 @@
 {
   "project": "giant-beads",
-  "note": "Canonical default snapshot. Mouth default is the fillet-well (bead_string_hole_well, letter-bead gravitational well) for ALL beads; bead_string_hole() (sphere) is explicit opt-out in bead_common.scad. Update with any template default change.",
+  "note": "Canonical default snapshot. Mouth defaults: letter bead = fillet-well (bead_string_hole_well, gravitational well); heart/star/flower = sphere countersink (bead_string_hole, sunk along local wall normal \u2014 well revolve grazes oblique flank and fins). Sphere vs well is deliberate per-wall, not a global switch. Update with any template default change.",
   "bead_scad": {
     "part": "body",
     "width": 120,
@@ -25,7 +25,7 @@
     "letter_recess_fillet": 0.2,
     "letter_outline_width": 0.8,
     "$fn": 128,
-    "mouth": "well (bead_string_hole_well, family default)"
+    "mouth": "well (bead_string_hole_well, fillet-well default)"
   },
   "bead_heart_scad": {
     "width": 120,
@@ -34,8 +34,7 @@
     "hole_diameter": 20,
     "fillet_radius": 10,
     "$fn": 128,
-    "r_mouth": 4.242,
-    "mouth": "well (bead_string_hole_well, family default)"
+    "mouth": "sphere (bead_string_hole, v2 countersink)"
   },
   "bead_star_scad": {
     "width": 120,
@@ -46,8 +45,7 @@
     "hole_diameter": 20,
     "fillet_radius": 10,
     "$fn": 128,
-    "r_mouth": 6.667,
-    "mouth": "well (bead_string_hole_well, family default)"
+    "mouth": "sphere (bead_string_hole, v2 countersink)"
   },
   "bead_default": {
     "template": "bead.scad",
@@ -70,7 +68,6 @@
     "save_to": "$HOME/Downloads"
   },
   "bead_flower_scad": {
-    "r_mouth": 6.667,
-    "mouth": "well (bead_string_hole_well, family default)"
+    "mouth": "sphere (bead_string_hole, v2 countersink)"
   }
 }
