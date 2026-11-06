@@ -45,11 +45,9 @@ $fn = 128;
 // bead.scad default: fillet_radius = width / 12  ->  10 mm at width 120.
 fillet_radius = width / 12;
 
-// Mouth: bore + 3 mm quarter-round rim fillet on BOTH hole mouths
-// (bead_string_hole_fillet, bead_common.scad) — the same smooth
-// fillet as the bead face fillets. hole_fillet is 3 mm at the default
-// 120 mm width, clamped so the torus stays inside the bead height at
-// small widths (defined next to R_throat below).
+// Mouth: the fillet-well (bead_string_hole_well, bead_common.scad),
+// ported verbatim from the letter bead (bead.scad) — the smooth G1
+// quarter-round mouth, same dial rule.
 
 // ---- mathematical helpers (verbatim from reference) --------------------
 function clamp01(x) = max(0, min(1, x));
@@ -132,12 +130,11 @@ assert(hole_opening_diameter < height, "hole opening must fit vertically within 
 assert(fillet_radius > 0, "fillet_radius must be positive");
 assert(fillet_radius <= height / 2, "fillet_radius must be <= height/2 so fillets never overlap");
 
-// ---- String hole: straight bore + 3 mm quarter-round fillet at both mouths -
-// Straight throat through the bead, eased at both mouths by a
-// quarter-round fillet (bead_string_hole_fillet, bead_common.scad):
-// tangent to the bore wall at entry_x - hole_fillet and tangent to
-// the wall plane at entry_x. The bore half-length is derived from
-// the outline so it clears both walls; see below.
+// ---- String hole: fillet-well mouth (letter-bead construction) ------------
+// Ported verbatim from bead.scad: quarter-round well crater revolved
+// about the hole axis (G1 into the bore wall, G1 into the wall plane
+// at its rim) plus the straight throat bore, at BOTH entrances. The
+// bore half-length is derived from the outline so the crater fits.
 // interpolated rule as bead_star (band-style max-x measurement is scale
 // dependent and would drift the rim by up to ~0.55 mm).
 // bore_fillet_radius is retained as a bead-family parameter, unused:
@@ -149,7 +146,10 @@ assert(hole_diameter < width, "hole throat must fit within the face");
 extra = 5;                                   // mm bore overshoot past both walls
 R_throat = hole_diameter / 2;
 R_open = hole_opening_diameter / 2;
-hole_fillet = min(3, (height / 2 - R_throat) / 2 - 0.5);
+// Fillet-well mouth dial, same rule as bead.scad: face-fillet-safe
+// ceiling minus the throat, floored at softness.
+r_mouth_max = height / 2.25 - fillet_radius - R_throat;
+r_mouth     = max(0.5, min(0.5 * hole_diameter, r_mouth_max)); // clamp to 0.5 when dial collapses at small width/hole combos
 
 // crossing + local wall frame from the outline vertices (recomputed per
 // bubble): scalar two-pass argmin because max() over vectors is not portable
@@ -166,21 +166,21 @@ hole_entry_x = max([
                        : p0[0] + (p1[0] - p0[0]) * (0 - p0[1]) / (p1[1] - p0[1])
 ]);
 assert(hole_entry_x > 0, "hole_entry_x must be positive: no +x outline crossing of y=0 found");
-assert(hole_fillet > 0, "hole_fillet must be positive; use a larger height or smaller hole_diameter");
+assert(r_mouth > 0, "fillet-well radius collapsed (r_mouth_max <= 0): height too small for this dial set");
 // the straight bore must clear every wall it can reach (the
 // oblique flank pokes beyond the centre-line crossing):
 hz_wall_span_x = max([for (p = hz_pts) if (abs(p[1]) <= R_open) p[0]]);
 hole_len = hz_wall_span_x + extra;
-echo(bead_heart_entry_x = hole_entry_x, bead_heart_hole_fillet = hole_fillet, bead_heart_hole_len = hole_len);
+echo(bead_heart_entry_x = hole_entry_x, bead_heart_r_mouth = r_mouth, bead_heart_hole_len = hole_len);
 
-// Shared mouth: bore + quarter-round rim fillet (bead_common.scad).
+// Shared mouth: fillet-well (bead_common.scad), letter-bead construction.
 module string_hole() {
     translate([0, 0, height / 2])
-        bead_string_hole_fillet(
+        bead_string_hole_well(
             hole_entry_x = hole_entry_x,
             R_throat = R_throat,
-            r_fillet = hole_fillet,
-            hole_len = hole_len);
+            r_mouth = r_mouth,
+            extra = extra);
 }
 
 // ---- Fillet geometry: bead.scad's quarter arc, carried in z-slices -------

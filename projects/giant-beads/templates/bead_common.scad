@@ -1,8 +1,10 @@
 // bead_common.scad - shared string-hole mouths for the bead template family.
 //
-// Plain hole (bead_string_hole_plain): heart/star/flower use this.
-// Fillet-well (bead_string_hole_well): letter bead (bead.scad) only,
-// where the wall is flat/perpendicular to the hole axis.
+// Plain hole (bead_string_hole_plain): star/flower use this.
+// Fillet-well (bead_string_hole_well): letter bead (bead.scad) and
+// heart (bead_heart.scad) — the smooth G1 mouth from the letter bead
+// example, ported verbatim. Star keeps the plain bore: the well revolve
+// grazes its oblique flank and fins.
 //
 // Coordinate frame: the hole axis is X, the bead centre sits at the origin
 // and the bore is centred on x = 0. The caller supplies the z lift (each
@@ -23,53 +25,6 @@ module bead_string_hole_plain(
 ) {
     rotate([0, 90, 0])
         cylinder(h = 2 * hole_len, r = R_throat, center = true);
-}
-
-// ---- bead_string_hole_fillet(): plain bore + quarter-round rim fillet -----
-//
-// A straight throat bore along X, with the mouth rim eased by a
-// quarter-round fillet of radius r_fillet (a torus ring at each mouth,
-// tangent to the bore wall at entry_x - r_fillet and tangent to the
-// wall plane at entry_x — the same quarter-round as the bead face
-// fillets). The caller passes hole_entry_x + hole_len exactly as for
-// the plain bore, so any template can swap modules without touching
-// its math.
-//
-// Torus ring centre sits at radial R_throat + r_fillet (tube radius
-// r_fillet, so it reaches from the bore wall to r = R_throat +
-// 2*r_fillet at its widest) and axial entry_x - r_fillet. Union with
-// the bore cylinder and subtract: the in-plane half of the torus is
-// inside the bore already, so only the quarter-round rim is left
-// behind. The caller must keep the torus inside the bead: its widest
-// reach is R_throat + 2*r_fillet against the bead's half-height (see
-// the assert in the heart template).
-module bead_string_hole_fillet(
-    hole_entry_x,  // exact x where the outline crosses the hole axis (y = 0), +x side
-    R_throat,      // throat bore radius = hole_diameter / 2
-    r_fillet,      // quarter-round fillet radius at both mouth rims (> 0)
-    hole_len       // straight-bore half-length: clears every wall the mouth can reach
-) {
-    assert(r_fillet > 0, "fillet radius must be positive");
-    assert(r_fillet < hole_entry_x, "fillet radius must be smaller than the wall crossing");
-    union() {
-        // straight throat bore along X through both walls
-        rotate([0, 90, 0])
-            cylinder(h = 2 * hole_len, r = R_throat, center = true);
-        // quarter-round rim fillet at the +x mouth (ring revolved
-        // about X: rotate_extrude turns around Y; rotate about Z by
-        // 90 maps Y -> X)
-        translate([hole_entry_x - r_fillet, 0, 0])
-            rotate([0, 0, 90])
-                rotate_extrude(angle = 360)
-                    translate([R_throat + r_fillet, 0])
-                        circle(r = r_fillet);
-        // mirrored rim fillet at the -x mouth (axial mirror, x -> -x)
-        translate([-hole_entry_x + r_fillet, 0, 0])
-            rotate([0, 0, 90])
-                rotate_extrude(angle = 360)
-                    translate([R_throat + r_fillet, 0])
-                        circle(r = r_fillet);
-    }
 }
 
 // ---- bead_string_hole_well(): the fillet-well mouth (shared) ----------------
