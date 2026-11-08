@@ -251,15 +251,13 @@ function mf_sec(i) =
 
 mf_w = mf_arc + 4;                           // vertices per cross-section
 mf_pts = [for (i = [0 : mf_n - 1]) each mf_sec(i)];
-// the cross-section is CCW in (e1, e2) while e1 x e2 = -T, so the sweep
-// winding is reversed from the usual (P, P+1, next P+1, next P) order
 mf_faces = [for (i = [0 : mf_n - 1])
     for (j = [0 : mf_w - 1])
         let(a = i * mf_w + j,
             b = i * mf_w + (j + 1) % mf_w,
             c = ((i + 1) % mf_n) * mf_w + (j + 1) % mf_w,
             d = ((i + 1) % mf_n) * mf_w + j)
-        each [[a, c, b], [a, d, c]]];
+        each [[a, b, c], [a, c, d]]];
 
 module mf_cutter() {
     polyhedron(points = mf_pts, faces = mf_faces, convexity = 10);
