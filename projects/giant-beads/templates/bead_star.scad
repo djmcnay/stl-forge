@@ -548,7 +548,6 @@ function vmul(a, s) = [a[0] * s, a[1] * s, a[2] * s];
 function vdot(a, b) = a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 
 mf_r = r_mouth;
-mf_overlap = 0.2;                            // mm the sliver reaches into the bore
 mf_n = 240;                                  // samples around the mouth edge
 mf_arc = 16;                                 // samples across the fillet arc
 mf_th = [for (i = [0 : mf_n - 1]) 360 * i / mf_n];
@@ -564,19 +563,15 @@ mf_e2 = [for (i = [0 : mf_n - 1])
     vmul(vsub(mf_nw[i], vmul(mf_nb[i], mf_c0[i])), 1 / mf_s0[i])];
 
 // One cross-section, perpendicular to the mouth edge: the edge point,
-// a small strip that reaches into the bore (so the sliver and the bore
-// cutter overlap instead of sharing a coplanar face), then the ball arc
-// from the bore tangency (phi = 180) to the wall tangency
-// (phi = acos(c0)). The polygon is exactly the sliver the fillet removes.
+// then the ball arc from the bore tangency (phi = 180) to the wall
+// tangency (phi = acos(c0)). The polygon is exactly the sliver the
+// fillet removes.
 function mf_sec(i) =
     let(c0 = mf_c0[i], s0 = mf_s0[i], e1 = mf_nb[i], e2 = mf_e2[i],
         th = acos(max(-1, min(1, c0))),
-        b_c = -mf_r * (1 + c0) / s0,
-        tb = vadd(mf_E[i], vmul(e2, b_c)),
-        e_in = vsub(mf_E[i], vmul(e1, mf_overlap)),
-        tb_in = vsub(tb, vmul(e1, mf_overlap)))
+        b_c = -mf_r * (1 + c0) / s0)
     concat(
-        [mf_E[i], e_in, tb_in],
+        [mf_E[i]],
         [for (k = [0 : mf_arc])
             let(phi = 180 - (180 - th) * k / mf_arc)
                 vadd(mf_E[i],
@@ -584,7 +579,7 @@ function mf_sec(i) =
                           vmul(e2, b_c + mf_r * sin(phi))))]
     );
 
-mf_w = mf_arc + 4;                           // vertices per cross-section
+mf_w = mf_arc + 2;                           // vertices per cross-section
 mf_pts = [for (i = [0 : mf_n - 1]) each mf_sec(i)];
 mf_faces = [for (i = [0 : mf_n - 1])
     for (j = [0 : mf_w - 1])
