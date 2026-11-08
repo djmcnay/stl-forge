@@ -1,8 +1,8 @@
 /*
     BEAD STAR - fresh parametric start (17 Oct 2026)
     =================================================
-    Star/flower cross-section bead with a plain string hole and
-    quarter-round face fillets (width/12). No letters, no rim, no
+    Star/flower cross-section bead with a swept ball-fillet string hole
+    and quarter-round face fillets (width/12). No letters, no rim, no
     preview colouring.
 
     Geometry source: the principal-supplied parametric star/flower generator
@@ -25,42 +25,45 @@
 
     Shared mouth: a straight bore plus the swept rolling-ball mouth
     fillet (ported from bead_heart.scad); this file keeps its local
-    values (hole_entry_x, hole_len, mouth_fillet) and builds the cutter
-    in place.
+    values (hole_entry_x, hole_len, r_mouth) and builds the cutter in
+    place.
 */
 use <bead_common.scad>
 
 // ---- parameters -------------------------------------------------------
 width = 120;
-roundness = 12;
-points = 5;
-petal_depth = 3;
+roundness = 12;                // 1..20: 1 = sharp star, 10 = bulbous, 20 = flower
+points = 5;                    // number of tips/petals
+petal_depth = 3;               // 1..10: valley depth
 height = width / 2;
 
-// ---- string hole (ported from templates/bead.scad) -----------------------
+// ---- string hole (common family block) ---------------------------------
 // Throat diameter at the centre plane (mm)
 hole_diameter = 20;
-// Bell-mouth diameter at the two entrances (mm): greater of throat*1.2 or height/2
+// Bell-mouth diameter at the entrances (mm): max(1.2 * throat, height / 2).
+// Retained for presets; inert now that the mouth is a swept ball fillet.
 hole_opening_diameter = max(hole_diameter * 1.2, height / 2);
-// Flare arc radius (mm), default width/8 (bead.scad rule)
+// Flare arc radius (mm): family rule width / 8; retained, unused by the mouth.
 bore_fillet_radius = width / 8;
-// Smooth bore surfaces; the star outline is polygonal and unaffected by $fn.
-$fn = 128;
-
-// ---- face fillets (mirrored from templates/bead.scad) --------------------
-// Quarter-round where each flat face meets the side wall (NOT a chamfer).
-// bead.scad default: fillet_radius = width / 12  ->  10 mm at width 120.
+// Face fillet radius (mm): quarter-round where each flat face meets the
+// side wall (NOT a chamfer); family rule width / 12.
 fillet_radius = width / 12;
+// Derived hole values
 R_throat = hole_diameter / 2;
-// Fillet-well mouth dial, same formula as bead.scad / bead_heart.scad, plus
-// a star wall-safe cap. The star outline runs only ~3.6 mm from the mouth
+R_open = hole_opening_diameter / 2;
+extra = 5;                     // mm bore overshoot past both walls
+// Mouth radius: same family dial as bead.scad / bead_heart.scad, plus a
+// star wall-safe cap. The star outline runs only ~3.6 mm from the mouth
 // edge to a concave valley and ~8.5 mm to the next tip (at the default
 // 5-point, roundness-12 outline), so a tangent ball larger than about 1 mm
 // cuts across the valley/tip. The cap scales with the outline: 1 mm at
 // width 120.
-r_mouth_max  = (height / 2.25) - (fillet_radius + R_throat);
-r_wall_max   = width / 120;
-mouth_fillet = max(0.5, min(0.5 * hole_diameter, r_mouth_max, r_wall_max));
+r_mouth_max = (height / 2.25) - (fillet_radius + R_throat);
+r_wall_max  = width / 120;
+r_mouth     = max(0.5, min(0.5 * hole_diameter, r_mouth_max, r_wall_max));
+
+// Smooth bore surfaces; the star outline is polygonal and unaffected by $fn.
+$fn = 128;
 
 // Mouth: swept rolling-ball fillet (ported from bead_heart.scad). The star
 // wall is oblique to the bore axis, so the revolved well cannot be used;
@@ -494,9 +497,8 @@ assert(fillet_radius <= height / 2, "fillet_radius must be <= height/2 so fillet
 // x = 49.7114, NOT 60.
 //
 // MOUTH: a straight 20 mm bore plus the swept rolling-ball fillet at both
-// entrances (radius capped by the star wall-safe dial; see mouth_fillet
-// above). The old spherical scoop, ball rollover, and revolved well are out.
-extra = 5;                                   // mm bore overshoot past both walls
+// entrances (radius capped by the star wall-safe dial; see r_mouth above).
+// The old spherical scoop, ball rollover, and revolved well are out.
 star_pts = star_vertices(width, points, roundness, petal_depth);
 L_pts = len(star_pts);
 // index of the outline vertex nearest the hole axis on the +x side
@@ -511,17 +513,16 @@ hole_entry_x = max([
                        : p0[0] + (p1[0] - p0[0]) * (0 - p0[1]) / (p1[1] - p0[1])
 ]);
 assert(hole_entry_x > 0, "hole_entry_x must be positive: no +x outline crossing of y=0 found");
-R_open = hole_opening_diameter / 2;
 // the straight bore must clear every wall it can reach (the
 // oblique flank pokes beyond the centre-line crossing):
 wall_span_x = max([for (p = star_pts) if (abs(p[1]) <= R_open) p[0]]);
 hole_len = wall_span_x + extra;
 echo(star_hole_entry_x = hole_entry_x, star_hole_len = hole_len,
-     star_mouth_fillet = mouth_fillet);
+     star_r_mouth = r_mouth);
 
 // ---- Ball-fillet mouth (ported from bead_heart.scad) ---------------------
 // A true rolling-ball fillet: remove the material between the sharp edge
-// and the ball of radius mouth_fillet tangent to both the bore and the
+// and the ball of radius r_mouth tangent to both the bore and the
 // wall. The 2D corner sliver is swept along the actual mouth edge, so it
 // stays tangent to both surfaces even though the star wall is oblique.
 
@@ -550,7 +551,7 @@ function vadd(a, b) = [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 function vmul(a, s) = [a[0] * s, a[1] * s, a[2] * s];
 function vdot(a, b) = a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 
-mf_r = mouth_fillet;
+mf_r = r_mouth;
 mf_overlap = 0.2;                            // mm the sliver reaches into the bore
 mf_n = 240;                                  // samples around the mouth edge
 mf_arc = 16;                                 // samples across the fillet arc

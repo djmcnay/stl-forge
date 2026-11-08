@@ -8,7 +8,7 @@ generator is committed verbatim as `templates/parametric_heart_reference.scad`
 in this project; keep it in sync if the outline maths ever changes.
 The template is parameter-complete but carries no preset in
 `presets.json` (reach it with `main.py --parts heart`, which renders the
-template defaults — bubble 5 — or drive it directly with `openscad -D`;
+template defaults — roundness 5 — or drive it directly with `openscad -D`;
 add a preset with `"template": "bead_heart.scad"`
 when letters or a second deliverable arrive).
 
@@ -17,17 +17,20 @@ when letters or a second deliverable arrive).
 | Key | Meaning | Default / rule |
 |---|---|---|
 | `width` | enclosing-circle diameter of the face (mm); the heart is the largest similar fit inside, so heart width ~= 0.93-0.95 x width | 120 |
-| `bubble` | puffiness dial, continuous, domain 1..10 | 5 |
+| `roundness` | puffiness dial, continuous, domain 1..10 | 5 |
 | `height` | extrusion, derived | `width / 2.2` |
 | `hole_diameter` | string-hole throat (mm) | 20 |
 | `hole_opening_diameter` | bell-mouth diameter at the mouths | `max(1.2 * throat, height/2)` |
 | `bore_fillet_radius` | hole flare arc (mm) | `width / 8` |
 | `fillet_radius` | face quarter-round (mm) | `width / 12` (=10 at width 120); asserts `>0` and `<= height/2` |
+| `R_throat` | throat radius (mm) | `hole_diameter / 2` |
+| `r_mouth_max` | mouth-radius ceiling (mm) | `(height / 2.25) - (fillet_radius + R_throat)` |
+| `r_mouth` | mouth radius (mm) | `max(0.5, min(0.5 * hole_diameter, r_mouth_max))` (=4.242 at width 120) |
 
-Dial mapping: the generator interpolates on `roundness` in 0..1;
-`roundness = clamp01((bubble - 1) / 9)`, so bubble 1 = sharp profile,
-bubble 10 = full bubble, bubble 5 = 0.444 (just shy of halfway, leaning
-sharp). The bubble dial does not move the hole axis.
+Dial mapping: the generator interpolates on an internal 0..1 `roundness`;
+`roundness01 = clamp01((roundness - 1) / 9)`, so roundness 1 = sharp
+profile, roundness 10 = full bubble, roundness 5 = 0.444 (just shy of
+halfway, leaning sharp). The roundness dial does not move the hole axis.
 
 ## Construction decisions (do not casually undo)
 
@@ -36,7 +39,7 @@ sharp). The bubble dial does not move the hole axis.
 - The mouth is the v2 spherical countersink sunk along the LOCAL wall
   normal at the heart's own flank (97da1b1): the entry point is the
   scale-invariant INTERPOLATED `y=0` outline crossing
-  (`hole_entry_x`), recomputed per bubble - NOT the old band-style
+  (`hole_entry_x`), recomputed per roundness - NOT the old band-style
   `max outline x with |y| < 0.5` measurement, which was scale
   dependent and would drift the rim. bead.scad lands its bell at
   `width/2`, which is out in empty air for the heart; without the
@@ -57,12 +60,12 @@ sharp). The bubble dial does not move the hole axis.
 
 ## Verification bands (measured, width 120)
 
-- Wall bbox, all bubbles: X 112.734 (b1 111.717 / b10 113.961),
+- Wall bbox, all roundness settings: X 112.734 (b1 111.717 / b10 113.961),
   Y 103.841, Z 54.545 - fillets and hole never move the outer bbox.
-- Face at z=0 (bubble 5): X 92.734 (exactly -10 per side).
+- Face at z=0 (roundness 5): X 92.734 (exactly -10 per side).
 - Generator self-test echoes: radial_error and bottom_error at float
   noise (<=1e-14), both lobe touch flags true at roundness
   0/0.25/0.5/0.75/1 - the acceptance gate from the original brief.
 - All renders exit 0 with no WARNING/ERROR lines; CGAL `Status: NoError`.
 - Any regression here means the outline maths moved: re-run the dial
-  ends (bubble 1 and 10) plus default before touching anything else.
+  ends (roundness 1 and 10) plus default before touching anything else.

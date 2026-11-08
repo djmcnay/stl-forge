@@ -50,7 +50,7 @@ DEFAULT_WORD_GAP = 10.0
 STL_MIN_BYTES = forge.STL_MIN_BYTES
 
 # --parts mapping: part name -> (template filename, -D overrides).
-# heart: bead_heart.scad at default bubble, star: bead_star.scad at template
+# heart: bead_heart.scad at default roundness, star: bead_star.scad at template
 # defaults, flower: bead_star.scad driven into full flower (roundness 20).
 PART_JOBS = {
     "heart": ("bead_heart.scad", {}),

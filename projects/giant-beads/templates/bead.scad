@@ -19,31 +19,32 @@
 // module call; the v2 sphere dials stay declared but inert for this bead.
 use <bead_common.scad>
 
+// ---- parameters -------------------------------------------------------
 // Cylinder outer diameter (mm)
 width = 120;
 // Cylinder height (mm), derived from width; set explicitly in a preset only to break the rule
 height = width / 2;
-// String-hole throat diameter at the centre plane x=0 (mm)
+// String-hole throat diameter at the centre plane (mm)
 hole_diameter = 20;
-// String-hole diameter at the two entrances |x| = width/2 (mm),
-// greater of hole_diameter*1.2 or height/2
-hole_opening_diameter = max(hole_diameter * 1.2, height / 2); // inert for the bead's mouth: v2 rim-taper dial superseded by the fillet-well dial (r_mouth); kept in case presets still set it
-// Fillet radius where each flat face meets the outer side wall (mm).
-// Quarter-round fillet, NOT a 45-degree chamfer; larger = more rounding,
-// smaller = flatter face
-// default width/12; set explicitly in a preset only to break the rule
-fillet_radius = width / 12;
-R_throat = hole_diameter / 2;
-// Fillet-well mouth dial, fixed empirically in David's SolidCraft rebuild
-// (6 Nov 2026): face-fillet-safe ceiling (height / 2.25) minus the face
-// fillet and the throat radius, floored at 0.5 mm for softness. Same formula
-// as bead_heart.scad.
-r_mouth_max = (height / 2.25) - (fillet_radius + R_throat);
-r_mouth     = max(0.5, min(0.5 * hole_diameter, r_mouth_max)); // clamp to 0.5 when dial collapses at small width/hole combos
-// Flare arc radius, default width/8; retained as a bead-family parameter but
-// no longer used by the string hole (the bell-flare role is now played by
-// the quarter-round fillet-well mouth, see bead_common.scad).
+// Bell-mouth diameter at the entrances (mm): max(1.2 * throat, height / 2).
+// Retained for presets; inert now that the mouth is a fillet-well.
+hole_opening_diameter = max(hole_diameter * 1.2, height / 2);
+// Flare arc radius (mm): family rule width / 8; retained, unused by the mouth.
 bore_fillet_radius = width / 8;
+// Face fillet radius (mm): quarter-round where each flat face meets the
+// outer side wall (NOT a chamfer); family rule width / 12.
+fillet_radius = width / 12;
+// Derived hole values
+R_throat = hole_diameter / 2;
+R_open = hole_opening_diameter / 2;
+extra = 5;                     // mm bore overshoot past both walls
+// Fillet-well mouth dial: face-fillet-safe ceiling (height / 2.25) minus
+// the face fillet and the throat radius, floored at 0.5 mm for softness.
+r_mouth_max = (height / 2.25) - (fillet_radius + R_throat);
+r_mouth = max(0.5, min(0.5 * hole_diameter, r_mouth_max));
+
+// Smooth surfaces, still fast.
+$fn = 128;
 
 // Two-color lettering (separate bodies for a two-material print).
 // The body has letter pockets cut into it; black letter inserts mate into
@@ -65,9 +66,6 @@ letter_outline_width = 0.8;    // mm, ~2 x 0.4mm nozzle line — bottom outline-
 // Which solid to export: "body" (white cylinder), "letter" (black letters),
 // "assembly" (colored preview with body+letters).
 part = "body";
-
-// Smooth cylinders but still fast: module-level resolution constant.
-$fn = 128;
 
 // ---- Sanity checks ----
 assert(fillet_radius > 0, "fillet_radius must be positive");
@@ -154,13 +152,11 @@ module bead_solid() {
 // same difference()-safe subtractive geometry as the old module. This file's
 // wall at the hole centre line is the plane x = +/- width/2, perpendicular to
 // the hole axis (local outward normal exactly [1, 0]), which is the only wall
-// shape the revolve is valid on; the star/heart/flower use the plain
-// bore (bead_string_hole_plain) on their oblique flanks.
+// shape the revolve is valid on; the heart and star use the swept ball
+// fillet and the flower keeps the plain bore on their oblique flanks.
 // Sphere machinery leaves this file with the mouth: R_ball, hole_len and the
 // sphere-fit asserts were countersink-only and are deleted; the new dial
 // (r_mouth_max / r_mouth, right after fillet_radius above) replaces them.
-extra = 5;   // mm cut overshoot past both face planes: bore length and crater closing legs
-R_open = hole_opening_diameter / 2;  // inert: v2 sphere rim radius, superseded by the fillet-well dial (r_mouth); kept in case presets still set it
 half = width / 2;
 k_scoop = extra;                     // inert: v2 scoop sink along the wall normal, superseded by the fillet-well dial (r_mouth); kept in case presets still set it
 

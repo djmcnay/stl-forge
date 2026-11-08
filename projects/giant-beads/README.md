@@ -41,7 +41,7 @@ Flags:
   run with exit 2 — an explicitly requested letter job either runs or
   fails, it is never silently dropped (absent/empty stays valid).
 - `--parts LIST` — comma list, harmless if empty. `heart` -> bead_heart.scad
-  at default bubble; `star` -> bead_star.scad at template defaults;
+  at default roundness; `star` -> bead_star.scad at template defaults;
   `flower` -> bead_star.scad with `roundness=20` and `petal_depth=3`.
 - `--preset NAME` — render one bead preset from `presets.json`
   (`bead_D`, `bead_default`, `bead_smooth`), exactly as the old forge.py
@@ -76,23 +76,35 @@ Run the tests: `python3 -m pytest projects/giant-beads/tests -q`
 | flower shape | `bead_flower.stl` (bead_star.scad, roundness 20) | `--parts flower` |
 | preset | `bead_<name>.stl` + `_body` / `_letter` splits + `.3mf` | `--preset` |
 
-## Shared bead parameters (all templates in this project)
+## Bead-family parameters
 
 | param | meaning | default / rule |
 |---|---|---|
 | `width` | enclosing-circle / cylinder outer diameter of the face (mm) | 120 — positive INTEGRAL mm only (fractional/bad values exit 2, never silently truncated) |
+| `roundness` | shape dial | heart 1..10 (default 5; 10 = full bubble); star 1..20 (default 12) |
+| `points` | star tip count | 5 |
+| `petal_depth` | star valley-depth dial 1..10 | 3 |
 | `height` | extrusion, derived | bead.scad `width/2`; bead_heart `width/2.2`; bead_star `width/2` |
 | `hole_diameter` | string-hole throat diameter at the centre plane (mm) | 20 |
-| `hole_opening_diameter` | diameter at the two entrances | `max(1.2 * hole_diameter, height/2)` |
-| `bore_fillet_radius` | flare arc (mm) | `width/8` — retained vestigially; the bell-flare role is now played by the v2 spherical countersink |
+| `hole_opening_diameter` | diameter at the two entrances | `max(1.2 * hole_diameter, height/2)` — retained for presets, inert |
+| `bore_fillet_radius` | flare arc (mm) | `width/8` — retained, unused by the current mouths |
+| `fillet_radius` | face quarter-round (mm) | `width/12` (=10 at width 120) |
+| `R_throat` | throat radius (mm) | `hole_diameter/2` |
+| `r_mouth_max` | mouth-radius ceiling (mm) | `(height/2.25) - (fillet_radius + R_throat)` |
+| `r_mouth` | mouth radius (mm) | `max(0.5, min(0.5*hole_diameter, r_mouth_max))`; star adds `r_wall_max = width/120` |
+| `$fn` | render resolution | 128 |
 
-### The v2 spherical-countersink mouth (43db29b + 97da1b1)
+`--parts flower` drives `bead_star.scad` with `roundness=20,
+petal_depth=3`; the separate `bead_flower.scad` template uses
+`points=6`, `petal_depth=8` and the tripled petal fillet
+`fillet_radius=width/4`.
 
-Every bead family shares ONE mouth construction (standing procedure),
-cut by ONE shared subtractive module: `templates/bead_common.scad`'s
-`bead_string_hole(...)` (each template forwards its own local values;
-provenance for the construction lives in that module's comment block).
-the string-hole mouth is a sphere of radius `sqrt(R_open^2 + k^2)` sunk
+### The v2 spherical-countersink mouth (43db29b + 97da1b1) — historical
+
+**Superseded for the heart and star by the swept ball fillet** (see
+"Approved mouth recipe" below); the flower keeps the plain bore. The v2
+construction was: the string-hole mouth is a sphere of radius
+`sqrt(R_open^2 + k^2)` sunk
 `k` mm along the LOCAL wall normal at the hole-axis outline crossing,
 with a straight `R_throat` bore along X; rim radius = R_open exactly. A
 sphere meets any smooth wall in smooth curves, so no fin/wedge can form
@@ -154,13 +166,13 @@ leaves only a 60 mm flat face: `120*0.45 = 54 < 60` fits, while 0.75 ->
 
 ## bead_heart.scad — heart bead
 
-Bubble dial `bubble` 1..10 (default 5): `roundness = clamp01((bubble-1)/9)`
-feeds the generator (bubble 5 = 0.444, just shy of halfway, leaning
-sharp). The hole runs along X at `y=0, z=height/2` (bead.scad
-orientation) and the v2 spherical countersink (43db29b/97da1b1) is sunk
-along the LOCAL wall normal at the heart's own flank: the entry point is
-the scale-invariant INTERPOLATED `y=0` outline crossing
-(`hole_entry_x`), recomputed per bubble — NOT the old band-style
+Roundness dial `roundness` 1..10 (default 5): mapped to the generator's
+0..1 profile blend as `roundness01 = clamp01((roundness-1)/9)` (5 =
+0.444, just shy of halfway, leaning sharp). The hole runs along X at
+`y=0, z=height/2` (bead.scad orientation) and the swept ball fillet is
+cut along the heart's own wall edge: the entry point is the
+scale-invariant INTERPOLATED `y=0` outline crossing
+(`hole_entry_x`), recomputed per roundness dial — NOT the old band-style
 `max outline x with |y| < 0.5` measurement, which was scale dependent.
 bead.scad's `width/2` landing is in empty air for the heart. Face fillets
 are the bead.scad quarter-arc carried as erosion Z-slabs
@@ -190,19 +202,22 @@ FILLET-WELL mouth, not a sphere countersink. The template calls the
 shared module `bead_string_hole_well` in `templates/bead_common.scad`
 (revolved quarter-round crater: the arc leaves the bore wall with zero
 slope and meets the flat wall tangentially - G1 at both ends, no rim
-crease). The old sphere-crater module `bead_string_hole` is retained
-untouched for the oblique-walled shapes (`bead_heart.scad`,
-`bead_star.scad`, `bead_flower.scad`), where a revolved well cannot be
-tangent to the wall; those keep the sphere countersink deliberately.
+crease). The old sphere-crater module `bead_string_hole` is retired:
+the heart and star now use a swept ball fillet local to each template
+(tangent to both surfaces on their oblique walls), and the flower keeps
+the plain bore (`bead_string_hole_plain`).
 
 Dial (parameters, exact):
 
-    r_mouth_max = H / 2.25 - r_fillet - R_throat   // face-fillet-safe ceiling
-    r_mouth     = min(0.5 * d_throat, r_mouth_max) // softness floor
+    r_mouth_max = (H / 2.25) - (r_fillet + R_throat)      // safe ceiling
+    r_mouth     = max(0.5, min(0.5 * d_throat, r_mouth_max)) // floor
 
 At defaults (width 120 => H 60, fillet_radius 10, hole 20):
-r_mouth_max = 6.667, r_mouth = 6.667. Asserts in bead.scad fire rather
-than collapse if the dial band goes non-positive.
+r_mouth_max = 6.667, r_mouth = 6.667 for the letter bead. The heart
+uses the same dial (H 54.545 => 4.242). The star adds
+`r_wall_max = width/120` (1 mm at width 120) because its outline runs
+close to a valley/tip; r_mouth = min(dial, r_wall_max). Asserts in
+bead.scad fire rather than collapse if the dial band goes non-positive.
 
 Verification (all measured, same session): SolidCraft reference
 610,079.46 mm3 / 243 faces; the scad build `build/bead-well.scad.stl`

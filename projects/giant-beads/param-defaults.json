@@ -1,16 +1,17 @@
 {
   "project": "giant-beads",
-  "note": "Canonical default snapshot. Mouth defaults: letter bead = fillet-well (bead_string_hole_well, gravitational well); heart/star/flower = sphere countersink (bead_string_hole, sunk along local wall normal \u2014 well revolve grazes oblique flank and fins). Sphere vs well is deliberate per-wall, not a global switch. Update with any template default change.",
+  "note": "Canonical default snapshot. Common family params: width, height, hole_diameter, hole_opening_diameter, bore_fillet_radius, fillet_radius, R_throat, r_mouth_max, r_mouth, $fn. Mouths: letter bead = revolved fillet-well; heart/star = swept ball fillet (star wall-capped); flower = plain bore. Update with any template default change.",
   "bead_scad": {
     "part": "body",
     "width": 120,
     "height": 60,
     "hole_diameter": 20,
     "hole_opening_diameter": 30,
-    "fillet_radius": 10,
-    "r_mouth": 6.667,
-    "r_mouth_max": 6.667,
     "bore_fillet_radius": 15,
+    "fillet_radius": 10,
+    "R_throat": 10,
+    "r_mouth_max": 6.667,
+    "r_mouth": 6.667,
     "letter_top": "M",
     "letter_bottom": "M",
     "letter_top_rotate": 0,
@@ -25,16 +26,21 @@
     "letter_recess_fillet": 0.2,
     "letter_outline_width": 0.8,
     "$fn": 128,
-    "mouth": "well (bead_string_hole_well, fillet-well default)"
+    "mouth": "revolved fillet-well (bead_string_hole_well)"
   },
   "bead_heart_scad": {
     "width": 120,
     "height": 54.545,
-    "bubble": 5,
+    "roundness": 5,
     "hole_diameter": 20,
+    "hole_opening_diameter": 27.273,
+    "bore_fillet_radius": 15,
     "fillet_radius": 10,
+    "R_throat": 10,
+    "r_mouth_max": 4.242,
+    "r_mouth": 4.242,
     "$fn": 128,
-    "mouth": "sphere (bead_string_hole, v2 countersink)"
+    "mouth": "swept ball fillet (local cutter)"
   },
   "bead_star_scad": {
     "width": 120,
@@ -43,9 +49,15 @@
     "points": 5,
     "petal_depth": 3,
     "hole_diameter": 20,
+    "hole_opening_diameter": 30,
+    "bore_fillet_radius": 15,
     "fillet_radius": 10,
+    "R_throat": 10,
+    "r_mouth_max": 6.667,
+    "r_wall_max": 1.0,
+    "r_mouth": 1.0,
     "$fn": 128,
-    "mouth": "sphere (bead_string_hole, v2 countersink)"
+    "mouth": "swept ball fillet, star wall-safe cap"
   },
   "bead_default": {
     "template": "bead.scad",
@@ -68,6 +80,18 @@
     "save_to": "$HOME/Downloads"
   },
   "bead_flower_scad": {
-    "mouth": "sphere (bead_string_hole, v2 countersink)"
+    "width": 120,
+    "height": 60,
+    "roundness": 20,
+    "points": 6,
+    "petal_depth": 8,
+    "hole_diameter": 20,
+    "width_stigma": 54.545,
+    "hole_opening_diameter": 30,
+    "bore_fillet_radius": 15,
+    "fillet_radius": 30,
+    "stigma_fillet_radius": 10,
+    "$fn": 128,
+    "mouth": "plain bore (bead_string_hole_plain)"
   }
 }

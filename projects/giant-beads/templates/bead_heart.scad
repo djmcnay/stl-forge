@@ -13,10 +13,10 @@
     interpolation, fitted so the heart touches its enclosing circle at the
     bottom tip and at two symmetrical upper-lobe shoulder points.
 
-    width    enclosing-circle diameter of the heart face (mm)
-    bubble   dial 1..10 (default 5): 1 = sharp/elongated, 10 = full bubble.
-             roundness = (bubble - 1) / 9, clamped, feeds the generator.
-    height   extrusion height = width / 2.2 (computed)
+    width      enclosing-circle diameter of the heart face (mm)
+    roundness  dial 1..10 (default 5): 1 = sharp/elongated, 10 = full bubble.
+               Mapped to the generator's 0..1 profile blend.
+    height     extrusion height = width / 2.2 (computed)
 
     Shared mouth: the string hole and its rim treatment are local to this
     file (the heart's wall is not perpendicular to the bore axis, so the
@@ -26,29 +26,32 @@
 use <bead_common.scad>
 
 // ---- parameters -------------------------------------------------------
-width  = 120;
-bubble = 5;
-height = width / 2.2;
+width     = 120;
+roundness = 5;                 // 1..10: 1 = sharp/elongated, 10 = full bubble
+height    = width / 2.2;
 
-// ---- string hole (ported from templates/bead.scad) -----------------------
+// ---- string hole (common family block) ---------------------------------
 // Throat diameter at the centre plane (mm)
 hole_diameter = 20;
-// Bell-mouth diameter at the two entrances (mm): greater of throat*1.2 or height/2
+// Bell-mouth diameter at the entrances (mm): max(1.2 * throat, height / 2).
+// Retained for presets; inert now that the mouth is a swept ball fillet.
 hole_opening_diameter = max(hole_diameter * 1.2, height / 2);
-// Flare arc radius (mm), default width/8 (bead.scad rule)
+// Flare arc radius (mm): family rule width / 8; retained, unused by the mouth.
 bore_fillet_radius = width / 8;
+// Face fillet radius (mm): quarter-round where each flat face meets the
+// side wall (NOT a chamfer); family rule width / 12.
+fillet_radius = width / 12;
+// Derived hole values
+R_throat = hole_diameter / 2;
+R_open = hole_opening_diameter / 2;
+extra = 5;                     // mm bore overshoot past both walls
+// Mouth radius: face-fillet-safe ceiling (height / 2.25) minus the face
+// fillet and the throat radius, floored at 0.5 mm. 4.242 mm at defaults.
+r_mouth_max = (height / 2.25) - (fillet_radius + R_throat);
+r_mouth = max(0.5, min(0.5 * hole_diameter, r_mouth_max));
+
 // Smooth bore surfaces; the heart outline is polygonal and unaffected by $fn.
 $fn = 128;
-
-// ---- face fillets (mirrored from templates/bead.scad) --------------------
-// Quarter-round where each flat face meets the side wall (NOT a chamfer).
-// bead.scad default: fillet_radius = width / 12  ->  10 mm at width 120.
-fillet_radius = width / 12;
-
-// Mouth: a rolling-ball fillet of `mouth_fillet` mm, using the letter
-// bead's dial: always a well (>= 0.5 mm), capped so the rim can never
-// reach the face fillets (4.242 mm at the 120 mm default).
-// follows the heart's actual wall - see the "String hole" section below.
 
 // ---- mathematical helpers (verbatim from reference) --------------------
 function clamp01(x) = max(0, min(1, x));
@@ -120,8 +123,8 @@ module heart_in_circle(w = 50, roundness = 0, resolution = 512) {
     heart_2d(r = w/2, roundness = roundness, resolution = resolution);
 }
 
-// ---- bubble dial: 1..10 -> roundness 0..1 --------------------------------
-roundness = clamp01((bubble - 1) / 9);
+// ---- roundness dial: 1..10 -> generator 0..1 -----------------------------
+roundness01 = clamp01((roundness - 1) / 9);
 
 assert(width > 0, "width must be positive");
 assert(hole_opening_diameter > hole_diameter, "hole_opening_diameter must exceed hole_diameter for a tapered (flared) hole");
@@ -133,7 +136,7 @@ assert(fillet_radius <= height / 2, "fillet_radius must be <= height/2 so fillet
 
 // ---- String hole: bore + rolling-ball rim fillet --------------------------
 // The heart wall at the mouth is the vertical extrusion of the heart
-// outline, so the correct G1 mouth is a ball of radius mouth_fillet
+// outline, so the correct G1 mouth is a ball of radius r_mouth
 // rolled along the bore/wall edge. The cut is the sweep of the 2D corner
 // sliver (edge point + ball arc) along that edge, which keeps the fillet
 // tangent to BOTH surfaces all the way round. This replaces the revolved
@@ -142,23 +145,11 @@ assert(fillet_radius <= height / 2, "fillet_radius must be <= height/2 so fillet
 // (wall x is 49.1 at y = -13 but 56.4 at y = +13), which is exactly
 // what produced the teardrop lip and the fin.
 // bore_fillet_radius is retained as a bead-family parameter, unused.
-assert(hole_opening_diameter > hole_diameter, "hole_opening_diameter must exceed hole_diameter");
-assert(hole_opening_diameter < width, "hole opening must fit within the face");
-assert(hole_diameter < width, "hole throat must fit within the face");
-
-extra = 5;                                   // mm bore overshoot past both walls
-R_throat = hole_diameter / 2;
-R_open = hole_opening_diameter / 2;
-// Rim fillet radius: letter-bead dial (bead.scad) - face-fillet-safe ceiling
-// (height / 2.25) minus the face fillet and the throat radius, default
-// min(hole radius, ceiling), floored at 0.5 mm. 4.242 mm at the default.
-r_mouth_max  = (height / 2.25) - (fillet_radius + R_throat);
-mouth_fillet = max(0.5, min(0.5 * hole_diameter, r_mouth_max));
 
 // crossing + local wall frame from the outline vertices (recomputed per
-// bubble): scalar two-pass argmin because max() over vectors is not portable
-// OpenSCAD, and this build has no normalize():
-hz_pts = heart_points(width / 2, roundness);
+// roundness dial): scalar two-pass argmin because max() over vectors is not
+// portable OpenSCAD, and this build has no normalize():
+hz_pts = heart_points(width / 2, roundness01);
 hz_L = len(hz_pts);
 hz_min_y = min([for (i = [0 : hz_L - 1]) if (hz_pts[i][0] > 0) abs(hz_pts[i][1])]);
 hz_cross_i = [for (i = [0 : hz_L - 1]) if (hz_pts[i][0] > 0 && abs(hz_pts[i][1]) == hz_min_y) i][0];
@@ -170,16 +161,16 @@ hole_entry_x = max([
                        : p0[0] + (p1[0] - p0[0]) * (0 - p0[1]) / (p1[1] - p0[1])
 ]);
 assert(hole_entry_x > 0, "hole_entry_x must be positive: no +x outline crossing of y=0 found");
-assert(mouth_fillet > 0, "mouth fillet collapsed: height too small for this hole");
+assert(r_mouth > 0, "mouth fillet collapsed: height too small for this hole");
 // the straight bore must clear every wall it can reach (the
 // oblique flank pokes beyond the centre-line crossing):
 hz_wall_span_x = max([for (p = hz_pts) if (abs(p[1]) <= R_open) p[0]]);
 hole_len = hz_wall_span_x + extra;
-echo(bead_heart_entry_x = hole_entry_x, bead_heart_mouth_fillet = mouth_fillet, bead_heart_hole_len = hole_len);
+echo(bead_heart_entry_x = hole_entry_x, bead_heart_r_mouth = r_mouth, bead_heart_hole_len = hole_len);
 
 // ---- Ball-fillet mouth ----------------------------------------------------
 // A true rolling-ball fillet: at both mouths, remove the material between
-// the sharp edge and the ball of radius mouth_fillet that is tangent to
+// the sharp edge and the ball of radius r_mouth that is tangent to
 // both the bore and the wall. The cut is the sweep of that 2D corner
 // sliver along the mouth edge, so the fillet stays tangent to BOTH
 // surfaces all the way round even though the heart's wall is oblique to
@@ -212,7 +203,7 @@ function vadd(a, b) = [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 function vmul(a, s) = [a[0] * s, a[1] * s, a[2] * s];
 function vdot(a, b) = a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 
-mf_r = mouth_fillet;
+mf_r = r_mouth;
 mf_overlap = 0.2;                            // mm the sliver reaches into the bore
 mf_n = 240;                                  // samples around the mouth edge
 mf_arc = 16;                                 // samples across the fillet arc
@@ -291,18 +282,18 @@ module heart_body() {
             translate([0, 0, fillet_z[i]])
                 linear_extrude(height = fillet_z[i+1] - fillet_z[i])
                     offset(r = -fillet_u[i])
-                        heart_in_circle(w = width, roundness = roundness);
+                        heart_in_circle(w = width, roundness = roundness01);
         // straight side wall; collapses like bead.scad when c == height/2
         if (side_len > 0.001)
             translate([0, 0, c])
                 linear_extrude(height = side_len)
-                    heart_in_circle(w = width, roundness = roundness);
+                    heart_in_circle(w = width, roundness = roundness01);
         // top fillet: mirrored slabs [H - z_k+1, H - z_k] with inset u_k
         for (k = [0 : n_fillet - 1])
             translate([0, 0, height - fillet_z[k+1]])
                 linear_extrude(height = fillet_z[k+1] - fillet_z[k])
                     offset(r = -fillet_u[k])
-                        heart_in_circle(w = width, roundness = roundness);
+                        heart_in_circle(w = width, roundness = roundness01);
     }
 }
 

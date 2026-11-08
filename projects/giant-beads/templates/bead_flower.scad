@@ -49,9 +49,10 @@
                        width_stigma / 2 - 10 = 17.27 mm at the defaults)
 
     Shared mouth: the plain bore module in bead_common.scad (just a
-    hole). This file keeps only its local values (hole_entry_x,
-    hole_len, ...) and forwards them to the call, EXACTLY as
-    bead_star.scad does. Local rule: hole_entry_x is computed from
+    hole). Unlike bead_star.scad's swept ball fillet, this template
+    keeps the plain bore. Local values (hole_entry_x, hole_len, ...)
+    are computed here and forwarded to the call. Local rule:
+    hole_entry_x is computed from
     THIS template's own UNION outline crossing at y = 0, never a
     pinned number, by scanning BOTH outlines (star polygon and the
     $fn-matched stigma circle) and taking the outermost interpolated
