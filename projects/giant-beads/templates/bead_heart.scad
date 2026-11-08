@@ -149,10 +149,10 @@ assert(hole_diameter < width, "hole throat must fit within the face");
 extra = 5;                                   // mm bore overshoot past both walls
 R_throat = hole_diameter / 2;
 R_open = hole_opening_diameter / 2;
-// Rim fillet radius: letter-bead dial (bead.scad) verbatim - face-fillet-safe
-// ceiling minus the throat, default min(hole radius, ceiling), floored at
-// 0.5 mm so a rounded entrance always exists. 4.242 mm at the 120 mm default.
-r_mouth_max  = height / 2.25 - fillet_radius - R_throat;
+// Rim fillet radius: letter-bead dial (bead.scad) - face-fillet-safe ceiling
+// (height / 2.25) minus the face fillet and the throat radius, default
+// min(hole radius, ceiling), floored at 0.5 mm. 4.242 mm at the default.
+r_mouth_max  = (height / 2.25) - (fillet_radius + R_throat);
 mouth_fillet = max(0.5, min(0.5 * hole_diameter, r_mouth_max));
 
 // crossing + local wall frame from the outline vertices (recomputed per

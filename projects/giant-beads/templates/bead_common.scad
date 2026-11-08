@@ -36,8 +36,8 @@ module bead_string_hole_plain(
 // family defaults: volume 610,079.46 mm3 / 243 faces (SolidCraft rebuild,
 // replicated by the steady-state OpenSCAD render up to tessellation). Dial
 // rule that fixed the well radius (empirical, family-wide):
-//     r_mouth_max = H / 2.25 - r_fillet - R_throat   (face-fillet-safe ceiling)
-//     r_mouth     = min(0.5 * d_throat, r_mouth_max) (softness floor)
+//     r_mouth_max = (H / 2.25) - (r_fillet + R_throat)  (safe ceiling)
+//     r_mouth     = min(0.5 * d_throat, r_mouth_max)     (softness floor)
 // giving 6.667 at H=60, r_fillet=W/12=10, d_throat=20.
 //
 // Wall-normal constraint (read before calling from a new template):
@@ -72,7 +72,7 @@ module bead_string_hole_plain(
 //      caller's hole axis and longer than 2 * hole_entry_x (hole_entry_x +
 //      extra each way) so it overshoots both walls as before.
 module bead_string_hole_well(hole_entry_x, R_throat, r_mouth, extra = 2) {
-    assert(r_mouth > 0, "fillet-well radius must be positive (dial r_mouth_max = H/2.25 - r_fillet - R_throat collapsed)");
+    assert(r_mouth > 0, "fillet-well radius must be positive (dial r_mouth_max = (H / 2.25) - (r_fillet + R_throat) collapsed)");
     assert(hole_entry_x > r_mouth, "hole_entry_x must exceed r_mouth so the crater arc fits inside the wall");
 
     // Arc centre in the (r, t) profile half-plane: r radial from the hole

@@ -34,8 +34,9 @@ hole_opening_diameter = max(hole_diameter * 1.2, height / 2); // inert for the b
 // default width/12; set explicitly in a preset only to break the rule
 fillet_radius = width / 12;
 // Fillet-well mouth dial, fixed empirically in David's SolidCraft rebuild
-// (6 Nov 2026): face-fillet-safe ceiling minus the throat, floored at softness.
-r_mouth_max = height / 2.25 - fillet_radius - hole_diameter / 2;
+// (6 Nov 2026): face-fillet-safe ceiling (height / 2.25) minus the face
+// fillet and the throat radius, floored at 0.5 mm for softness.
+r_mouth_max = (height / 2.25) - (fillet_radius + hole_diameter / 2);
 r_mouth     = max(0.5, min(0.5 * hole_diameter, r_mouth_max)); // clamp to 0.5 when dial collapses at small width/hole combos
 // Flare arc radius, default width/8; retained as a bead-family parameter but
 // no longer used by the string hole (the bell-flare role is now played by
