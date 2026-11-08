@@ -23,9 +23,10 @@
                  `depth = petal_depth`.
     height       extrusion height = width / 2 (computed)
 
-    Shared mouth: the plain bore is one common subtractive module in
-    bead_common.scad; this file keeps only its local values
-    (hole_entry_x, hole_len, ...) and forwards them to the call.
+    Shared mouth: a straight bore plus the swept rolling-ball mouth
+    fillet (ported from bead_heart.scad); this file keeps its local
+    values (hole_entry_x, hole_len, mouth_fillet) and builds the cutter
+    in place.
 */
 use <bead_common.scad>
 
@@ -50,10 +51,20 @@ $fn = 128;
 // Quarter-round where each flat face meets the side wall (NOT a chamfer).
 // bead.scad default: fillet_radius = width / 12  ->  10 mm at width 120.
 fillet_radius = width / 12;
+R_throat = hole_diameter / 2;
+// Fillet-well mouth dial, same formula as bead.scad / bead_heart.scad, plus
+// a star wall-safe cap. The star outline runs only ~3.6 mm from the mouth
+// edge to a concave valley and ~8.5 mm to the next tip (at the default
+// 5-point, roundness-12 outline), so a tangent ball larger than about 1 mm
+// cuts across the valley/tip. The cap scales with the outline: 1 mm at
+// width 120.
+r_mouth_max  = (height / 2.25) - (fillet_radius + R_throat);
+r_wall_max   = width / 120;
+mouth_fillet = max(0.5, min(0.5 * hole_diameter, r_mouth_max, r_wall_max));
 
-// Mouth: JUST A HOLE (bead_string_hole_plain, bead_common.scad): a
-// straight throat bore, no scoop, no fillet, no well. Added later only
-// if asked.
+// Mouth: swept rolling-ball fillet (ported from bead_heart.scad). The star
+// wall is oblique to the bore axis, so the revolved well cannot be used;
+// the 2D corner sliver is swept along the actual mouth edge instead.
 
 // ==================================================
 // 1. MATHEMATICAL HELPERS
@@ -482,9 +493,9 @@ assert(fillet_radius <= height / 2, "fillet_radius must be <= height/2 so fillet
 // At defaults (width 120, roundness 12, points 5, petal_depth 3) it is
 // x = 49.7114, NOT 60.
 //
-// MOUTH: just a hole (bead_string_hole_plain, bead_common.scad) — a
-// straight 20 mm bore through both walls. The old spherical scoop,
-// ball rollover, fillet, and well cuts are all out.
+// MOUTH: a straight 20 mm bore plus the swept rolling-ball fillet at both
+// entrances (radius capped by the star wall-safe dial; see mouth_fillet
+// above). The old spherical scoop, ball rollover, and revolved well are out.
 extra = 5;                                   // mm bore overshoot past both walls
 star_pts = star_vertices(width, points, roundness, petal_depth);
 L_pts = len(star_pts);
@@ -500,20 +511,105 @@ hole_entry_x = max([
                        : p0[0] + (p1[0] - p0[0]) * (0 - p0[1]) / (p1[1] - p0[1])
 ]);
 assert(hole_entry_x > 0, "hole_entry_x must be positive: no +x outline crossing of y=0 found");
-R_throat = hole_diameter / 2;
 R_open = hole_opening_diameter / 2;
 // the straight bore must clear every wall it can reach (the
 // oblique flank pokes beyond the centre-line crossing):
 wall_span_x = max([for (p = star_pts) if (abs(p[1]) <= R_open) p[0]]);
 hole_len = wall_span_x + extra;
-echo(star_hole_entry_x = hole_entry_x, star_hole_len = hole_len);
+echo(star_hole_entry_x = hole_entry_x, star_hole_len = hole_len,
+     star_mouth_fillet = mouth_fillet);
 
-// Shared mouth: just a hole (bead_common.scad).
+// ---- Ball-fillet mouth (ported from bead_heart.scad) ---------------------
+// A true rolling-ball fillet: remove the material between the sharp edge
+// and the ball of radius mouth_fillet tangent to both the bore and the
+// wall. The 2D corner sliver is swept along the actual mouth edge, so it
+// stays tangent to both surfaces even though the star wall is oblique.
+
+// wall position and outward normal as functions of y on the +x side
+function wall_x_at(y) =
+    max([for (i = [0 : L_pts - 1])
+        let(p0 = star_pts[i], p1 = star_pts[(i + 1) % L_pts])
+        if (p0[0] > 0 && p1[0] > 0 && p0[1] != p1[1] &&
+            (p0[1] - y) * (p1[1] - y) <= 0)
+            p0[0] + (p1[0] - p0[0]) * (y - p0[1]) / (p1[1] - p0[1])]);
+
+// outward wall normal from a finite difference of the outline (smoother
+// than a single polygon segment; the y-increasing tangent gives
+// n = (t.y, -t.x))
+function wall_n_at(y) =
+    let(e = 0.5,
+        p0 = [wall_x_at(y - e), y - e],
+        p1 = [wall_x_at(y + e), y + e],
+        tx = p1[0] - p0[0],
+        ty = p1[1] - p0[1],
+        m = sqrt(tx * tx + ty * ty))
+        [ty / m, -tx / m, 0];
+
+function vsub(a, b) = [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+function vadd(a, b) = [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+function vmul(a, s) = [a[0] * s, a[1] * s, a[2] * s];
+function vdot(a, b) = a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+
+mf_r = mouth_fillet;
+mf_overlap = 0.2;                            // mm the sliver reaches into the bore
+mf_n = 240;                                  // samples around the mouth edge
+mf_arc = 16;                                 // samples across the fillet arc
+mf_th = [for (i = [0 : mf_n - 1]) 360 * i / mf_n];
+mf_E = [for (a = mf_th)
+    [wall_x_at(R_throat * cos(a)), R_throat * cos(a),
+     height / 2 + R_throat * sin(a)]];
+mf_nb = [for (a = mf_th) [0, cos(a), sin(a)]];          // bore outward normal
+mf_nw = [for (a = mf_th) wall_n_at(R_throat * cos(a))]; // wall outward normal
+mf_c0 = [for (i = [0 : mf_n - 1]) vdot(mf_nb[i], mf_nw[i])];
+mf_s0 = [for (i = [0 : mf_n - 1]) sqrt(max(1e-9, 1 - mf_c0[i] * mf_c0[i]))];
+// in-plane axis perpendicular to the bore normal
+mf_e2 = [for (i = [0 : mf_n - 1])
+    vmul(vsub(mf_nw[i], vmul(mf_nb[i], mf_c0[i])), 1 / mf_s0[i])];
+
+// One cross-section, perpendicular to the mouth edge: the edge point,
+// a small strip that reaches into the bore (so the sliver and the bore
+// cutter overlap instead of sharing a coplanar face), then the ball arc
+// from the bore tangency (phi = 180) to the wall tangency
+// (phi = acos(c0)). The polygon is exactly the sliver the fillet removes.
+function mf_sec(i) =
+    let(c0 = mf_c0[i], s0 = mf_s0[i], e1 = mf_nb[i], e2 = mf_e2[i],
+        th = acos(max(-1, min(1, c0))),
+        b_c = -mf_r * (1 + c0) / s0,
+        tb = vadd(mf_E[i], vmul(e2, b_c)),
+        e_in = vsub(mf_E[i], vmul(e1, mf_overlap)),
+        tb_in = vsub(tb, vmul(e1, mf_overlap)))
+    concat(
+        [mf_E[i], e_in, tb_in],
+        [for (k = [0 : mf_arc])
+            let(phi = 180 - (180 - th) * k / mf_arc)
+                vadd(mf_E[i],
+                     vadd(vmul(e1, mf_r * (1 + cos(phi))),
+                          vmul(e2, b_c + mf_r * sin(phi))))]
+    );
+
+mf_w = mf_arc + 4;                           // vertices per cross-section
+mf_pts = [for (i = [0 : mf_n - 1]) each mf_sec(i)];
+mf_faces = [for (i = [0 : mf_n - 1])
+    for (j = [0 : mf_w - 1])
+        let(a = i * mf_w + j,
+            b = i * mf_w + (j + 1) % mf_w,
+            c = ((i + 1) % mf_n) * mf_w + (j + 1) % mf_w,
+            d = ((i + 1) % mf_n) * mf_w + j)
+        each [[a, b, c], [a, c, d]]];
+
+module mf_cutter() {
+    polyhedron(points = mf_pts, faces = mf_faces, convexity = 10);
+}
+
+// Shared mouth: straight bore + the swept ball fillet at both mouths
+// (the star is symmetric about x = 0).
 module string_hole() {
     translate([0, 0, height / 2])
         bead_string_hole_plain(
             R_throat = R_throat,
             hole_len = hole_len);
+    mf_cutter();
+    mirror([1, 0, 0]) mf_cutter();
 }
 
 // ---- Fillet geometry: bead.scad's quarter arc, carried in z-slices -------
