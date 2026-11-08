@@ -33,10 +33,12 @@ hole_opening_diameter = max(hole_diameter * 1.2, height / 2); // inert for the b
 // smaller = flatter face
 // default width/12; set explicitly in a preset only to break the rule
 fillet_radius = width / 12;
+R_throat = hole_diameter / 2;
 // Fillet-well mouth dial, fixed empirically in David's SolidCraft rebuild
 // (6 Nov 2026): face-fillet-safe ceiling (height / 2.25) minus the face
-// fillet and the throat radius, floored at 0.5 mm for softness.
-r_mouth_max = (height / 2.25) - (fillet_radius + hole_diameter / 2);
+// fillet and the throat radius, floored at 0.5 mm for softness. Same formula
+// as bead_heart.scad.
+r_mouth_max = (height / 2.25) - (fillet_radius + R_throat);
 r_mouth     = max(0.5, min(0.5 * hole_diameter, r_mouth_max)); // clamp to 0.5 when dial collapses at small width/hole combos
 // Flare arc radius, default width/8; retained as a bead-family parameter but
 // no longer used by the string hole (the bell-flare role is now played by
@@ -158,7 +160,6 @@ module bead_solid() {
 // sphere-fit asserts were countersink-only and are deleted; the new dial
 // (r_mouth_max / r_mouth, right after fillet_radius above) replaces them.
 extra = 5;   // mm cut overshoot past both face planes: bore length and crater closing legs
-R_throat = hole_diameter / 2;
 R_open = hole_opening_diameter / 2;  // inert: v2 sphere rim radius, superseded by the fillet-well dial (r_mouth); kept in case presets still set it
 half = width / 2;
 k_scoop = extra;                     // inert: v2 scoop sink along the wall normal, superseded by the fillet-well dial (r_mouth); kept in case presets still set it
