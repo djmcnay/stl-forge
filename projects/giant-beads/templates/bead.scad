@@ -26,9 +26,6 @@ width = 120;
 height = width / 2;
 // String-hole throat diameter at the centre plane (mm)
 hole_diameter = 20;
-// Bell-mouth diameter at the entrances (mm): max(1.2 * throat, height / 2).
-// Retained for presets; inert now that the mouth is a fillet-well.
-hole_opening_diameter = max(hole_diameter * 1.2, height / 2);
 // Flare arc radius (mm): family rule width / 8; retained, unused by the mouth.
 bore_fillet_radius = width / 8;
 // Face fillet radius (mm): quarter-round where each flat face meets the
@@ -36,7 +33,6 @@ bore_fillet_radius = width / 8;
 fillet_radius = width / 12;
 // Derived hole values
 R_throat = hole_diameter / 2;
-R_open = hole_opening_diameter / 2;
 extra = 5;                     // mm bore overshoot past both walls
 // Fillet-well mouth dial: face-fillet-safe ceiling (height / 2.25) minus
 // the face fillet and the throat radius, floored at 0.5 mm for softness.

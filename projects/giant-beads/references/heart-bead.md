@@ -18,14 +18,13 @@ when letters or a second deliverable arrive).
 |---|---|---|
 | `width` | enclosing-circle diameter of the face (mm); the heart is the largest similar fit inside, so heart width ~= 0.93-0.95 x width | 120 |
 | `roundness` | puffiness dial, continuous, domain 1..10 | 5 |
-| `height` | extrusion, derived | `width / 2.2` |
+| `height` | extrusion, derived | `width / 2` (=60 at width 120) |
 | `hole_diameter` | string-hole throat (mm) | 20 |
-| `hole_opening_diameter` | bell-mouth diameter at the mouths | `max(1.2 * throat, height/2)` |
 | `bore_fillet_radius` | hole flare arc (mm) | `width / 8` |
 | `fillet_radius` | face quarter-round (mm) | `width / 12` (=10 at width 120); asserts `>0` and `<= height/2` |
 | `R_throat` | throat radius (mm) | `hole_diameter / 2` |
 | `r_mouth_max` | mouth-radius ceiling (mm) | `(height / 2.25) - (fillet_radius + R_throat)` |
-| `r_mouth` | mouth radius (mm) | `max(0.5, min(0.5 * hole_diameter, r_mouth_max))` (=4.242 at width 120) |
+| `r_mouth` | mouth radius (mm) | `max(0.5, min(0.5 * hole_diameter, r_mouth_max))` (=6.667 at width 120) |
 
 Dial mapping: the generator interpolates on an internal 0..1 `roundness`;
 `roundness01 = clamp01((roundness - 1) / 9)`, so roundness 1 = sharp
@@ -61,7 +60,7 @@ halfway, leaning sharp). The roundness dial does not move the hole axis.
 ## Verification bands (measured, width 120)
 
 - Wall bbox, all roundness settings: X 112.734 (b1 111.717 / b10 113.961),
-  Y 103.841, Z 54.545 - fillets and hole never move the outer bbox.
+  Y 103.841, Z 60 - fillets and hole never move the outer bbox.
 - Face at z=0 (roundness 5): X 92.734 (exactly -10 per side).
 - Generator self-test echoes: radial_error and bottom_error at float
   noise (<=1e-14), both lobe touch flags true at roundness

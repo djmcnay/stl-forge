@@ -84,9 +84,8 @@ Run the tests: `python3 -m pytest projects/giant-beads/tests -q`
 | `roundness` | shape dial | heart 1..10 (default 5; 10 = full bubble); star 1..20 (default 12) |
 | `points` | star tip count | 5 |
 | `petal_depth` | star valley-depth dial 1..10 | 3 |
-| `height` | extrusion, derived | bead.scad `width/2`; bead_heart `width/2.2`; bead_star `width/2` |
+| `height` | extrusion, derived | all three beads `width/2` (=60 at width 120) |
 | `hole_diameter` | string-hole throat diameter at the centre plane (mm) | 20 |
-| `hole_opening_diameter` | diameter at the two entrances | `max(1.2 * hole_diameter, height/2)` — retained for presets, inert |
 | `bore_fillet_radius` | flare arc (mm) | `width/8` — retained, unused by the current mouths |
 | `fillet_radius` | face quarter-round (mm) | `width/12` (=10 at width 120) |
 | `R_throat` | throat radius (mm) | `hole_diameter/2` |
@@ -103,7 +102,8 @@ petal_depth=3`; the separate `bead_flower.scad` template uses
 
 **Superseded for the heart and star by the swept ball fillet** (see
 "Approved mouth recipe" below); the flower keeps the plain bore. The v2
-construction was: the string-hole mouth is a sphere of radius
+construction used the now-retired opening dial
+(`hole_opening_diameter` / `R_open`): a sphere of radius
 `sqrt(R_open^2 + k^2)` sunk
 `k` mm along the LOCAL wall normal at the hole-axis outline crossing,
 with a straight `R_throat` bore along X; rim radius = R_open exactly. A
@@ -214,7 +214,7 @@ Dial (parameters, exact):
 
 At defaults (width 120 => H 60, fillet_radius 10, hole 20):
 r_mouth_max = 6.667, r_mouth = 6.667 for the letter bead. The heart
-uses the same dial (H 54.545 => 4.242). The star adds
+uses the same dial (H 60 => 6.667). The star adds
 `r_wall_max = width/120` (1 mm at width 120) because its outline runs
 close to a valley/tip; r_mouth = min(dial, r_wall_max). Asserts in
 bead.scad fire rather than collapse if the dial band goes non-positive.

@@ -77,8 +77,7 @@ height = width / 2;       // extrusion height, mm (family rule)
 
 // ---- string hole (ported family values) ---------------------------------
 // Throat diameter at the centre plane (mm)
-// Bell-mouth diameter at the two entrances (mm): greater of throat*1.2 or height/2
-hole_opening_diameter = max(hole_diameter * 1.2, height / 2);
+R_throat = hole_diameter / 2;
 // Flare arc radius (mm), family rule width/8 (unused: the hole is plain)
 bore_fillet_radius = width / 8;
 // Smooth bore surfaces; the petal outline is polygonal and unaffected by $fn
@@ -154,10 +153,9 @@ hole_entry_x = max(cross_star, cross_circ);
 assert(hole_entry_x > 0, "hole_entry_x must be positive: no +x union crossing of y=0 found");
 
 // the straight bore must clear every wall it can reach
-R_open = hole_opening_diameter / 2;
 wall_span_x = max(
-    max([for (p = star_pts)   if (abs(p[1]) <= R_open) p[0]]),
-    max([for (p = circle_pts) if (abs(p[1]) <= R_open) p[0]]));
+    max([for (p = star_pts)   if (abs(p[1]) <= R_throat) p[0]]),
+    max([for (p = circle_pts) if (abs(p[1]) <= R_throat) p[0]]));
 hole_len = wall_span_x + extra;
 echo(flower_hole_entry_x = hole_entry_x, flower_cross_star = cross_star,
      flower_cross_stigma = cross_circ, flower_hole_len = hole_len);
@@ -271,7 +269,7 @@ module flower_body() {
 module string_hole() {
     translate([0, 0, height / 2])
         bead_string_hole_plain(
-            R_throat = hole_diameter / 2,
+            R_throat = R_throat,
             hole_len = hole_len);
 }
 

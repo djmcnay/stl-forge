@@ -16,7 +16,7 @@
     width      enclosing-circle diameter of the heart face (mm)
     roundness  dial 1..10 (default 5): 1 = sharp/elongated, 10 = full bubble.
                Mapped to the generator's 0..1 profile blend.
-    height     extrusion height = width / 2.2 (computed)
+    height     extrusion height = width / 2 (computed)
 
     Shared mouth: the string hole and its rim treatment are local to this
     file (the heart's wall is not perpendicular to the bore axis, so the
@@ -28,14 +28,11 @@ use <bead_common.scad>
 // ---- parameters -------------------------------------------------------
 width     = 120;
 roundness = 5;                 // 1..10: 1 = sharp/elongated, 10 = full bubble
-height    = width / 2.2;
+height    = width / 2;
 
 // ---- string hole (common family block) ---------------------------------
 // Throat diameter at the centre plane (mm)
 hole_diameter = 20;
-// Bell-mouth diameter at the entrances (mm): max(1.2 * throat, height / 2).
-// Retained for presets; inert now that the mouth is a swept ball fillet.
-hole_opening_diameter = max(hole_diameter * 1.2, height / 2);
 // Flare arc radius (mm): family rule width / 8; retained, unused by the mouth.
 bore_fillet_radius = width / 8;
 // Face fillet radius (mm): quarter-round where each flat face meets the
@@ -43,10 +40,9 @@ bore_fillet_radius = width / 8;
 fillet_radius = width / 12;
 // Derived hole values
 R_throat = hole_diameter / 2;
-R_open = hole_opening_diameter / 2;
 extra = 5;                     // mm bore overshoot past both walls
 // Mouth radius: face-fillet-safe ceiling (height / 2.25) minus the face
-// fillet and the throat radius, floored at 0.5 mm. 4.242 mm at defaults.
+// fillet and the throat radius, floored at 0.5 mm. 6.667 mm at defaults.
 r_mouth_max = (height / 2.25) - (fillet_radius + R_throat);
 r_mouth = max(0.5, min(0.5 * hole_diameter, r_mouth_max));
 
@@ -127,10 +123,7 @@ module heart_in_circle(w = 50, roundness = 0, resolution = 512) {
 roundness01 = clamp01((roundness - 1) / 9);
 
 assert(width > 0, "width must be positive");
-assert(hole_opening_diameter > hole_diameter, "hole_opening_diameter must exceed hole_diameter for a tapered (flared) hole");
-assert(hole_opening_diameter < width, "hole opening must fit within the face");
 assert(hole_diameter < width, "hole throat must fit within the face");
-assert(hole_opening_diameter < height, "hole opening must fit vertically within the bead height");
 assert(fillet_radius > 0, "fillet_radius must be positive");
 assert(fillet_radius <= height / 2, "fillet_radius must be <= height/2 so fillets never overlap");
 
@@ -164,7 +157,7 @@ assert(hole_entry_x > 0, "hole_entry_x must be positive: no +x outline crossing 
 assert(r_mouth > 0, "mouth fillet collapsed: height too small for this hole");
 // the straight bore must clear every wall it can reach (the
 // oblique flank pokes beyond the centre-line crossing):
-hz_wall_span_x = max([for (p = hz_pts) if (abs(p[1]) <= R_open) p[0]]);
+hz_wall_span_x = max([for (p = hz_pts) if (abs(p[1]) <= R_throat + r_mouth) p[0]]);
 hole_len = hz_wall_span_x + extra;
 echo(bead_heart_entry_x = hole_entry_x, bead_heart_r_mouth = r_mouth, bead_heart_hole_len = hole_len);
 

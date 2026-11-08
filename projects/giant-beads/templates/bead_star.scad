@@ -40,9 +40,6 @@ height = width / 2;
 // ---- string hole (common family block) ---------------------------------
 // Throat diameter at the centre plane (mm)
 hole_diameter = 20;
-// Bell-mouth diameter at the entrances (mm): max(1.2 * throat, height / 2).
-// Retained for presets; inert now that the mouth is a swept ball fillet.
-hole_opening_diameter = max(hole_diameter * 1.2, height / 2);
 // Flare arc radius (mm): family rule width / 8; retained, unused by the mouth.
 bore_fillet_radius = width / 8;
 // Face fillet radius (mm): quarter-round where each flat face meets the
@@ -50,7 +47,6 @@ bore_fillet_radius = width / 8;
 fillet_radius = width / 12;
 // Derived hole values
 R_throat = hole_diameter / 2;
-R_open = hole_opening_diameter / 2;
 extra = 5;                     // mm bore overshoot past both walls
 // Mouth radius: same family dial as bead.scad / bead_heart.scad, plus a
 // star wall-safe cap. The star outline runs only ~3.6 mm from the mouth
@@ -515,7 +511,7 @@ hole_entry_x = max([
 assert(hole_entry_x > 0, "hole_entry_x must be positive: no +x outline crossing of y=0 found");
 // the straight bore must clear every wall it can reach (the
 // oblique flank pokes beyond the centre-line crossing):
-wall_span_x = max([for (p = star_pts) if (abs(p[1]) <= R_open) p[0]]);
+wall_span_x = max([for (p = star_pts) if (abs(p[1]) <= R_throat + r_mouth) p[0]]);
 hole_len = wall_span_x + extra;
 echo(star_hole_entry_x = hole_entry_x, star_hole_len = hole_len,
      star_r_mouth = r_mouth);
