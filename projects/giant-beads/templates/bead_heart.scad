@@ -45,9 +45,9 @@ $fn = 128;
 // bead.scad default: fillet_radius = width / 12  ->  10 mm at width 120.
 fillet_radius = width / 12;
 
-// Mouth: a rolling-ball fillet of `mouth_fillet` mm (6.5 mm at defaults,
-// essentially the letter bead's 6.667 mm well - the most this heart's
-// 54.5 mm height allows before the rim reaches the face fillets)
+// Mouth: a rolling-ball fillet of `mouth_fillet` mm, using the letter
+// bead's dial: always a well (>= 0.5 mm), capped so the rim can never
+// reach the face fillets (4.242 mm at the 120 mm default).
 // follows the heart's actual wall - see the "String hole" section below.
 
 // ---- mathematical helpers (verbatim from reference) --------------------
@@ -149,11 +149,11 @@ assert(hole_diameter < width, "hole throat must fit within the face");
 extra = 5;                                   // mm bore overshoot past both walls
 R_throat = hole_diameter / 2;
 R_open = hole_opening_diameter / 2;
-// Rim fillet radius: the ball that rolls the bore/wall edge. 6.5 mm at the
-// default width (the letter bead's well is 6.667); the clamp keeps the
-// swept rim inside the straight wall band, clear of the face fillets, and
-// floors at a token radius so tiny test widths still render.
-mouth_fillet = max(0.05, min(6.5, height / 2 - fillet_radius - R_throat));
+// Rim fillet radius: letter-bead dial (bead.scad) verbatim - face-fillet-safe
+// ceiling minus the throat, default min(hole radius, ceiling), floored at
+// 0.5 mm so a rounded entrance always exists. 4.242 mm at the 120 mm default.
+r_mouth_max  = height / 2.25 - fillet_radius - R_throat;
+mouth_fillet = max(0.5, min(0.5 * hole_diameter, r_mouth_max));
 
 // crossing + local wall frame from the outline vertices (recomputed per
 // bubble): scalar two-pass argmin because max() over vectors is not portable
