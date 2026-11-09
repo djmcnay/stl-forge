@@ -99,7 +99,8 @@ Run the tests: `python3 -m pytest projects/giant-beads/tests -q`
 | `r_mouth_max` | mouth-radius ceiling (mm) | `(height/2.25) - (fillet_radius + R_throat)` |
 | `r_mouth` | mouth radius (mm) | `max(0.5, min(0.5*hole_diameter, r_mouth_max))`; star adds `r_wall_max = width/120` |
 | `face_diameter` | wide spacer top/bottom face diameter (mm) | `(width/2) - 2*(width/12)` = `width/3` (40 at width 120) |
-| `curvature` | spacer shape dial | wide: 2.0 = parabola / banana shallot (1 = straight bicone, >2 fuller); small: 0.75 (0 = flat washer, 1 = full doughnut) |
+| `curvature` | spacer shape dial | wide: 2.0 = parabola / banana shallot (1 = straight bicone, >2 fuller); small: 0.5 = medium doughnut (0 = flat washer, 1 = full doughnut) |
+| `hole_fillet` | small-spacer hole-mouth fillet (mm) | `-1` = match the outer fillet automatically; positive value = independent radius |
 | `$fn` | render resolution | 128 |
 
 `--parts flower` drives `bead_star.scad` with `roundness=20,
@@ -235,21 +236,24 @@ side. It is a double cone / barrel:
 The small spacer is the doughnut: a squat ring with the bore vertical.
 
 - Outer diameter = letter bead height = `width/2` = 60 mm.
-- Bore throat = 20 mm, plain straight vertical bore, **no mouth fillet
-  yet** at either face.
+- Bore throat = 20 mm at its narrowest.
 - Overall height = letter bead height / 2 = `width/4` = 30 mm.
-- Looking down the hole: a Ø60 circle with a Ø20 hole and flat annular
-  top/bottom faces.
+- Looking down the hole: a Ø60 circle with a filleted mouth around the
+  Ø20 throat.
 - `curvature` (0..1) controls the outer edge:
   0 = nearly flat washer with a small outer fillet (`H/8`);
-  1 = fully rounded doughnut, where the two outer fillets meet at
-  mid-height and the outer profile is a semicircle (radius `H/2`);
-  default 0.75 leaves a short vertical outer band.
-- The bore is the same 20 mm throat as the letter bead, so "at its
-  narrowest" is exact. A mouth fillet can be added later without
-  changing the doughnut body.
-- Printed hole-up, the bottom outer fillet is an overhang; lower
-  curvature is flatter and more forgiving, 1.0 is the curviest.
+  1 = full doughnut, where the outer fillet reaches `H/2` (semicircular
+  rim); the default **0.5** is the medium rounded doughnut.
+- The **hole mouth is filleted too**. `hole_fillet` (mm) controls it
+  independently; the default `-1` means "match the outer fillet"
+  automatically. At the default 0.5 both fillets are 9.375 mm and a
+  1.25 mm flat land remains between them. The auto value clamps when
+  the radial wall or half-height cannot fit it (at curvature 1.0 the
+  outer fillet is 15 mm, so the hole fillet auto-clamps to 5 mm). Set
+  `hole_fillet` to a positive mm value for a different inner radius.
+- The throat is still exactly 20 mm; the fillets only flare the mouths.
+- Printed hole-up, the bottom fillet is an overhang; lower curvature
+  is flatter and more forgiving, 1.0 is the curviest.
 
 ## Approved mouth recipe (cylinder letter bead)
 
