@@ -10,9 +10,10 @@ A single-page, native-Gradio workbench for the six-bead family:
 - **Shallot spacer** (`bead_spacer_wide.scad`)
 
 The bear's face, ears, inner ears, eyes and muzzle are traced from the
-supplied Etsy reference as flat ellipses and arcs, then extruded with the
-family fillets. The round nose-and-mouth pad is its **muzzle** (also
-called the snout). The inner-ear shapes are recessed into the front face and clipped by
+supplied Etsy reference as flat ellipses and arcs. The first pass is a
+straight extrusion with a plain bore: the front face stays flat so the
+muzzle and all facial relief are fully supported. The round
+nose-and-mouth pad is its **muzzle** (also called the snout). The inner-ear shapes are recessed into the front face and clipped by
 the head outline, so they read as ears disappearing behind the face;
 the eye pads and muzzle are raised; the catchlights, nose and mouth are
 embossed on top. The build-plate face carries shallow contour grooves

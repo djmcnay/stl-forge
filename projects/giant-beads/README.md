@@ -197,12 +197,13 @@ leaves only a 60 mm flat face: `120*0.45 = 54 < 60` fits, while 0.75 ->
 
 The bear uses the letter bead's outer-family rules: `width` is the
 widest part of the cheeks, `height = width / 2` is the body thickness,
-the bore and face fillets keep their family defaults, and the bottom
-stays flat on the build plate. The face is a broad, gently elliptical shape with two large high ear
+the bore is a plain 20 mm tunnel, and the bottom stays flat on the build
+plate. The first pass is a straight extrusion with no face fillet, so
+the approved detail field stays flat and supported. The face is a broad, gently elliptical shape with two large high ear
 lobes; the ears sit outboard of the cheeks, so the overall ear span is
 wider than the family width.  The face, ears,
 inner ears, eyes and muzzle are traced as flat ellipses/arcs from the
-supplied reference and then extruded with the family's face fillets. The inner-ear shapes are a
+supplied reference and extruded straight in this first pass. The inner-ear shapes are a
 shallow recess on the front face, clipped where the head overlaps them; the eye pads and muzzle (the round
 snout carrying the nose and mouth) are raised; catchlights, nose and
 mouth are embossed on top. The build-plate face carries shallow

@@ -1,35 +1,21 @@
 /*
-    BEAD BEAR - a broad, friendly bear face on the family's bead body.
-    ================================================================
+    BEAD BEAR - first-pass extruded face bead.
+    ========================================
 
-    The bear uses the letter bead's outer-family rules: the family width is
-    the widest part of the cheeks, the bead thickness is width / 2, the
-    string-hole throat and face fillets keep the same family defaults, and
-    the bottom stays flat for the build plate.
+    The approved 2D face sketch is extruded straight from the build-plate
+    face to the front face.  There is deliberately NO face fillet in this
+    first pass: the whole front face stays flat, so every raised/recessed
+    detail is supported by the body and cannot overhang the chin.  A
+    softened edge can be added after the print shape is approved.
 
-    Face language (matching the supplied felt-bear illustration):
-      - broad, gently elliptical head with two large round ears overlapping the crown
-      - pink inner-ear shape cut back by the face: shallow recess in the
-        front face and a matching contour etch on the build-plate face
-      - raised oval eye pads with a small raised white catchlight
-      - raised round muzzle ("the round bit" is the muzzle / snout)
-      - raised nose and a raised stitched-looking mouth line
-      - bottom-face contour etches for the inner ears, eyes, pupils,
-        muzzle, nose and mouth, in the same shallow-groove language as the
-        letter bead's bottom letter
+    The string hole is a plain 20 mm bore along X through the side walls.
 
-    The bottom etch keeps the same layout as the front face, so every
-    groove sits directly under the feature it belongs to.  (The bear is
-    left-right symmetric, so looking at the bottom from below reads the
-    same way, just mirrored left-to-right.)
-
-    width       widest part of the cheeks (mm)
-    height      bead thickness = width / 2 (computed)
-    fillet_radius  face fillet = width / 12 (family rule)
-    ear_size    scales both ear lobes and their inner-ear pockets
-    eye_spacing  moves the eyes apart without changing their size
-    muzzle_size  scales the muzzle and its nose/mouth details
-    detail_relief  scales the raised/recessed front-face relief
+    Width       widest part of the cheeks (mm)
+    height      body thickness = width / 2 (mm)
+    ear_size    scales the ear lobes and inner-ear pockets
+    eye_spacing moves the eyes apart
+    muzzle_size scales the muzzle, nose and mouth
+    detail_relief scales the raised/recessed face detail heights
 */
 use <bead_common.scad>
 
@@ -37,383 +23,231 @@ use <bead_common.scad>
 width = 120;
 height = width / 2;
 
-// ---- string hole (common family block) ---------------------------------
 hole_diameter = 20;
-// Flare arc radius: family rule width / 8; retained, unused by the mouth.
-bore_fillet_radius = width / 8;
-// Quarter-round face fillet: family rule width / 12.
-fillet_radius = width / 12;
-
-// ---- bear shape dials --------------------------------------------------
-ear_size = 1.0;                // 0.80..1.20, ear lobe + inner-ear scale
-eye_spacing = 1.0;             // 0.80..1.20, eye centre spacing
-muzzle_size = 1.0;             // 0.85..1.15, muzzle/nose/mouth scale
-detail_relief = 1.0;           // 0.50..1.50, front-face relief scale
-
-// Derived hole values
+bore_fillet_radius = width / 8;   // retained family name; plain bore here
+fillet_radius = width / 12;       // retained family name; no face fillet yet
 R_throat = hole_diameter / 2;
-extra = 5;                     // mm bore overshoot past both walls
-r_mouth_max = (height / 2.25) - (fillet_radius + R_throat);
-r_mouth = max(0.5, min(0.5 * hole_diameter, r_mouth_max));
+extra = 5;
 
-// Smooth surfaces, still fast.
+ear_size = 1.0;
+eye_spacing = 1.0;
+muzzle_size = 1.0;
+detail_relief = 1.0;
+
 $fn = 128;
 
 // ---- sanity checks -----------------------------------------------------
 assert(width > 0, "width must be positive");
 assert(hole_diameter < width, "hole throat must fit within the face");
-assert(fillet_radius > 0, "fillet_radius must be positive");
-assert(fillet_radius <= height / 2, "fillet_radius must be <= height/2");
 assert(ear_size > 0, "ear_size must be positive");
 assert(eye_spacing > 0, "eye_spacing must be positive");
 assert(muzzle_size > 0, "muzzle_size must be positive");
 assert(detail_relief > 0, "detail_relief must be positive");
 
-// ---- primary face proportions -----------------------------------------
 R = width / 2;
 H = height;
-c = fillet_radius;
+c = fillet_radius;                 // reserved; not used in this pass
 
-// Measured from the supplied Etsy reference (face width = 2R):
-//   face ellipse       width 2R, reference height 1.714R;
-//                      the user-requested extra ellipse uses 1.640R
-//   ear span           2.192R, ear tops at 1.036R above centre
-//   inner ear          near-circle 0.392R diameter, cut back by the face
-//   eyes              0.272R x 0.318R ovals, centres at y = -0.012R
-//   muzzle             0.906R x 0.732R ellipse, centre y = -0.394R
-face_ry = 0.820 * R;
-face_cy = 0.0;
+// ---- approved face-sketch proportions ---------------------------------
+// Traced from the supplied reference and normalised to width = 2R.
+face_rx = 1.000 * R;
+face_widest_y = -0.1893 * R;
+face_top = 0.8895 * R;
+face_bottom = -0.9172 * R;
+upper_h = face_top - face_widest_y;
+lower_h = face_widest_y - face_bottom;
 
-// Large high ears, centred just outboard of the cheeks.
-ear_r = 0.386 * R * ear_size;
-ear_x = 0.710 * R;
-ear_y = 0.650 * R;
-// The inner-ear recess is nearly circular, centred slightly low in the ear.
-// It is cut by the face outline below, so it reads as a shape that disappears
-// behind the head instead of an oval floating on the cheek.
-inner_ear_r = min(0.196 * R * ear_size,
-                  ear_r - fillet_radius - 0.6);
-inner_ear_etch_r = min(inner_ear_r,
-                       ear_r - fillet_radius - 1.2);
-inner_ear_dx = 0.006 * R;
-inner_ear_dy = -0.030 * R;
+ear_r = 0.4137 * R * ear_size;
+ear_x = 0.7610 * R;
+ear_y = 0.6967 * R;
 
-// Eyes are large oval pads at the vertical centre, close to the muzzle.
-eye_x = 0.408 * R * eye_spacing;
-eye_y = -0.012 * R;
-eye_r = 0.136 * R;
-eye_y_scale = 1.17;
-catchlight_r = 0.020 * R;
-catchlight_dx = 0.030 * R;
-catchlight_dy = 0.075 * R;
+inner_r = 0.2102 * R * ear_size;
+inner_dx = 0.0322 * R;
+inner_dy = 0.0322 * R;
 
-// The round bit around the nose and mouth is the muzzle: a wide cream
-// ellipse.  Nose and mouth sit in its upper half.
-muzzle_cy = -0.394 * R;
-muzzle_rx = 0.453 * R * muzzle_size;
-muzzle_ry = 0.366 * R * muzzle_size;
+eye_x = 0.4373 * R * eye_spacing;
+eye_y = -0.0128 * R;
+eye_rx = 0.1458 * R;
+eye_ry = 0.1707 * R;
+
+pupil_rx = 0.0375 * R;
+pupil_ry = 0.0537 * R;
+pupil_dx = 0.0322 * R;
+pupil_dy = 0.0803 * R;
+
+muzzle_cy = -0.4127 * R;
+muzzle_rx = 0.4855 * R * muzzle_size;
+muzzle_ry = 0.3698 * R * muzzle_size;
+
+nose_cy = muzzle_cy + 0.1640 * R * muzzle_size;
+nose_rx = 0.1832 * R * muzzle_size;
+nose_ry = 0.1275 * R * muzzle_size;
+
+// Mouth: one vertical stem into TWO U-shaped smiles, both meeting at
+// the centre.  All y values are local to the muzzle centre.
+mouth_top = 0.0365 * R;
+mouth_mid = -0.1233 * R;
+mouth_ctrl_y = -0.1983 * R;
+mouth_tip_y = -0.1115 * R;
+mouth_tip_x = 0.1833 * R;
+mouth_ctrl_x = 0.0912 * R;
+mouth_w = 0.025 * R;
+
+// Feature heights
+inner_recess = 1.2 * detail_relief;
+eye_raise = 1.1 * detail_relief;
+pupil_raise = 0.45 * detail_relief;
+muzzle_raise = 1.1 * detail_relief;
 nose_raise = 0.55 * detail_relief;
 mouth_raise = 0.45 * detail_relief;
-
-// Front-face relief amounts.
-inner_ear_recess = 1.20 * detail_relief;
-eye_raise = 1.10 * detail_relief;
-catchlight_raise = 0.45 * detail_relief;
-muzzle_raise = 1.10 * detail_relief;
-
-// Bottom etch mirrors the letter bead's shallow contour-groove language.
 etch_depth = 1.0;
 etch_width = 0.8;
 
-// ---- 2D outline --------------------------------------------------------
-module _face_2d() {
-    translate([0, face_cy])
-        scale([1, face_ry / R])
-            circle(r = R);
+// ---- face outline: upper and lower half-ellipse (egg) -----------------
+function face_pts(n = 160) = concat(
+    [for (i = [0:n])
+        let(a = 180 - 180 * i / n)
+            [face_rx * cos(a), face_widest_y + upper_h * sin(a)]],
+    [for (i = [1:n])
+        let(a = -180 * i / n)
+            [face_rx * cos(a), face_widest_y + lower_h * sin(a)]]
+);
+
+module face_2d() {
+    polygon(points = face_pts());
 }
 
-module bear_outline_2d() {
+module outer_2d() {
     union() {
-        _face_2d();
+        face_2d();
         translate([ ear_x, ear_y]) circle(r = ear_r);
         translate([-ear_x, ear_y]) circle(r = ear_r);
     }
 }
 
-// Inner ears: the pink felt shapes, also used for the bottom etch.
-module inner_ears_2d(r = inner_ear_r) {
+// Inner ears are full circles cut back by the head, so they read as
+// shapes disappearing behind the face rather than ovals on the cheek.
+module inner_ears_2d(r = inner_r) {
     difference() {
         union() {
-            for (s = [-1, 1])
-                translate([s * (ear_x - inner_ear_dx), ear_y + inner_ear_dy])
-                    circle(r = r);
+            translate([ ear_x - inner_dx, ear_y - inner_dy]) circle(r = r);
+            translate([-ear_x + inner_dx, ear_y - inner_dy]) circle(r = r);
         }
-        // The head is in front of the ear, so the inner-ear recess is cut
-        // off cleanly where it meets the face, leaving a clipped shape
-        // rather than an oval floating on the cheek.
-        _face_2d();
+        face_2d();
     }
 }
 
-// Eyes: oval black pads.  The catchlights are separate small raised dots.
-module eye_pad_2d(side) {
-    translate([side * eye_x, eye_y])
-        scale([1, eye_y_scale])
-            circle(r = eye_r);
-}
-
 module eyes_2d() {
-    eye_pad_2d(-1);
-    eye_pad_2d(1);
-}
-
-module catchlights_2d() {
     for (s = [-1, 1])
-        translate([s * eye_x + catchlight_dx, eye_y + catchlight_dy])
-            circle(r = catchlight_r);
+        translate([s * eye_x, eye_y])
+            scale([1, eye_ry / eye_rx])
+                circle(r = eye_rx);
 }
 
-// Muzzle / snout, nose and mouth are built in muzzle-local coordinates so
-// the muzzle_size dial scales the whole expression coherently.
+module pupils_2d() {
+    for (s = [-1, 1])
+        translate([s * eye_x + pupil_dx, eye_y + pupil_dy])
+            scale([1, pupil_ry / pupil_rx])
+                circle(r = pupil_rx);
+}
+
 module muzzle_2d() {
     translate([0, muzzle_cy])
-        scale([muzzle_rx / (0.453 * R), muzzle_ry / (0.366 * R)])
-            circle(r = 0.453 * R);
+        scale([1, muzzle_ry / muzzle_rx])
+            circle(r = muzzle_rx);
 }
 
 module nose_2d() {
-    translate([0, muzzle_cy])
-        scale([muzzle_size, muzzle_size])
-            translate([0, 0.153 * R])
-                scale([1, 0.696])
-                    circle(r = 0.171 * R);
+    translate([0, nose_cy])
+        scale([1, nose_ry / nose_rx])
+            circle(r = nose_rx);
 }
 
 function _qbez(p0, p1, p2, t) =
     let(u = 1 - t)
-    [
-        u * u * p0[0] + 2 * u * t * p1[0] + t * t * p2[0],
-        u * u * p0[1] + 2 * u * t * p1[1] + t * t * p2[1]
-    ];
+    [u * u * p0[0] + 2 * u * t * p1[0] + t * t * p2[0],
+     u * u * p0[1] + 2 * u * t * p1[1] + t * t * p2[1]];
+
+module _mouth_capsule(p0, p1) {
+    hull() {
+        translate(p0) circle(r = mouth_w / 2);
+        translate(p1) circle(r = mouth_w / 2);
+    }
+}
 
 module mouth_2d() {
     translate([0, muzzle_cy])
         scale([muzzle_size, muzzle_size]) {
-            line_w = 0.023 * R;
-            // Short stem down from the nose, then the two soft "w" arcs.
-            hull() {
-                translate([0, 0.034 * R]) circle(r = line_w / 2);
-                translate([0, -0.106 * R]) circle(r = line_w / 2);
-            }
-            for (s = [-1, 1]) {
-                n = 18;
-                for (i = [0 : n - 1]) {
-                    p0 = _qbez(
-                        [0, -0.106 * R],
-                        [s * 0.090 * R, -0.190 * R],
-                        [s * 0.170 * R, -0.150 * R],
-                        i / n);
-                    p1 = _qbez(
-                        [0, -0.106 * R],
-                        [s * 0.090 * R, -0.190 * R],
-                        [s * 0.170 * R, -0.150 * R],
-                        (i + 1) / n);
-                    hull() {
-                        translate([p0[0], p0[1]]) circle(r = line_w / 2);
-                        translate([p1[0], p1[1]]) circle(r = line_w / 2);
-                    }
-                }
+            // central stem
+            _mouth_capsule([0, mouth_top], [0, mouth_mid]);
+            // two separate U-shaped smiles meeting at the centre
+            for (side = [-1, 1]) {
+                n = 24;
+                for (i = [0 : n - 1])
+                    _mouth_capsule(
+                        _qbez([0, mouth_mid],
+                              [side * mouth_ctrl_x, mouth_ctrl_y],
+                              [side * mouth_tip_x, mouth_tip_y],
+                              i / n),
+                        _qbez([0, mouth_mid],
+                              [side * mouth_ctrl_x, mouth_ctrl_y],
+                              [side * mouth_tip_x, mouth_tip_y],
+                              (i + 1) / n));
             }
         }
 }
 
-// ---- raised/recessed 2D helper ----------------------------------------
-// A shallow bevelled raise.  The top few slices shrink toward the centre,
-// so the feature reads as a soft pad rather than a vertical-walled decal.
-module raised_2d(h, bevel = 0.25) {
-    base = max(0.01, h - bevel);
-    linear_extrude(height = base)
-        children();
-    for (k = [0 : 2])
-        translate([0, 0, base + bevel * k / 3])
-            linear_extrude(height = bevel / 3 + 0.002)
-                offset(r = -bevel * (k + 1) / 3)
-                    children();
-}
-
-// ---- body: extruded outline + the family's face fillets ----------------
-n_fillet = 32;
-fillet_u = [for (i = [0 : n_fillet]) c - c * cos(-90 + 90 * i / n_fillet)];
-fillet_z = [for (i = [0 : n_fillet]) c + c * sin(-90 + 90 * i / n_fillet)];
-
-module bear_solid() {
-    union() {
-        // bottom fillet
-        for (i = [0 : n_fillet - 1])
-            translate([0, 0, fillet_z[i]])
-                linear_extrude(height = fillet_z[i + 1] - fillet_z[i])
-                    offset(r = -fillet_u[i])
-                        bear_outline_2d();
-        // straight side wall
-        if (H - 2 * c > 0.001)
-            translate([0, 0, c])
-                linear_extrude(height = H - 2 * c)
-                    bear_outline_2d();
-        // top fillet
-        for (k = [0 : n_fillet - 1])
-            translate([0, 0, H - fillet_z[k + 1]])
-                linear_extrude(height = fillet_z[k + 1] - fillet_z[k])
-                    offset(r = -fillet_u[k])
-                        bear_outline_2d();
-    }
-}
-
-// ---- string hole: straight bore + swept ball-fillet mouth --------------
-// The bear's cheek wall is curved in plan, so the heart/star rolling-ball
-// mouth is used rather than the letter's revolved well.
-function face_x_at(y) =
-    R * sqrt(max(0, 1 - pow((y - face_cy) / face_ry, 2)));
-
-function wall_x_at(y) = face_x_at(y);
-
-function wall_n_at(y) =
-    let(e = 0.5,
-        p0 = [wall_x_at(y - e), y - e],
-        p1 = [wall_x_at(y + e), y + e],
-        tx = p1[0] - p0[0],
-        ty = p1[1] - p0[1],
-        m = sqrt(tx * tx + ty * ty))
-        [ty / m, -tx / m, 0];
-
-function vsub(a, b) = [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
-function vadd(a, b) = [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
-function vmul(a, s) = [a[0] * s, a[1] * s, a[2] * s];
-function vdot(a, b) = a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-
-hole_entry_x = face_x_at(0);
-assert(hole_entry_x > 0, "hole_entry_x must be positive");
-assert(r_mouth > 0, "mouth fillet collapsed: height too small for this hole");
-
-mf_r = r_mouth;
-mf_n = 240;
-mf_arc = 16;
-mf_th = [for (i = [0 : mf_n - 1]) 360 * i / mf_n];
-mf_E = [for (a = mf_th)
-    [wall_x_at(R_throat * cos(a)), R_throat * cos(a),
-     H / 2 + R_throat * sin(a)]];
-mf_nb = [for (a = mf_th) [0, cos(a), sin(a)]];
-mf_nw = [for (a = mf_th) wall_n_at(R_throat * cos(a))];
-mf_c0 = [for (i = [0 : mf_n - 1]) vdot(mf_nb[i], mf_nw[i])];
-mf_s0 = [for (i = [0 : mf_n - 1]) sqrt(max(1e-9, 1 - mf_c0[i] * mf_c0[i]))];
-mf_e2 = [for (i = [0 : mf_n - 1])
-    vmul(vsub(mf_nw[i], vmul(mf_nb[i], mf_c0[i])), 1 / mf_s0[i])];
-
-function mf_sec(i) =
-    let(c0 = mf_c0[i], s0 = mf_s0[i], e1 = mf_nb[i], e2 = mf_e2[i],
-        th = acos(max(-1, min(1, c0))),
-        b_c = -mf_r * (1 + c0) / s0)
-    concat(
-        [mf_E[i]],
-        [for (k = [0 : mf_arc])
-            let(phi = 180 - (180 - th) * k / mf_arc)
-                vadd(mf_E[i],
-                     vadd(vmul(e1, mf_r * (1 + cos(phi))),
-                          vmul(e2, b_c + mf_r * sin(phi))))]
-    );
-
-mf_w = mf_arc + 2;
-mf_pts = [for (i = [0 : mf_n - 1]) each mf_sec(i)];
-mf_faces = [for (i = [0 : mf_n - 1])
-    for (j = [0 : mf_w - 1])
-        let(a = i * mf_w + j,
-            b = i * mf_w + (j + 1) % mf_w,
-            c = ((i + 1) % mf_n) * mf_w + (j + 1) % mf_w,
-            d = ((i + 1) % mf_n) * mf_w + j)
-        each [[a, b, c], [a, c, d]]];
-
-module mf_cutter() {
-    polyhedron(points = mf_pts, faces = mf_faces, convexity = 10);
-}
-
-module string_hole() {
-    translate([0, 0, H / 2])
-        rotate([0, 90, 0])
-            cylinder(h = 2 * (hole_entry_x + extra), r = R_throat, center = true);
-    mf_cutter();
-    mirror([1, 0, 0]) mf_cutter();
-}
-
-// ---- bottom etch -------------------------------------------------------
-// Contour grooves in the same layout as the front face, so each groove sits
-// directly under the feature it belongs to.
+// ---- bottom-face etch -------------------------------------------------
 module _etch_ring(w) {
     difference() {
         children();
-        offset(r = -w)
-            children();
+        offset(r = -w) children();
     }
 }
 
 module bottom_etch_2d() {
-    // inner ears
-    _etch_ring(min(etch_width, inner_ear_etch_r * 0.35))
-        inner_ears_2d(inner_ear_etch_r);
-    // eyes
-    _etch_ring(min(etch_width, eye_r * 0.35))
-        eyes_2d();
-    // pupils / catchlights
-    _etch_ring(min(etch_width, catchlight_r * 0.35))
-        catchlights_2d();
-    // muzzle
-    _etch_ring(min(etch_width, muzzle_rx * 0.25))
-        muzzle_2d();
-    // nose
-    _etch_ring(min(etch_width, 0.052 * R * muzzle_size * 0.55))
-        nose_2d();
-    // mouth: a line feature, so the groove follows the line itself rather
-    // than trying to leave an impossibly thin island inside it.
+    _etch_ring(min(etch_width, inner_r * 0.35)) inner_ears_2d();
+    _etch_ring(etch_width) eyes_2d();
+    _etch_ring(min(etch_width, pupil_rx * 0.30)) pupils_2d();
+    _etch_ring(etch_width) muzzle_2d();
+    _etch_ring(etch_width) nose_2d();
+    // The mouth is a line feature: a shallow groove follows the line.
     mouth_2d();
 }
 
-// ---- assembled bead ----------------------------------------------------
-module _bear_body() {
+// ---- solid -------------------------------------------------------------
+module bear_body() {
     difference() {
-        bear_solid();
-        string_hole();
-        // pink inner-ear recess on the front face
-        translate([0, 0, H - inner_ear_recess])
-            linear_extrude(height = inner_ear_recess + 0.5)
+        linear_extrude(height = H) outer_2d();
+        // plain string-hole bore along X, centred at mid-thickness
+        translate([0, 0, H / 2])
+            rotate([0, 90, 0])
+                cylinder(h = 2 * (R + extra), r = R_throat, center = true);
+        // inner-ear pockets on the front face
+        translate([0, 0, H - inner_recess])
+            linear_extrude(height = inner_recess + 0.5)
                 inner_ears_2d();
-        // shallow build-plate-face etch
+        // shallow build-plate etch
         translate([0, 0, -0.5])
             linear_extrude(height = etch_depth + 0.5)
                 bottom_etch_2d();
     }
 }
 
-module _bear_details() {
-    // eyes
+module bear_details() {
     translate([0, 0, H])
-        raised_2d(eye_raise, 0.30)
-            eyes_2d();
-    // white catchlights sit on top of the eye pads
+        linear_extrude(height = eye_raise) eyes_2d();
     translate([0, 0, H + eye_raise])
-        raised_2d(catchlight_raise, 0.12)
-            catchlights_2d();
-    // muzzle
+        linear_extrude(height = pupil_raise) pupils_2d();
     translate([0, 0, H])
-        raised_2d(muzzle_raise, 0.35)
-            muzzle_2d();
-    // nose and mouth sit on the raised muzzle
+        linear_extrude(height = muzzle_raise) muzzle_2d();
     translate([0, 0, H + muzzle_raise])
-        raised_2d(nose_raise, 0.16)
-            nose_2d();
+        linear_extrude(height = nose_raise) nose_2d();
     translate([0, 0, H + muzzle_raise])
-        raised_2d(mouth_raise, 0.10)
-            mouth_2d();
+        linear_extrude(height = mouth_raise) mouth_2d();
 }
 
 union() {
-    _bear_body();
-    _bear_details();
+    bear_body();
+    bear_details();
 }
