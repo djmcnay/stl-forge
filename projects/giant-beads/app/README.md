@@ -78,13 +78,15 @@ into `~/Downloads` itself.
 
 ## Design notes
 
-- Native Gradio components only. The theme is a `gr.themes.Base`
-  subclass in `theme.py` using the house palette (warm paper / deep
-  green-black / one brass accent), plus a small tier-2 CSS block for the
-  bead picker, viewer frame, monospace metadata, and a warm filter on the
-  Model3D canvas. No custom HTML or JavaScript.
-- The Model3D canvas filter desaturates and warms Gradio's default
-  lavender mesh so it sits with the brass accent rather than fighting it.
+- Native Gradio components only. The default house theme is **Aurora
+  Hex**: midnight royal purple, one teal action colour, violet
+  selection, and a lavender-to-mint page wash only in light mode. No
+  orange or brown.
+- `aurora_hex.py` is the reusable theme class shared with the
+  `gradio-design` skill. `theme.py` subclasses it and appends only the
+  bead-picker and viewer CSS. No custom HTML or JavaScript.
+- The viewer stage is aubergine and the mesh keeps its cool lavender
+  default; the old warm brass filter is gone.
 - The viewer toolbar's Undo/Clear buttons are hidden; the app owns the
   render state.
 - The page keeps the working surface first: family size, bead choice,
@@ -96,7 +98,8 @@ into `~/Downloads` itself.
 app/
   app.py          # Blocks layout, state, and event wiring
   family.py       # bead specs, global/override rules, render cache, zip
-  theme.py        # native theme tokens + small CSS
+  aurora_hex.py   # reusable Aurora Hex Gradio theme
+  theme.py        # app subclass: bead-picker and viewer CSS
   shared/scad.py  # OpenSCAD parsing, -D formatting, render, STL probe
 ```
 

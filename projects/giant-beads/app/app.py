@@ -65,6 +65,7 @@ import gradio as gr
 
 PORT = 7863
 TITLE = "Giant beads"
+DEFAULT_VIEWER_CLEAR_COLOR = (0.035, 0.012, 0.06, 1.0)
 
 
 def _make_control(control):
@@ -171,7 +172,11 @@ def _make_reset_function(bead):
     return reset
 
 
-def build_demo() -> gr.Blocks:
+def build_demo(
+    viewer_clear_color: tuple[float, float, float, float] = (
+        DEFAULT_VIEWER_CLEAR_COLOR
+    ),
+) -> gr.Blocks:
     boot_state = default_state()
     try:
         boot_result = render_bead(boot_state, boot_state["selected"])
@@ -269,7 +274,7 @@ def build_demo() -> gr.Blocks:
                     model3d = gr.Model3D(
                         value=boot_stl,
                         display_mode="solid",
-                        clear_color=(0.06, 0.09, 0.07, 1.0),
+                        clear_color=viewer_clear_color,
                         height=560,
                         show_label=False,
                         interactive=True,

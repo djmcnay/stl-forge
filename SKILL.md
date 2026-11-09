@@ -471,10 +471,12 @@ The app venv is Gradio 6.31.0. If that venv\'s python dies with
 venv python (`~/.hermes/hermes-agent/venv/bin/python projects/giant-beads/app/app.py`)
 and repair the app venv in a quiet moment.
 
-The UI uses native components only. `app/theme.py` is a
-`gr.themes.Base` subclass with the house palette plus a small tier-2
-CSS block (bead picker cards, viewer frame, monospace metadata, and a
-warm filter on the Model3D canvas); custom HTML and JavaScript are
+The UI uses native components only. `app/aurora_hex.py` is the
+reusable default house theme (Aurora Hex: midnight purple ground, teal
+action, violet selection, lavender/mint light-mode wash); `app/theme.py`
+subclasses it and adds only bead-picker and viewer CSS. There is no
+orange or brown, and no warm filter: the Model3D stage is aubergine and
+the mesh keeps Gradio's cool lavender. Custom HTML and JavaScript are
 still out of bounds. The viewer's own Undo/Clear toolbar is hidden so
 the app state stays authoritative. Renders land ONLY in gitignored
 `projects/giant-beads/app/.render-scratch/`. File defaults come from
