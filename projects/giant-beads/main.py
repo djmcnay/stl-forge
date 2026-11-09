@@ -42,11 +42,16 @@ import forge  # noqa: E402  (utilities/ renderer/packager)
 
 TEMPLATES_DIR = PROJECT_DIR / "templates"
 PRESETS_FILE = PROJECT_DIR / "presets.json"
+PARAM_DEFAULTS_FILE = PROJECT_DIR / "param-defaults.json"
 WORD_BASE_PRESET = "bead_default"
 SPEC_KEYS = {"letters", "parts", "width", "save_to", "preset"}
 
-DEFAULT_WIDTH = 120
-DEFAULT_WORD_GAP = 10.0
+# Canonical defaults snapshot: main.py reads its own CLI defaults from here
+# (templates keep their local defaults in .scad; the JSON is the contract and
+# is checked against them by the test suite).
+PARAM_DEFAULTS = json.loads(PARAM_DEFAULTS_FILE.read_text(encoding="utf-8"))
+DEFAULT_WIDTH = int(PARAM_DEFAULTS["main_defaults"]["width"])
+DEFAULT_WORD_GAP = float(PARAM_DEFAULTS["main_defaults"]["word_gap"])
 STL_MIN_BYTES = forge.STL_MIN_BYTES
 
 # --parts mapping: part name -> (template filename, -D overrides).
@@ -308,7 +313,8 @@ def parse_args(argv=None):
                         " row-layout STL beads_<WORD>.stl (e.g. 'C A M I L A')"
                         " with a clear 10 mm gap")
     p.add_argument("--parts", default=None,
-                   help="comma list of heart,star,flower (harmless if empty)")
+                   help="comma list of heart,star,flower,spacer_wide,"
+                        "spacer_small (harmless if empty)")
     p.add_argument("--preset", default=None,
                    help="render one bead preset from the project's"
                         " presets.json (bead_D / bead_default / bead_smooth)")

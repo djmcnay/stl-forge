@@ -1,5 +1,6 @@
 """Spec parsing / normalisation tests for giant-beads main.py (no renders)."""
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -7,6 +8,60 @@ import pytest
 from conftest import load_main, PROJECT_DIR
 
 gbmain = load_main()
+
+PARAM_DEFAULTS = json.loads(
+    (PROJECT_DIR / "param-defaults.json").read_text(encoding="utf-8"))
+TEMPLATE_DEFAULTS = {
+    "bead_scad": "bead.scad",
+    "bead_heart_scad": "bead_heart.scad",
+    "bead_star_scad": "bead_star.scad",
+    "bead_flower_scad": "bead_flower.scad",
+    "bead_spacer_wide_scad": "bead_spacer_wide.scad",
+    "bead_spacer_small_scad": "bead_spacer_small.scad",
+}
+
+
+# --- defaults JSON is the family contract --------------------------------
+
+def test_param_defaults_cover_every_owned_template():
+    for key, template in TEMPLATE_DEFAULTS.items():
+        assert key in PARAM_DEFAULTS, f"param-defaults.json missing {key}"
+        assert (PROJECT_DIR / "templates" / template).is_file(), template
+
+
+def test_param_defaults_have_the_common_family_names():
+    common = ("width", "height", "hole_diameter", "bore_fillet_radius",
+              "fillet_radius", "R_throat", "$fn")
+    for key in TEMPLATE_DEFAULTS:
+        entry = PARAM_DEFAULTS[key]
+        for name in common:
+            assert name in entry, f"{key} missing common param {name}"
+
+
+def test_spacers_share_the_aligned_names():
+    wide = PARAM_DEFAULTS["bead_spacer_wide_scad"]
+    small = PARAM_DEFAULTS["bead_spacer_small_scad"]
+    aligned = ("width", "height", "hole_diameter", "outer_diameter",
+               "R_out", "R_throat", "curvature", "$fn")
+    for name in aligned:
+        assert name in wide, f"wide spacer missing aligned param {name}"
+        assert name in small, f"small spacer missing aligned param {name}"
+
+
+def test_main_defaults_are_read_from_the_json():
+    assert gbmain.DEFAULT_WIDTH == PARAM_DEFAULTS["main_defaults"]["width"]
+    assert gbmain.DEFAULT_WORD_GAP == PARAM_DEFAULTS["main_defaults"]["word_gap"]
+
+
+def test_templates_declare_the_common_parameter_names():
+    common = ("width", "height", "hole_diameter", "bore_fillet_radius",
+              "fillet_radius", "R_throat", "$fn")
+    for key, template in TEMPLATE_DEFAULTS.items():
+        text = (PROJECT_DIR / "templates" / template).read_text(
+            encoding="utf-8")
+        for name in common:
+            assert re.search(rf"(?m)^{re.escape(name)}\s*=", text), \
+                f"{template} does not declare {name}"
 
 
 # --- letters: normalisation + unique-letter dedup, order preserved -------

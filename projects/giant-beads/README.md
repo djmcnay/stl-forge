@@ -85,22 +85,28 @@ Run the tests: `python3 -m pytest projects/giant-beads/tests -q`
 
 ## Bead-family parameters
 
+`param-defaults.json` is the canonical defaults contract. `main.py` reads
+its `main_defaults.width` and `main_defaults.word_gap` from that file, and
+`tests/test_spec_and_naming.py` checks that every owned template is listed,
+declares the common parameter names, and matches the JSON's spacer and
+common keys. Change a template default and the JSON in the same commit.
+
 | param | meaning | default / rule |
 |---|---|---|
 | `width` | enclosing-circle / cylinder outer diameter of the face (mm) | 120 — positive INTEGRAL mm only (fractional/bad values exit 2, never silently truncated) |
 | `roundness` | shape dial | heart 1..10 (default 5; 10 = full bubble); star 1..20 (default 12) |
 | `points` | star tip count | 5 |
 | `petal_depth` | star valley-depth dial 1..10 | 3 |
-| `height` | extrusion, derived | all three beads `width/2` (=60 at width 120) |
+| `height` | extrusion / overall height, derived | letter/heart/star/flower `width/2` (=60); wide spacer `width` (=120); small spacer `width/4` (=30) |
 | `hole_diameter` | string-hole throat diameter at the centre plane (mm) | 20 |
+| `outer_diameter` | widest/outer diameter of a spacer (mm) | both spacers: letter bead height = `width/2` (=60 at width 120) |
 | `bore_fillet_radius` | flare arc (mm) | `width/8` — retained, unused by the current mouths |
-| `fillet_radius` | face quarter-round (mm) | `width/12` (=10 at width 120) |
+| `fillet_radius` | face quarter-round (mm) | `width/12` (=10 at width 120); flower petals use `width/4` |
 | `R_throat` | throat radius (mm) | `hole_diameter/2` |
-| `r_mouth_max` | mouth-radius ceiling (mm) | `(height/2.25) - (fillet_radius + R_throat)` |
-| `r_mouth` | mouth radius (mm) | `max(0.5, min(0.5*hole_diameter, r_mouth_max))`; star adds `r_wall_max = width/120` |
+| `r_mouth_max` | mouth-radius ceiling (mm) | letter/heart/star: `(height/2.25) - (fillet_radius + R_throat)`; small spacer: `min(H/2, R_out - R_throat - outer_fillet)` |
+| `r_mouth` | mouth radius (mm) | letter/heart/star: `max(0.5, min(0.5*hole_diameter, r_mouth_max))`; star adds `r_wall_max = width/120`; small spacer: `-1` = auto-match the outer fillet, effective value in `r_mouth_eff` |
 | `face_diameter` | wide spacer top/bottom face diameter (mm) | `(width/2) - 2*(width/12)` = `width/3` (40 at width 120) |
 | `curvature` | spacer shape dial | wide: 2.0 = parabola / banana shallot (1 = straight bicone, >2 fuller); small: 0.5 = medium doughnut (0 = flat washer, 1 = full doughnut) |
-| `hole_fillet` | small-spacer hole-mouth fillet (mm) | `-1` = match the outer fillet automatically; positive value = independent radius |
 | `$fn` | render resolution | 128 |
 
 `--parts flower` drives `bead_star.scad` with `roundness=20,
@@ -221,7 +227,7 @@ side. It is a double cone / barrel:
 - Hole throat 20 mm, plain straight bore, **no mouth fillet yet** at
   either end.
 - The side is a parabola by default — the banana-shallot profile:
-  `r(z) = R_max - (R_max - R_face) * abs(1 - 2*z/H)^curvature`,
+  `r(z) = R_out - (R_out - R_face) * abs(1 - 2*z/H)^curvature`,
   with `curvature = 2`. The widest point at mid-height is smooth, and
   the ends taper into the flat faces. `curvature = 1` is a straight
   bicone; values above 2 keep the middle fuller and steepen the taper
@@ -244,13 +250,14 @@ The small spacer is the doughnut: a squat ring with the bore vertical.
   0 = nearly flat washer with a small outer fillet (`H/8`);
   1 = full doughnut, where the outer fillet reaches `H/2` (semicircular
   rim); the default **0.5** is the medium rounded doughnut.
-- The **hole mouth is filleted too**. `hole_fillet` (mm) controls it
-  independently; the default `-1` means "match the outer fillet"
-  automatically. At the default 0.5 both fillets are 9.375 mm and a
-  1.25 mm flat land remains between them. The auto value clamps when
-  the radial wall or half-height cannot fit it (at curvature 1.0 the
-  outer fillet is 15 mm, so the hole fillet auto-clamps to 5 mm). Set
-  `hole_fillet` to a positive mm value for a different inner radius.
+- The **hole mouth is filleted too**. `r_mouth` (mm) controls it; the
+  default `-1` means "match the outer fillet" automatically, and the
+  effective value is `r_mouth_eff`. At the default 0.5 both fillets are
+  9.375 mm and a 1.25 mm flat land remains between them. The auto value
+  clamps when the radial wall or half-height cannot fit it (at
+  curvature 1.0 the outer fillet is 15 mm, so `r_mouth_eff` auto-clamps
+  to 5 mm). Set `r_mouth` to a positive mm value for a different inner
+  radius.
 - The throat is still exactly 20 mm; the fillets only flare the mouths.
 - Printed hole-up, the bottom fillet is an overhang; lower curvature
   is flatter and more forgiving, 1.0 is the curviest.

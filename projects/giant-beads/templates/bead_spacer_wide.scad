@@ -15,7 +15,7 @@
         = (width/2) - 2*(width/12) = width/3 = 40 mm
       - hole throat = 20 mm, straight bore, NO mouth fillet yet
       - the side is a parabola by default (the banana-shallot profile):
-        r(z) = R_max - (R_max - R_face)*abs(1 - 2*z/H)^curvature, with
+        r(z) = R_out - (R_out - R_face)*abs(1 - 2*z/H)^curvature, with
         curvature = 2. The widest point at mid-height is smooth; the ends
         taper into the flat faces. curvature = 1 gives a straight bicone,
         >2 gives fuller shoulders. The widest point is smooth for all >= 1.
@@ -53,7 +53,8 @@ curvature = 2.0;
 // ---- derived body dimensions ------------------------------------------
 H = height;
 letter_height = width / 2;     // the letter bead's height
-R_max = letter_height / 2;     // equator radius = half the letter bead height
+outer_diameter = letter_height; // widest diameter = the letter bead height
+R_out = outer_diameter / 2;    // equator radius
 face_diameter = letter_height - 2 * fillet_radius;
 R_face = face_diameter / 2;    // top/bottom face radius
 R_throat = hole_diameter / 2;
@@ -64,7 +65,7 @@ assert(height > 0, "height must be positive");
 assert(fillet_radius > 0, "fillet_radius must be positive");
 assert(curvature >= 1, "curvature must be >= 1 (below 1 the ends cusp)");
 assert(R_face >= R_throat, "face diameter must be at least the hole diameter");
-assert(R_face <= R_max, "face radius must not exceed the equator radius");
+assert(R_face <= R_out, "face radius must not exceed the equator radius");
 
 // Smooth revolved surfaces.
 $fn = 128;
@@ -75,7 +76,7 @@ $fn = 128;
 // mid-height: the banana-shallot silhouette. Larger exponents keep the middle
 // fuller and steepen the taper into the faces; 1 is a straight bicone.
 function barrel_r(z) =
-    R_max - (R_max - R_face) * pow(abs(1 - 2 * z / H), curvature);
+    R_out - (R_out - R_face) * pow(abs(1 - 2 * z / H), curvature);
 
 n_profile = 96;                // profile samples over the full height
 profile = concat(
@@ -101,7 +102,8 @@ module string_hole() {
                 hole_len = H / 2 + extra);
 }
 
-echo(bead_spacer_wide_face_dia = face_diameter,
+echo(bead_spacer_wide_outer_dia = outer_diameter,
+     bead_spacer_wide_face_dia = face_diameter,
      bead_spacer_wide_face_r = R_face,
      bead_spacer_wide_curvature = curvature,
      bead_spacer_wide_width = width,
