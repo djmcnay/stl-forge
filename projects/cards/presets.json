@@ -1,15 +1,16 @@
 {
   "presets": {
     "uno-junior-box": {
-      "card": "uno-junior",
-      "deck_thickness_mm": 15,
-      "wall_mm": 2,
-      "fit_clearance_mm": 0.6,
-      "entry_chamfer_mm": 1,
-      "thumb_arch_diameter_mm": 17.5,
-      "logo_width_mm": 45,
-      "logo_depth_mm": 0.8,
-      "solidcraft": "solidcraft/uno-junior-box.sc"
+      "template": "uno_junior_box.scad",
+      "card_w": 56,
+      "card_h": 87,
+      "deck_t": 15,
+      "wall": 2,
+      "fit": 0.6,
+      "entry_chamfer": 1,
+      "thumb_arch_d": 17.5,
+      "logo_w": 45,
+      "logo_depth": 0.8
     }
   }
 }

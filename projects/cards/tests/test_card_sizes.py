@@ -5,6 +5,7 @@ derived box defaults against drift.
 """
 
 import json
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -79,13 +80,26 @@ def test_preset_matches_the_canonical_defaults():
     preset = load("presets.json")["presets"]["uno-junior-box"]
     box = load("param-defaults.json")["uno_junior_box"]
 
-    for key in (
-        "deck_thickness_mm",
-        "wall_mm",
-        "fit_clearance_mm",
-        "entry_chamfer_mm",
-        "thumb_arch_diameter_mm",
-        "logo_width_mm",
-        "logo_depth_mm",
+    assert preset["template"] == "uno_junior_box.scad"
+    for key, value in box["scad"].items():
+        assert preset[key] == value, key
+
+
+def test_scad_template_defaults_match_the_snapshot():
+    text = (ROOT / "templates" / "uno_junior_box.scad").read_text()
+    defaults = {}
+    for match in re.finditer(
+        r"^\s*([A-Za-z_]\w*)\s*=\s*(-?\d+(?:\.\d+)?)\s*;", text, re.MULTILINE
     ):
-        assert preset[key] == box[key], key
+        defaults[match.group(1)] = float(match.group(2))
+
+    box = load("param-defaults.json")["uno_junior_box"]["scad"]
+    for key, value in box.items():
+        assert defaults[key] == value, key
+
+
+def test_generated_logo_module_is_present():
+    logo = (ROOT / "templates" / "artemis_logo.scad").read_text()
+    assert "module artemis_logo_2d()" in logo
+    assert "ARTEMIS_LOGO_ARTWORK_W = 37.749023;" in logo
+    assert "ARTEMIS_LOGO_ARTWORK_H =" in logo

@@ -55,7 +55,9 @@ Rules (full contract in `AGENTS.md`):
   parametric UNO Junior deck box (56 x 87 mm cards, 15 mm deck, 2 mm
   walls, engraved Artemis logo). Validated card sizes and corner radii
   live in `projects/cards/card-sizes.json`; the model is a SolidCraft
-  design at `projects/cards/solidcraft/uno-junior-box.sc`.
+  design at `projects/cards/solidcraft/uno-junior-box.sc`, with a
+  dimensionally identical OpenSCAD replica in
+  `projects/cards/templates/uno_junior_box.scad`.
 
 - **Box family (utilities example)** — open-top storage boxes via
   `utilities/forge.py`:

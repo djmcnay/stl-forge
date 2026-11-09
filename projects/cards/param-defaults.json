@@ -1,6 +1,6 @@
 {
   "project": "cards",
-  "note": "Canonical defaults for the UNO Junior deck box. Card data lives in card-sizes.json; this file is the box parameter snapshot. Derived values are what the SolidCraft model computes, kept here so a new agent can check the model without opening it.",
+  "note": "Canonical defaults for the UNO Junior deck box, shared by the SolidCraft model (solidcraft/uno-junior-box.sc) and the OpenSCAD template (templates/uno_junior_box.scad). logo_width_mm is the visible Artemis artwork width; the SVG file is 45 mm square with 37.75 mm artwork inside it. The 'scad' block mirrors the template's parameter names exactly.",
   "uno_junior_box": {
     "card": "uno-junior",
     "card_width_mm": 56,
@@ -22,6 +22,17 @@
       "outer_width": 60.6,
       "outer_depth": 19.6,
       "outer_height": 89.6
+    },
+    "scad": {
+      "card_w": 56,
+      "card_h": 87,
+      "deck_t": 15,
+      "wall": 2,
+      "fit": 0.6,
+      "entry_chamfer": 1,
+      "thumb_arch_d": 17.5,
+      "logo_w": 45,
+      "logo_depth": 0.8
     }
   }
 }

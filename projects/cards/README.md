@@ -56,9 +56,9 @@ side is the top, and the large front face carries the Artemis logo.
   8.75 mm tall at its crown.
 - The front face carries `assets/artemis-logo.svg` centred, engraved
   0.8 mm deep. The SVG file is 45 mm square, but its artwork occupies
-  about 37.75 mm x 35.11 mm of that box, so the visible mark is about
-  37.8 mm wide. The black areas of the SVG are cut; the white figure
-  stays flush.
+  about 37.75 mm x 35.11 mm of that box; the model scales the artwork to
+  `logo_w` = 45 mm wide, so the visible mark is 45 mm. The black areas of
+  the SVG are cut; the white figure stays flush.
 - Print orientation: floor on the bed, open top up. No supports. The
   engraving is on a vertical wall.
 
@@ -82,12 +82,16 @@ side is the top, and the large front face carries the Artemis logo.
 | `card-sizes.json` | validated card sizes and corner radii |
 | `param-defaults.json` | canonical box parameter snapshot + derived dimensions |
 | `presets.json` | named preset for the UNO Junior box |
-| `assets/artemis-logo.svg` | 45 mm Artemis SVG (37.8 mm visible artwork; same file as the play-coins logo) |
+| `assets/artemis-logo.svg` | 45 mm Artemis SVG (37.75 mm artwork; scaled to 45 mm visible) |
 | `solidcraft/uno-junior-box.sc` | SolidCraft source model |
 | `solidcraft/uno-junior-box.step` | STEP export for CAD interchange |
-| `stl/uno-junior-box.stl` | print STL (gitignored) |
-| `tests/test_card_sizes.py` | checks the card data and box defaults agree |
-| `templates/`, `tools/`, `.tmp/` | reserved for the OpenSCAD replication / scratch |
+| `templates/uno_junior_box.scad` | OpenSCAD replica |
+| `templates/artemis_logo.scad` | generated 2D logo polygons (do not hand-edit) |
+| `tools/svg_to_scad.py` | SVG -> OpenSCAD converter for the logo |
+| `stl/uno-junior-box.stl` | SolidCraft STL (gitignored) |
+| `stl/uno-junior-box-openscad.stl` | OpenSCAD STL (gitignored) |
+| `tests/test_card_sizes.py` | checks card data, box defaults and SCAD defaults agree |
+| `.tmp/` | scratch (gitignored) |
 
 The printable copy is delivered to `~/Downloads/stl-forge/`.
 
@@ -102,5 +106,38 @@ Change one, rebuild, and the shell, chamfer, thumb arch and logo follow. The
 one exception is the face/edge picks: they are resolved once and then
 follow their edge/face, which is what keeps the model editable.
 
-An OpenSCAD replication is not written yet; this project is a SolidCraft
-design first.
+## OpenSCAD replica
+
+`templates/uno_junior_box.scad` is a dimensionally identical replica of the
+SolidCraft model. The SolidCraft STL measures 27,318.39 mm3 and 4,380
+triangles; the OpenSCAD render measures 27,318.52 mm3 and 3,624 facets, with
+the same 60.6 x 19.6 x 89.6 mm bounding box.
+
+Render it with the repo pipeline:
+
+```bash
+python3 utilities/forge.py \
+    --presets projects/cards/presets.json \
+    --only uno-junior-box \
+    --out /tmp/cards-check
+```
+
+or directly:
+
+```bash
+openscad --export-format=binstl \
+    -o uno-junior-box-openscad.stl \
+    projects/cards/templates/uno_junior_box.scad
+```
+
+The Artemis badge is generated from `assets/artemis-logo.svg` into
+`templates/artemis_logo.scad` by `tools/svg_to_scad.py`; the SVG is line-only,
+so the conversion is exact. Re-run that tool if the SVG changes. The template
+scales the artwork to `logo_w` (45 mm visible), matching the SolidCraft import.
+
+The OpenSCAD template uses the same parameter names as the SolidCraft user
+parameters. Edit the defaults at the top of the template, or pass overrides:
+
+```bash
+openscad -D wall=3 -D deck_t=20 ...
+```
