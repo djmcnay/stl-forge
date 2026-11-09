@@ -13,6 +13,7 @@ PARAM_DEFAULTS = json.loads(
     (PROJECT_DIR / "param-defaults.json").read_text(encoding="utf-8"))
 TEMPLATE_DEFAULTS = {
     "bead_scad": "bead.scad",
+    "bead_bear_scad": "bead_bear.scad",
     "bead_heart_scad": "bead_heart.scad",
     "bead_star_scad": "bead_star.scad",
     "bead_flower_scad": "bead_flower.scad",

@@ -1,6 +1,6 @@
 {
   "project": "giant-beads",
-  "note": "Canonical default snapshot. Common family params: width, height, hole_diameter, bore_fillet_radius, fillet_radius, R_throat, r_mouth_max, r_mouth, $fn. Mouths: letter bead = revolved fillet-well; heart/star = swept ball fillet (star wall-capped); flower = plain bore; wide spacer = plain vertical bore; small spacer = filleted hole mouth and outer edge. Update with any template default change.",
+  "note": "Canonical default snapshot. Common family params: width, height, hole_diameter, bore_fillet_radius, fillet_radius, R_throat, r_mouth_max, r_mouth, $fn. Mouths: letter bead = revolved fillet-well; bear/heart/star = swept ball fillet (star wall-capped); flower = plain bore; wide spacer = plain vertical bore; small spacer = filleted hole mouth and outer edge. Update with any template default change.",
   "bead_scad": {
     "part": "body",
     "width": 120,
@@ -26,6 +26,33 @@
     "letter_outline_width": 0.8,
     "$fn": 128,
     "mouth": "revolved fillet-well (bead_string_hole_well)"
+  },
+  "bead_bear_scad": {
+    "width": 120,
+    "height": 60,
+    "hole_diameter": 20,
+    "bore_fillet_radius": 15,
+    "fillet_radius": 10,
+    "R_throat": 10,
+    "r_mouth_max": 6.667,
+    "r_mouth": 6.667,
+    "ear_size": 1.0,
+    "eye_spacing": 1.0,
+    "muzzle_size": 1.0,
+    "detail_relief": 1.0,
+    "face_ry": 44.4,
+    "face_cy": -3.6,
+    "ear_r": 19.2,
+    "ear_x": 36,
+    "ear_y": 30,
+    "inner_ear_r": 8.4,
+    "eye_x": 20.4,
+    "eye_y": 7.2,
+    "eye_r": 6.0,
+    "muzzle_cy": -16.2,
+    "muzzle_r": 17.4,
+    "$fn": 128,
+    "mouth": "swept ball fillet (local cutter)"
   },
   "bead_heart_scad": {
     "width": 120,

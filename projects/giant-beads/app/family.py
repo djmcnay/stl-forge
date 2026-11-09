@@ -10,11 +10,11 @@ Global family size = width + string-hole diameter.  Every bead inherits
 both; a bead may override either one without changing its siblings.
 Height is a family rule, not a free dial:
 
-    letter / heart / star   height = width / 2
+    letter / bear / heart / star   height = width / 2
     doughnut spacer         height = width / 4
     shallot spacer          height = width
 
-That keeps the five templates proportional and honours the assertions
+That keeps the six templates proportional and honours the assertions
 inside the .scad files.
 """
 from __future__ import annotations
@@ -40,6 +40,7 @@ _TEMPLATE_DEFAULTS = {
     stem: {p.name: p.value for p in scad.parse_template_params(stem)}
     for stem in (
         "bead",
+        "bead_bear",
         "bead_heart",
         "bead_star",
         "bead_spacer_small",
@@ -142,6 +143,39 @@ BEADS: tuple[BeadSpec, ...] = (
                 "Faux bold, millimetres per side.",
                 minimum=0.0, maximum=2.0, step=0.1,
                 default=_td("bead", "letter_bold"),
+            ),
+        ),
+    ),
+    BeadSpec(
+        slug="bear",
+        label="Bear bead",
+        template="bead_bear.scad",
+        blurb="A broad bear face with a raised muzzle and eyes and etched features.",
+        output="giant-bead-bear.stl",
+        controls=(
+            ControlSpec(
+                "ear_size", "slider", "Ear size",
+                "Scales the ears and their inner-ear pockets.",
+                minimum=0.80, maximum=1.20, step=0.05,
+                default=_td("bead_bear", "ear_size"),
+            ),
+            ControlSpec(
+                "eye_spacing", "slider", "Eye spacing",
+                "Moves the eyes apart without changing their size.",
+                minimum=0.80, maximum=1.20, step=0.05,
+                default=_td("bead_bear", "eye_spacing"),
+            ),
+            ControlSpec(
+                "muzzle_size", "slider", "Muzzle size",
+                "Scales the muzzle and its nose and mouth.",
+                minimum=0.85, maximum=1.15, step=0.05,
+                default=_td("bead_bear", "muzzle_size"),
+            ),
+            ControlSpec(
+                "detail_relief", "slider", "Detail relief",
+                "Scales the recessed and raised face details.",
+                minimum=0.50, maximum=1.50, step=0.10,
+                default=_td("bead_bear", "detail_relief"),
             ),
         ),
     ),
@@ -328,7 +362,7 @@ def family_summary(width: float) -> str:
     """Markdown for the global height rule at the current family width."""
     return (
         "**Heights from this width**  \n"
-        f"Letter, heart, star **{fmt_num(width / 2)} mm**  \n"
+        f"Letter, bear, heart, star **{fmt_num(width / 2)} mm**  \n"
         f"Doughnut **{fmt_num(width / 4)} mm** · "
         f"Shallot **{fmt_num(width)} mm**"
     )
@@ -386,7 +420,7 @@ def settings_text(state: dict) -> str:
         f"Family width : {fmt_num(state['width'])} mm",
         f"Family hole  : {fmt_num(state['hole'])} mm",
         "",
-        "Height rule: letter/heart/star = width/2, "
+        "Height rule: letter/bear/heart/star = width/2, "
         "doughnut = width/4, shallot = width.",
         "",
     ]
@@ -422,7 +456,7 @@ def build_family_zip(
         state: dict,
         progress: Callable[..., None] | None = None,
 ) -> tuple[Path, list[RenderResult]]:
-    """Render all five beads and return a ready-to-download zip."""
+    """Render all six beads and return a ready-to-download zip."""
     results: list[RenderResult] = []
     total = len(BEADS)
     for index, bead in enumerate(BEADS, start=1):

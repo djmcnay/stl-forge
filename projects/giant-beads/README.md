@@ -12,7 +12,7 @@ The two provenance copies sit beside them verbatim:
 
 ## Interactive family app
 
-`app/` is a single-page Gradio workbench for the same five beads:
+`app/` is a single-page Gradio workbench for the same six beads:
 
 ```bash
 projects/giant-beads/app/.venv/bin/python projects/giant-beads/app/app.py
@@ -20,7 +20,7 @@ projects/giant-beads/app/.venv/bin/python projects/giant-beads/app/app.py
 
 It keeps width and string hole global, offers a per-bead size override,
 renders the selected bead live in an orbit viewer, downloads the current
-STL, and can build a family zip containing all five STLs plus a settings
+STL, and can build a family zip containing all six STLs plus a settings
 note. See `app/README.md` for the layout and behaviour contract.
 
 ## One command, all artefacts
@@ -192,6 +192,22 @@ per-layer colour maps. Presets carry `parts: ["body","letter"]` and
 leaves only a 60 mm flat face: `120*0.45 = 54 < 60` fits, while 0.75 ->
 90 overflows the face assert. `bead_D` is the letter-D variant with
 `letter_font "Courier"`.
+
+## bead_bear.scad — bear bead
+
+The bear uses the letter bead's outer-family rules: `width` is the
+widest part of the cheeks, `height = width / 2` is the body thickness,
+the bore and face fillets keep their family defaults, and the bottom
+stays flat on the build plate. The face is a broad, slightly squat
+ellipse with two overlapping ear lobes. The inner-ear shapes are a
+shallow recess on the front face; the eye pads and muzzle (the round
+snout carrying the nose and mouth) are raised; catchlights, nose and
+mouth are embossed on top. The build-plate face carries shallow
+contour-groove etches for the inner ears, eyes, pupils, muzzle, nose
+and mouth, in the same print-friendly language as the letter bead's
+bottom groove. The mouth is a fillable line groove rather than a
+contour ring so it stays printable at small widths. Dials: `ear_size`,
+`eye_spacing`, `muzzle_size`, `detail_relief`.
 
 ## bead_heart.scad — heart bead
 

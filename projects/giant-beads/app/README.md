@@ -1,12 +1,19 @@
 # Giant beads app
 
-A single-page, native-Gradio workbench for the five-bead family:
+A single-page, native-Gradio workbench for the six-bead family:
 
 - **Letter bead** (`bead.scad`)
+- **Bear bead** (`bead_bear.scad`)
 - **Heart bead** (`bead_heart.scad`)
 - **Star bead** (`bead_star.scad`)
 - **Doughnut spacer** (`bead_spacer_small.scad`)
 - **Shallot spacer** (`bead_spacer_wide.scad`)
+
+The bear's round nose-and-mouth pad is its **muzzle** (also called the
+snout). The inner-ear shapes are recessed into the front face; the eye
+pads and muzzle are raised; the catchlights, nose and mouth are
+embossed on top. The build-plate face carries shallow contour grooves
+for the inner ears, eyes, pupils, muzzle, nose and mouth.
 
 The page is arranged as a three-pane bench: bead choice and family size
 on the left, the orbit view in the middle, and the selected bead's shape
@@ -43,15 +50,15 @@ The app was built and smoke-tested with Gradio 6.31.0 and OpenSCAD
 - **String hole**: the throat diameter, 10 to 40 mm.
 - **Heights** are shown as a readout because the templates define them
   from the family width:
-  - letter, heart, star: `width / 2`
+  - letter, bear, heart, star: `width / 2`
   - doughnut spacer: `width / 4`
   - shallot spacer: `width`
 
 **Per bead** (right column):
 
-- Shape controls only (letter/font/size/weight, heart roundness, star
-  roundness/points/petal depth, doughnut curvature/mouth, shallot
-  curvature).
+- Shape controls only (letter/font/size/weight, bear ears/eye
+  spacing/muzzle/relief, heart roundness, star roundness/points/petal
+  depth, doughnut curvature/mouth, shallot curvature).
 - **Override family size** opens per-bead width and hole sliders. The
   override belongs to that bead; switching beads does not leak it to a
   sibling. This is how to make one extra-fat shallot without changing
@@ -68,9 +75,9 @@ on Enter or blur.
 
 - **Download bead** downloads the current render as
   `giant-bead-<bead>.stl`.
-- **Download family** renders all five at the current family and
+- **Download family** renders all six at the current family and
   override settings, then swaps itself to a ready download button. The
-  zip contains the five STLs plus `family-settings.txt` with the
+  zip contains the six STLs plus `family-settings.txt` with the
   effective parameters for the set. The adjacent description says
   "All STL files as a zip folder."
 
@@ -89,6 +96,8 @@ into `~/Downloads` itself.
   viewer and bead-select CSS. No custom HTML or JavaScript.
 - The viewer stage is aubergine and the mesh keeps its cool lavender
   default; the old warm brass filter is gone.
+- The viewer opens at a 30° above-face angle so the facial relief and
+  top-face etch are legible without orbiting first.
 - The viewer toolbar's Undo/Clear buttons are hidden; the app owns the
   render state.
 - The page keeps the working surface first: bead choice, family size,

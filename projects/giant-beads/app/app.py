@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Giant beads: a native-Gradio bench for the five-bead family.
+"""Giant beads: a native-Gradio bench for the six-bead family.
 
 The page has three jobs, in order: set the shared family size, shape one
 bead, take the STLs.  The family values live in the left column, the
@@ -251,6 +251,7 @@ def build_demo(
                         value=boot_stl,
                         display_mode="solid",
                         clear_color=viewer_clear_color,
+                        camera_position=(-90, 30, None),
                         height=560,
                         show_label=False,
                         interactive=True,

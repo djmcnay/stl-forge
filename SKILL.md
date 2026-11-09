@@ -54,8 +54,8 @@ entanglements (a second fillet, a dome) he has not mentioned.
 
 Completed one-command projects live under `projects/` - currently
 `projects/giant-beads/`: a self-contained builder (`main.py`), its own
-`presets.json`, `templates/` (bead, bead_heart, bead_star, bead_flower,
-sharing the common mouth module `bead_common.scad`) and an input-contract
+`presets.json`, `templates/` (bead, bead_bear, bead_heart, bead_star,
+bead_flower, sharing the common mouth module `bead_common.scad`) and an input-contract
 test suite. NOTE: the legacy `--parts flower` flag still drives
 bead_star.scad at roundness 20 (the pre-template flower); the REAL flower
 template is `bead_flower.scad` and wiring main.py/presets to it is an
@@ -297,8 +297,8 @@ non-circular family (heart, star, flower), not just the heart:
   the quarter-arc as erosion z-slices: a uniform `offset(r=-u)` of the outline
   per slab, 32 slabs, each slab taking its BASE point's inset so the chords
   stay inscribed and match bead.scad's polyline arcs. `hull()` is not a
-  substitute - it fills any cleft the outline has. bead_heart.scad and
-  bead_star.scad both ship these fillets at the shared family default
+  substitute - it fills any cleft the outline has. bead_bear.scad,
+  bead_heart.scad and bead_star.scad all ship these fillets at the shared family default
   `fillet_radius = width / 12` (10 mm at width 120); when porting a new
   non-circular family, mirror bead_heart.scad's slab construction verbatim
   (the `n_fillet`, `fillet_u`, `fillet_z` tables and the
@@ -441,28 +441,29 @@ from template work - do not reuse template gates here:
 
 ## Generation app (Gradio, in-skill)
 
-`projects/giant-beads/app/` is the principal's five-bead family
+`projects/giant-beads/app/` is the principal's six-bead family
 workbench (port 7863, H1 `# Giant beads`). It is a single native-Gradio
 page, not a template browser:
 
 - The left column starts with the compact bead dropdown, then the global
   family width and string-hole diameter with the derived-height readout.
 - The middle column is the interactive binary-STL orbit view with the
-  render metadata and a collapsed render log.
+  render metadata and a collapsed render log. It opens at a 30° above-face
+  angle so top-face relief is legible.
 - The right column is one settings card whose heading is the selected
   bead's name. Inside are its shape controls and per-bead family-size
   override (width and hole). Below is an unheaded download card with a
   full-width Download bead button, then a two-column Download family
   action and the description "All STL files as a zip folder." The
   override belongs to that bead and does not leak to its siblings.
-- Family heights are a rule, not a free dial: letter/heart/star
+- Family heights are a rule, not a free dial: letter/bear/heart/star
   `width/2`, doughnut `width/4`, shallot `width`. Show them, do not
   drive a derived `height` control into the templates.
 - No Render button: every change renders live. Sliders use `.change`
   with `always_last` so number-box entry works; text fields apply on
   Enter/blur. A per-bead Reset restores that bead's file defaults.
 - Per-bead downloads are `giant-bead-<bead>.stl`; the family zip is
-  built on demand (five STLs plus `family-settings.txt`) and then
+  built on demand (six STLs plus `family-settings.txt`) and then
   downloaded through `gr.DownloadButton`. The browser owns the download
   folder.
 
