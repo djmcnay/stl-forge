@@ -2,7 +2,7 @@
 
 Aurora Hex is the house default for Gradio apps. The shared class lives
 in ``aurora_hex.py`` so it can be copied to other projects; this module
-only appends the bead-picker and viewer rules.
+only appends the bead-select and viewer rules.
 """
 from __future__ import annotations
 
@@ -12,14 +12,9 @@ except ImportError:
     from aurora_hex import AuroraHexTheme
 
 APP_CSS = """
-.bead-picker { gap: 6px !important; }
-.bead-picker label { border: 1px solid var(--border-color-primary);
-    border-radius: 6px !important; padding: 10px 12px !important;
-    background: var(--background-fill-primary); }
-.bead-picker label:has(input:checked) {
-    border-color: var(--checkbox-border-color-selected);
-    background: var(--checkbox-label-background-fill-selected); }
-.bead-picker input { accent-color: var(--checkbox-background-color-selected); }
+.bead-select { border: 1px solid var(--border-color-primary) !important;
+    border-radius: 6px !important; }
+.bead-select:focus-within { border-color: var(--border-color-accent) !important; }
 .viewer-shell { border: 1px solid var(--border-color-primary);
     border-radius: 6px; overflow: hidden; }
 .viewer-shell .block { border: 0 !important; }

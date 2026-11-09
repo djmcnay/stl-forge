@@ -8,10 +8,11 @@ A single-page, native-Gradio workbench for the five-bead family:
 - **Doughnut spacer** (`bead_spacer_small.scad`)
 - **Shallot spacer** (`bead_spacer_wide.scad`)
 
-The page is arranged as a three-pane bench: family size on the left,
-the orbit view in the middle, and the selected bead's shape controls on
-the right. The goal is to size the whole set, shape one bead at a time,
-then download the STLs. It is not a CAD editor.
+The page is arranged as a three-pane bench: family size and bead choice
+on the left, the orbit view in the middle, and the selected bead's shape
+controls plus download actions on the right. The goal is to size the
+whole set, shape one bead at a time, then download the STLs. It is not a
+CAD editor.
 
 ## Run
 
@@ -65,7 +66,7 @@ on Enter or blur.
 
 ## Downloads
 
-- **Download this bead** downloads the current render as
+- **Download bead** downloads the current render as
   `giant-bead-<bead>.stl`.
 - **Build family zip** renders all five at the current family and
   override settings, then reveals **Download family zip**. The zip
@@ -84,7 +85,7 @@ into `~/Downloads` itself.
   orange or brown.
 - `aurora_hex.py` is the reusable theme class shared with the
   `gradio-design` skill. `theme.py` subclasses it and appends only the
-  bead-picker and viewer CSS. No custom HTML or JavaScript.
+  viewer and bead-select CSS. No custom HTML or JavaScript.
 - The viewer stage is aubergine and the mesh keeps its cool lavender
   default; the old warm brass filter is gone.
 - The viewer toolbar's Undo/Clear buttons are hidden; the app owns the
@@ -99,7 +100,7 @@ app/
   app.py          # Blocks layout, state, and event wiring
   family.py       # bead specs, global/override rules, render cache, zip
   aurora_hex.py   # reusable Aurora Hex Gradio theme
-  theme.py        # app subclass: bead-picker and viewer CSS
+  theme.py        # app subclass: viewer CSS
   shared/scad.py  # OpenSCAD parsing, -D formatting, render, STL probe
 ```
 

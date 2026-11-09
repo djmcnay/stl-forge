@@ -33,7 +33,6 @@ if __package__ in (None, ""):
         DEFAULT_HOLE,
         DEFAULT_WIDTH,
         bead_meta,
-        bead_title,
         build_family_zip,
         default_params,
         default_state,
@@ -50,7 +49,6 @@ else:
         DEFAULT_HOLE,
         DEFAULT_WIDTH,
         bead_meta,
-        bead_title,
         build_family_zip,
         default_params,
         default_state,
@@ -197,9 +195,7 @@ def build_demo(
         fill_width=True,
     ) as demo:
         gr.Markdown(
-            "# Giant beads\n"
-            "One family, five beads. Set the shared size, shape one bead "
-            "at a time, then take the set.",
+            "# Giant beads",
             elem_classes=["workbench-header"],
         )
 
@@ -238,38 +234,18 @@ def build_demo(
                     )
 
                 with gr.Group(elem_classes=["bench-card"]):
-                    gr.Markdown("## Beads", elem_classes=["section-title"])
-                    picker = gr.Radio(
+                    gr.Markdown("## Bead", elem_classes=["section-title"])
+                    picker = gr.Dropdown(
                         choices=[(bead.label, bead.slug) for bead in BEADS],
                         value=boot_state["selected"],
-                        label="Beads",
+                        label="Bead",
                         container=False,
                         show_label=False,
-                        elem_classes=["bead-picker"],
+                        elem_classes=["bead-select"],
                     )
 
-                with gr.Group(elem_classes=["bench-card"]):
-                    gr.Markdown("## Take the set", elem_classes=["section-title"])
-                    gr.Markdown(
-                        "Renders all five at the current family settings.",
-                        elem_classes=["family-summary"],
-                    )
-                    build_btn = gr.Button(
-                        "Build family zip", variant="primary", size="lg")
-                    family_download = gr.DownloadButton(
-                        "Download family zip",
-                        value=None,
-                        variant="primary",
-                        visible=False,
-                    )
-                    family_note = gr.Markdown(
-                        "Five STLs plus a settings note.",
-                        elem_classes=["family-summary"],
-                    )
-
-            # ---- orbit view + this-bead download ----------------------
+            # ---- orbit view -------------------------------------------
             with gr.Column(scale=6, min_width=420):
-                title = gr.Markdown(bead_title(BEAD_BY_SLUG[boot_state["selected"]]))
                 with gr.Group(elem_classes=["viewer-shell"]):
                     model3d = gr.Model3D(
                         value=boot_stl,
@@ -280,15 +256,8 @@ def build_demo(
                         interactive=True,
                     )
                 meta = gr.Markdown(boot_meta, elem_classes=["meta"])
-                download_current = gr.DownloadButton(
-                    "Download this bead",
-                    value=boot_stl,
-                    variant="primary",
-                    size="lg",
-                )
                 gr.Markdown(
-                    "Drag to orbit. Scroll to zoom. Downloads use the "
-                    "browser's normal download folder.",
+                    "Drag to orbit. Scroll to zoom.",
                     elem_classes=["family-summary"],
                 )
                 with gr.Accordion(
@@ -306,11 +275,9 @@ def build_demo(
 
             # ---- selected bead's shape controls -----------------------
             with gr.Column(scale=3, min_width=300):
-                gr.Markdown("## Bead settings", elem_classes=["section-title"])
-                gr.Markdown(
-                    "Shape this bead. Size is inherited from the family "
-                    "unless overridden.",
-                    elem_classes=["family-summary"],
+                panel_title = gr.Markdown(
+                    f"## {BEAD_BY_SLUG[boot_state['selected']].label}",
+                    elem_classes=["section-title"],
                 )
                 panels = {}
                 controls_by_bead = {}
@@ -380,6 +347,37 @@ def build_demo(
                         )
                         if local_mouth_group is not None:
                             mouth_groups[bead.slug] = local_mouth_group
+
+                with gr.Group(elem_classes=["bench-card"]):
+                    gr.Markdown("## Take the set", elem_classes=["section-title"])
+                    with gr.Row():
+                        download_current = gr.DownloadButton(
+                            "Download bead",
+                            value=boot_stl,
+                            variant="primary",
+                            size="md",
+                            min_width=120,
+                        )
+                        build_btn = gr.Button(
+                            "Build family zip",
+                            variant="secondary",
+                            size="md",
+                            min_width=120,
+                        )
+                    family_download = gr.DownloadButton(
+                        "Download family zip",
+                        value=None,
+                        variant="primary",
+                        visible=False,
+                    )
+                    family_note = gr.Markdown(
+                        "Five STLs plus a settings note.",
+                        elem_classes=["family-summary"],
+                    )
+                    gr.Markdown(
+                        "Downloads use the browser's normal download folder.",
+                        elem_classes=["family-summary"],
+                    )
 
         # ---- state setters ---------------------------------------------
         def set_family_width(settings, value):
@@ -540,7 +538,7 @@ def build_demo(
         def render_state(settings):
             slug = settings["selected"]
             bead = BEAD_BY_SLUG[slug]
-            title_md = bead_title(bead)
+            title_md = f"## {bead.label}"
             summary_md = family_summary(float(settings["width"]))
             # A changed setting makes a previously built family zip
             # stale, so hide it rather than offering the old bundle.
@@ -579,7 +577,7 @@ def build_demo(
             outputs=[
                 model3d,
                 download_current,
-                title,
+                panel_title,
                 meta,
                 summary,
                 error_log,

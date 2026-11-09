@@ -446,13 +446,14 @@ workbench (port 7863, H1 `# Giant beads`). It is a single native-Gradio
 page, not a template browser:
 
 - The left column holds the global family width and string-hole
-  diameter, the derived-height readout, the bead picker, and the family
-  zip action.
+  diameter, the derived-height readout, and a compact bead dropdown.
 - The middle column is the interactive binary-STL orbit view with the
-  current bead's download button and a collapsed render log.
-- The right column holds only the selected bead's shape controls and a
-  per-bead family-size override (width and hole). The override belongs
-  to that bead and does not leak to its siblings.
+  render metadata and a collapsed render log.
+- The right column opens with the selected bead's name, then its shape
+  controls and per-bead family-size override (width and hole), then one
+  "Take the set" card holding Download bead, Build family zip and
+  the conditional Download family zip. The override belongs to that
+  bead and does not leak to its siblings.
 - Family heights are a rule, not a free dial: letter/heart/star
   `width/2`, doughnut `width/4`, shallot `width`. Show them, do not
   drive a derived `height` control into the templates.
@@ -474,7 +475,7 @@ and repair the app venv in a quiet moment.
 The UI uses native components only. `app/aurora_hex.py` is the
 reusable default house theme (Aurora Hex: midnight purple ground, teal
 action, violet selection, lavender/mint light-mode wash); `app/theme.py`
-subclasses it and adds only bead-picker and viewer CSS. There is no
+subclasses it and adds only bead-select and viewer CSS. There is no
 orange or brown, and no warm filter: the Model3D stage is aubergine and
 the mesh keeps Gradio's cool lavender. Custom HTML and JavaScript are
 still out of bounds. The viewer's own Undo/Clear toolbar is hidden so
