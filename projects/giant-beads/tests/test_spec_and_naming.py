@@ -45,6 +45,14 @@ def test_parse_parts_maps_all_three():
     assert jobs[0][2] == {} and jobs[1][2] == {}
 
 
+def test_parse_parts_maps_spacer_wide():
+    jobs = gbmain.parse_parts("spacer_wide")
+    assert [(name, tmpl) for name, tmpl, _ in jobs] == [
+        ("spacer_wide", "bead_spacer_wide.scad"),
+    ]
+    assert jobs[0][2] == {}
+
+
 def test_parse_parts_harmless_if_empty():
     assert gbmain.parse_parts(None) == []
     assert gbmain.parse_parts("") == []
@@ -73,6 +81,7 @@ def test_output_naming():
     assert gbmain.part_stl_name("heart") == "bead_heart.stl"
     assert gbmain.part_stl_name("star") == "bead_star.stl"
     assert gbmain.part_stl_name("flower") == "bead_flower.stl"
+    assert gbmain.part_stl_name("spacer_wide") == "bead_spacer_wide.stl"
 
 
 # --- --spec alternate input form ------------------------------------------

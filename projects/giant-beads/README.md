@@ -3,8 +3,9 @@
 A finished stl-forge project that generates parameterised, print-ready
 bead artefacts. Owned templates: `templates/bead.scad` (cylinder letter
 bead, two-colour two-body model), `templates/bead_heart.scad` (heart
-bead), `templates/bead_star.scad` (star/flower bead). The two provenance
-copies sit beside them verbatim:
+bead), `templates/bead_star.scad` (star/flower bead),
+`templates/bead_spacer_wide.scad` (wide tapered spacer, hole vertical).
+The two provenance copies sit beside them verbatim:
 `templates/parametric_heart_reference.scad` and
 `templates/parametric_star_flower.scad` (see "Provenance" below).
 
@@ -16,7 +17,7 @@ are skill-root-relative):
 ```bash
 # The one-liner: word row + heart + star + flower
 python3 projects/giant-beads/main.py \
-    --width 120 --letters "C A M I L A" --parts heart,star,flower
+    --width 120 --letters "C A M I L A" --parts heart,star,flower,spacer_wide
 
 # One bead preset (body + letter + assembly STLs plus the Bambu .3mf)
 python3 projects/giant-beads/main.py --preset bead_D
@@ -42,7 +43,8 @@ Flags:
   fails, it is never silently dropped (absent/empty stays valid).
 - `--parts LIST` — comma list, harmless if empty. `heart` -> bead_heart.scad
   at default roundness; `star` -> bead_star.scad at template defaults;
-  `flower` -> bead_star.scad with `roundness=20` and `petal_depth=3`.
+  `flower` -> bead_star.scad with `roundness=20` and `petal_depth=3`;
+  `spacer_wide` -> bead_spacer_wide.scad (tapered barrel, hole vertical).
 - `--preset NAME` — render one bead preset from `presets.json`
   (`bead_D`, `bead_default`, `bead_smooth`), exactly as the old forge.py
   preset suite did, including the Bambu-native `.3mf`.
@@ -74,6 +76,7 @@ Run the tests: `python3 -m pytest projects/giant-beads/tests -q`
 | heart shape | `bead_heart.stl` | `--parts heart` |
 | star shape | `bead_star.stl` | `--parts star` |
 | flower shape | `bead_flower.stl` (bead_star.scad, roundness 20) | `--parts flower` |
+| wide spacer | `bead_spacer_wide.stl` | `--parts spacer_wide` |
 | preset | `bead_<name>.stl` + `_body` / `_letter` splits + `.3mf` | `--preset` |
 
 ## Bead-family parameters
@@ -193,6 +196,32 @@ the principal's rename of the generator's `depth`, mapped as
 hyphen). One tip points vertically up; the valley ratio is determined
 automatically. `--parts star` renders template defaults (roundness 12),
 `--parts flower` drives `roundness=20, petal_depth=3`.
+
+## bead_spacer_wide.scad — wide tapered spacer
+
+The wide spacer is the first bead in the family whose string hole is
+**vertical** (axis Z, bottom face on the build plate), not through the
+side. It is a double cone / barrel:
+
+- `height = width` (120 mm at defaults), not the letter bead's
+  `width/2`.
+- Widest point at `z = height/2` (60 mm at defaults, also the letter
+  bead's height), with diameter `width` (120 mm).
+- Linear taper from the widest point down to the top and bottom faces.
+- Top/bottom face diameter = `2 * (R_throat + r_mouth)` = 33.33 mm at
+  defaults: the letter bead's mouth-opening diameter, i.e. the radius
+  where the mouth fillet starts. The face is the well rim; there is no
+  extra flat land.
+- Hole throat 20 mm, with the same revolved fillet-well mouth as the
+  letter bead at both ends. The mouth dial is deliberately evaluated at
+  the letter bead's reference height (`width/2`), so `r_mouth` stays
+  6.667 mm and the hole really is the same size despite the taller
+  body.
+- The outer profile is a revolved polygon (`rotate_extrude`); the
+  faces and equator are sharp edges. The bottom half is a ~34 deg
+  overhang (support-free at the usual 45 deg limit); the top half is
+  self-supporting. The top mouth is a countersink, so it is the one
+  feature to watch when printing hole-up.
 
 ## Approved mouth recipe (cylinder letter bead)
 
