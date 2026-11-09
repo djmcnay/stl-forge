@@ -205,6 +205,17 @@ def build_demo(
             # ---- family + bead list + family download -----------------
             with gr.Column(scale=3, min_width=280):
                 with gr.Group(elem_classes=["bench-card"]):
+                    gr.Markdown("## Bead", elem_classes=["section-title"])
+                    picker = gr.Dropdown(
+                        choices=[(bead.label, bead.slug) for bead in BEADS],
+                        value=boot_state["selected"],
+                        label="Bead",
+                        container=False,
+                        show_label=False,
+                        elem_classes=["bead-select"],
+                    )
+
+                with gr.Group(elem_classes=["bench-card"]):
                     gr.Markdown("## Family size", elem_classes=["section-title"])
                     gr.Markdown(
                         "Shared by every bead unless overridden.",
@@ -233,17 +244,6 @@ def build_demo(
                         elem_classes=["family-summary"],
                     )
 
-                with gr.Group(elem_classes=["bench-card"]):
-                    gr.Markdown("## Bead", elem_classes=["section-title"])
-                    picker = gr.Dropdown(
-                        choices=[(bead.label, bead.slug) for bead in BEADS],
-                        value=boot_state["selected"],
-                        label="Bead",
-                        container=False,
-                        show_label=False,
-                        elem_classes=["bead-select"],
-                    )
-
             # ---- orbit view -------------------------------------------
             with gr.Column(scale=6, min_width=420):
                 with gr.Group(elem_classes=["viewer-shell"]):
@@ -256,10 +256,6 @@ def build_demo(
                         interactive=True,
                     )
                 meta = gr.Markdown(boot_meta, elem_classes=["meta"])
-                gr.Markdown(
-                    "Drag to orbit. Scroll to zoom.",
-                    elem_classes=["family-summary"],
-                )
                 with gr.Accordion(
                     "Render log",
                     open=(boot_result is None),
@@ -275,16 +271,16 @@ def build_demo(
 
             # ---- selected bead's shape controls -----------------------
             with gr.Column(scale=3, min_width=300):
-                panel_title = gr.Markdown(
-                    f"## {BEAD_BY_SLUG[boot_state['selected']].label}",
-                    elem_classes=["section-title"],
-                )
                 panels = {}
                 controls_by_bead = {}
                 override_widgets = {}
                 mouth_groups = {}
 
                 with gr.Group(elem_classes=["bench-card"]):
+                    panel_title = gr.Markdown(
+                        f"## {BEAD_BY_SLUG[boot_state['selected']].label}",
+                        elem_classes=["section-title"],
+                    )
                     for bead in BEADS:
                         with gr.Column(
                             visible=(bead.slug == boot_state["selected"]),
@@ -349,35 +345,31 @@ def build_demo(
                             mouth_groups[bead.slug] = local_mouth_group
 
                 with gr.Group(elem_classes=["bench-card"]):
-                    gr.Markdown("## Take the set", elem_classes=["section-title"])
-                    with gr.Row():
-                        download_current = gr.DownloadButton(
-                            "Download bead",
-                            value=boot_stl,
-                            variant="primary",
-                            size="md",
-                            min_width=120,
-                        )
-                        build_btn = gr.Button(
-                            "Build family zip",
-                            variant="secondary",
-                            size="md",
-                            min_width=120,
-                        )
-                    family_download = gr.DownloadButton(
-                        "Download family zip",
-                        value=None,
+                    download_current = gr.DownloadButton(
+                        "Download bead",
+                        value=boot_stl,
                         variant="primary",
-                        visible=False,
+                        size="lg",
                     )
-                    family_note = gr.Markdown(
-                        "Five STLs plus a settings note.",
-                        elem_classes=["family-summary"],
-                    )
-                    gr.Markdown(
-                        "Downloads use the browser's normal download folder.",
-                        elem_classes=["family-summary"],
-                    )
+                    with gr.Row():
+                        with gr.Column(scale=1, min_width=130):
+                            build_btn = gr.Button(
+                                "Download family",
+                                variant="secondary",
+                                size="md",
+                            )
+                            family_download = gr.DownloadButton(
+                                "Download family",
+                                value=None,
+                                variant="primary",
+                                size="md",
+                                visible=False,
+                            )
+                        with gr.Column(scale=1, min_width=130):
+                            family_note = gr.Markdown(
+                                "All STL files as a zip folder.",
+                                elem_classes=["family-summary"],
+                            )
 
         # ---- state setters ---------------------------------------------
         def set_family_width(settings, value):
@@ -543,7 +535,8 @@ def build_demo(
             # A changed setting makes a previously built family zip
             # stale, so hide it rather than offering the old bundle.
             stale_zip = gr.update(
-                value=None, visible=False, label="Download family zip")
+                value=None, visible=False, label="Download family")
+            stale_build = gr.update(visible=True)
             try:
                 result = render_bead(settings, slug)
             except Exception as exc:  # noqa: BLE001 - keep the UI alive
@@ -557,7 +550,7 @@ def build_demo(
                     error_text(exc),
                     gr.update(open=True),
                     stale_zip,
-                    "Five STLs plus a settings note.",
+                    stale_build,
                 )
             return (
                 str(result.path),
@@ -568,7 +561,7 @@ def build_demo(
                 "No render errors.",
                 gr.update(open=False),
                 stale_zip,
-                "Five STLs plus a settings note.",
+                stale_build,
             )
 
         settings.change(
@@ -583,7 +576,7 @@ def build_demo(
                 error_log,
                 log_accordion,
                 family_download,
-                family_note,
+                build_btn,
             ],
             trigger_mode="always_last",
             show_progress="full",
@@ -592,26 +585,21 @@ def build_demo(
         # ---- family zip ------------------------------------------------
         def make_zip(settings, progress=gr.Progress()):
             try:
-                zip_path, results = build_family_zip(settings, progress)
+                zip_path, _results = build_family_zip(settings, progress)
             except Exception as exc:  # noqa: BLE001 - keep the UI alive
                 return (
                     gr.update(),
-                    "**The family zip did not build.** See the render log.",
+                    gr.update(),
                     error_text(exc),
                     gr.update(open=True),
                 )
-            zip_size = zip_path.stat().st_size
-            note = (
-                "**Family zip ready.** "
-                f"{len(results)} STLs · {scad.human_bytes(zip_size)}."
-            )
             return (
                 gr.update(
                     value=str(zip_path),
                     visible=True,
-                    label=f"Download family zip ({scad.human_bytes(zip_size)})",
+                    label="Download family",
                 ),
-                note,
+                gr.update(visible=False),
                 "No render errors.",
                 gr.update(open=False),
             )
@@ -619,7 +607,7 @@ def build_demo(
         build_btn.click(
             make_zip,
             inputs=[settings],
-            outputs=[family_download, family_note, error_log, log_accordion],
+            outputs=[family_download, build_btn, error_log, log_accordion],
             show_progress="full",
         )
 

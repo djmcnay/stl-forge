@@ -311,10 +311,6 @@ def bead_dimensions(slug: str, width: float) -> tuple[float, float]:
     return width, width / 2
 
 
-def bead_title(bead: BeadSpec) -> str:
-    return f"## {bead.label}\n{bead.blurb}"
-
-
 def bead_meta(state: dict, slug: str, result: "RenderResult") -> str:
     bead = BEAD_BY_SLUG[slug]
     width = effective_width(state, slug)

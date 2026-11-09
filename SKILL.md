@@ -445,15 +445,16 @@ from template work - do not reuse template gates here:
 workbench (port 7863, H1 `# Giant beads`). It is a single native-Gradio
 page, not a template browser:
 
-- The left column holds the global family width and string-hole
-  diameter, the derived-height readout, and a compact bead dropdown.
+- The left column starts with the compact bead dropdown, then the global
+  family width and string-hole diameter with the derived-height readout.
 - The middle column is the interactive binary-STL orbit view with the
   render metadata and a collapsed render log.
-- The right column opens with the selected bead's name, then its shape
-  controls and per-bead family-size override (width and hole), then one
-  "Take the set" card holding Download bead, Build family zip and
-  the conditional Download family zip. The override belongs to that
-  bead and does not leak to its siblings.
+- The right column is one settings card whose heading is the selected
+  bead's name. Inside are its shape controls and per-bead family-size
+  override (width and hole). Below is an unheaded download card with a
+  full-width Download bead button, then a two-column Download family
+  action and the description "All STL files as a zip folder." The
+  override belongs to that bead and does not leak to its siblings.
 - Family heights are a rule, not a free dial: letter/heart/star
   `width/2`, doughnut `width/4`, shallot `width`. Show them, do not
   drive a derived `height` control into the templates.

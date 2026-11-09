@@ -8,7 +8,7 @@ A single-page, native-Gradio workbench for the five-bead family:
 - **Doughnut spacer** (`bead_spacer_small.scad`)
 - **Shallot spacer** (`bead_spacer_wide.scad`)
 
-The page is arranged as a three-pane bench: family size and bead choice
+The page is arranged as a three-pane bench: bead choice and family size
 on the left, the orbit view in the middle, and the selected bead's shape
 controls plus download actions on the right. The goal is to size the
 whole set, shape one bead at a time, then download the STLs. It is not a
@@ -68,10 +68,11 @@ on Enter or blur.
 
 - **Download bead** downloads the current render as
   `giant-bead-<bead>.stl`.
-- **Build family zip** renders all five at the current family and
-  override settings, then reveals **Download family zip**. The zip
-  contains the five STLs plus `family-settings.txt` with the effective
-  parameters for the set.
+- **Download family** renders all five at the current family and
+  override settings, then swaps itself to a ready download button. The
+  zip contains the five STLs plus `family-settings.txt` with the
+  effective parameters for the set. The adjacent description says
+  "All STL files as a zip folder."
 
 Both use `gr.DownloadButton`, so the browser's normal download folder
 and download prompt decide where the file lands. The app does not write
@@ -90,7 +91,7 @@ into `~/Downloads` itself.
   default; the old warm brass filter is gone.
 - The viewer toolbar's Undo/Clear buttons are hidden; the app owns the
   render state.
-- The page keeps the working surface first: family size, bead choice,
+- The page keeps the working surface first: bead choice, family size,
   viewer, then the selected bead's controls.
 
 ## Layout
