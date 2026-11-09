@@ -8,9 +8,9 @@
     the bottom stays flat for the build plate.
 
     Face language (matching the supplied felt-bear illustration):
-      - broad, near-round head with two large round ears overlapping the crown
-      - pink inner-ear shape: shallow recess in the front face and a contour
-        etch on the build-plate face
+      - broad, gently elliptical head with two large round ears overlapping the crown
+      - pink inner-ear shape cut back by the face: shallow recess in the
+        front face and a matching contour etch on the build-plate face
       - raised oval eye pads with a small raised white catchlight
       - raised round muzzle ("the round bit" is the muzzle / snout)
       - raised nose and a raised stitched-looking mouth line
@@ -75,12 +75,13 @@ H = height;
 c = fillet_radius;
 
 // Measured from the supplied Etsy reference (face width = 2R):
-//   face ellipse       width 2R, height 1.714R
+//   face ellipse       width 2R, reference height 1.714R;
+//                      the user-requested extra ellipse uses 1.640R
 //   ear span           2.192R, ear tops at 1.036R above centre
-//   inner ear          near-circle 0.392R diameter
+//   inner ear          near-circle 0.392R diameter, cut back by the face
 //   eyes              0.272R x 0.318R ovals, centres at y = -0.012R
 //   muzzle             0.906R x 0.732R ellipse, centre y = -0.394R
-face_ry = 0.857 * R;
+face_ry = 0.820 * R;
 face_cy = 0.0;
 
 // Large high ears, centred just outboard of the cheeks.
@@ -88,7 +89,8 @@ ear_r = 0.386 * R * ear_size;
 ear_x = 0.710 * R;
 ear_y = 0.650 * R;
 // The inner-ear recess is nearly circular, centred slightly low in the ear.
-// Clamp it to the flat ear cap left by the fixed family face fillet.
+// It is cut by the face outline below, so it reads as a shape that disappears
+// behind the head instead of an oval floating on the cheek.
 inner_ear_r = min(0.196 * R * ear_size,
                   ear_r - fillet_radius - 0.6);
 inner_ear_etch_r = min(inner_ear_r,
@@ -140,9 +142,17 @@ module bear_outline_2d() {
 
 // Inner ears: the pink felt shapes, also used for the bottom etch.
 module inner_ears_2d(r = inner_ear_r) {
-    for (s = [-1, 1])
-        translate([s * (ear_x - inner_ear_dx), ear_y + inner_ear_dy])
-            circle(r = r);
+    difference() {
+        union() {
+            for (s = [-1, 1])
+                translate([s * (ear_x - inner_ear_dx), ear_y + inner_ear_dy])
+                    circle(r = r);
+        }
+        // The head is in front of the ear, so the inner-ear recess is cut
+        // off cleanly where it meets the face, leaving a clipped shape
+        // rather than an oval floating on the cheek.
+        _face_2d();
+    }
 }
 
 // Eyes: oval black pads.  The catchlights are separate small raised dots.

@@ -12,8 +12,9 @@ A single-page, native-Gradio workbench for the six-bead family:
 The bear's face, ears, inner ears, eyes and muzzle are traced from the
 supplied Etsy reference as flat ellipses and arcs, then extruded with the
 family fillets. The round nose-and-mouth pad is its **muzzle** (also
-called the snout). The inner-ear shapes are recessed into the front face; the eye
-pads and muzzle are raised; the catchlights, nose and mouth are
+called the snout). The inner-ear shapes are recessed into the front face and clipped by
+the head outline, so they read as ears disappearing behind the face;
+the eye pads and muzzle are raised; the catchlights, nose and mouth are
 embossed on top. The build-plate face carries shallow contour grooves
 for the inner ears, eyes, pupils, muzzle, nose and mouth.
 
