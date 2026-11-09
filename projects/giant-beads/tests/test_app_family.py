@@ -102,3 +102,9 @@ def test_settings_note_records_a_per_bead_override():
 def test_settings_note_marks_the_automatic_doughnut_mouth():
     note = family.settings_text(family.default_state())
     assert "r_mouth: auto (matches the outer fillet)" in note
+
+
+def test_settings_note_uses_bear_width_and_thickness():
+    note = family.settings_text(family.default_state())
+    assert "Bear bead" in note
+    assert "120 mm wide x 60 mm thick" in note

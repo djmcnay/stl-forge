@@ -46,7 +46,8 @@ The app was built and smoke-tested with Gradio 6.31.0 and OpenSCAD
 
 **Global** (left column):
 
-- **Width**: the face/enclosing-circle diameter, 60 to 240 mm.
+- **Width**: the full face width, 60 to 240 mm. For the bear this is
+  the widest part of the cheeks.
 - **String hole**: the throat diameter, 10 to 40 mm.
 - **Heights** are shown as a readout because the templates define them
   from the family width:

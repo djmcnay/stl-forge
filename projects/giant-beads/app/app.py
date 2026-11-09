@@ -227,7 +227,7 @@ def build_demo(
                         value=DEFAULT_WIDTH,
                         step=1,
                         label="Width",
-                        info="Enclosing-circle diameter of the face, mm.",
+                        info="Full face width, mm.",
                         interactive=True,
                     )
                     family_hole = gr.Slider(

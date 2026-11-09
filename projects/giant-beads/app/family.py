@@ -346,13 +346,16 @@ def bead_dimensions(slug: str, width: float) -> tuple[float, float]:
 
 
 def bead_meta(state: dict, slug: str, result: "RenderResult") -> str:
-    bead = BEAD_BY_SLUG[slug]
     width = effective_width(state, slug)
     hole = effective_hole(state, slug)
     diameter, height = bead_dimensions(slug, width)
+    size = (
+        f"{fmt_num(width)} mm wide × {fmt_num(height)} mm thick"
+        if slug == "bear"
+        else f"Ø{fmt_num(diameter)} × {fmt_num(height)} mm"
+    )
     return (
-        f"Ø{fmt_num(diameter)} × {fmt_num(height)} mm  ·  "
-        f"Ø{fmt_num(hole)} mm hole  \n"
+        f"{size}  ·  Ø{fmt_num(hole)} mm hole  \n"
         f"`{result.facets:,} facets · {scad.human_bytes(result.bytes)}"
         f" · {result.seconds:.1f} s`"
     )
@@ -429,9 +432,14 @@ def settings_text(state: dict) -> str:
         hole = effective_hole(state, bead.slug)
         diameter, height = bead_dimensions(bead.slug, width)
         overridden = bool(state["beads"][bead.slug]["override"])
+        size = (
+            f"{fmt_num(width)} mm wide x {fmt_num(height)} mm thick"
+            if bead.slug == "bear"
+            else f"Ø{fmt_num(diameter)} x {fmt_num(height)} mm"
+        )
         lines += [
             f"{bead.label}  ({bead.template})",
-            f"  size   : Ø{fmt_num(diameter)} x {fmt_num(height)} mm",
+            f"  size   : {size}",
             f"  hole   : Ø{fmt_num(hole)} mm",
             f"  size source: {'per-bead override' if overridden else 'family'}",
         ]
