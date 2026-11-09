@@ -14,15 +14,16 @@
       - top/bottom face diameter = letter bead height - 2 * letter face fillet
         = (width/2) - 2*(width/12) = width/3 = 40 mm
       - hole throat = 20 mm, straight bore, NO mouth fillet yet
-      - the side is a smooth barrel, not a straight bicone. `curvature` is the
-        exponent in r(z) = R_face + (R_max - R_face)*sin(pi*z/H)^curvature:
-        1.0 = sine barrel, 1.5 = fuller barrel with vertical ends (default),
-        2.0 = more rounded. The widest point is smooth for every value >= 1.
+      - the side is a parabola by default (the banana-shallot profile):
+        r(z) = R_max - (R_max - R_face)*abs(1 - 2*z/H)^curvature, with
+        curvature = 2. The widest point at mid-height is smooth; the ends
+        taper into the flat faces. curvature = 1 gives a straight bicone,
+        >2 gives fuller shoulders. The widest point is smooth for all >= 1.
 
     Print orientation: hole vertical, bottom face on the plate. The equatorial
-    bulge is only 10 mm over a 60 mm half-height (roughly 14 deg maximum
-    overhang), so the whole body prints support-free. The plain bore also
-    removes the top-mouth countersink overhang.
+    bulge is only 10 mm over a 60 mm half-height (roughly 18 deg maximum
+    overhang at the faces), so the whole body prints support-free. The plain
+    bore also removes the top-mouth countersink overhang.
 
     The face formula deliberately uses the LETTER bead's height (width/2) and
     face fillet (width/12), not the spacer's taller height.
@@ -44,10 +45,10 @@ bore_fillet_radius = width / 8;
 // Face fillet radius (mm): family rule width / 12. Here it is used as the
 // letter bead's face-fillet value in the face-diameter formula below.
 fillet_radius = width / 12;
-// Barrel curvature exponent: 1 = sine barrel, 1.5 = fuller barrel with
-// vertical ends, 2 = more rounded. Must be >= 1 so the widest point is smooth
-// and the ends do not cusp.
-curvature = 1.5;
+// Barrel curvature exponent: 1 = straight bicone, 2 = parabola (default,
+// banana-shallot profile), >2 = fuller shoulders. Must be >= 1 so the widest
+// point is smooth and the ends do not cusp.
+curvature = 2.0;
 
 // ---- derived body dimensions ------------------------------------------
 H = height;
@@ -68,13 +69,13 @@ assert(R_face <= R_max, "face radius must not exceed the equator radius");
 // Smooth revolved surfaces.
 $fn = 128;
 
-// ---- body: smooth barrel with flat ends -------------------------------
-// Radius as a function of height. sin(180*z/H) is 0 at the faces, 1 at the
-// equator; the exponent controls how full the barrel is. At curvature > 1 the
-// side is vertical at both the faces and the equator, and the widest point is
-// smooth (dr/dz = 0).
+// ---- body: parabolic barrel with flat ends ----------------------------
+// Radius as a function of height. |1 - 2z/H| is 1 at the faces and 0 at the
+// equator, so the default exponent 2 is a true parabola with its vertex at
+// mid-height: the banana-shallot silhouette. Larger exponents keep the middle
+// fuller and steepen the taper into the faces; 1 is a straight bicone.
 function barrel_r(z) =
-    R_face + (R_max - R_face) * pow(sin(180 * z / H), curvature);
+    R_max - (R_max - R_face) * pow(abs(1 - 2 * z / H), curvature);
 
 n_profile = 96;                // profile samples over the full height
 profile = concat(

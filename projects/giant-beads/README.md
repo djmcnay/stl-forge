@@ -95,7 +95,7 @@ Run the tests: `python3 -m pytest projects/giant-beads/tests -q`
 | `r_mouth_max` | mouth-radius ceiling (mm) | `(height/2.25) - (fillet_radius + R_throat)` |
 | `r_mouth` | mouth radius (mm) | `max(0.5, min(0.5*hole_diameter, r_mouth_max))`; star adds `r_wall_max = width/120` |
 | `face_diameter` | wide spacer top/bottom face diameter (mm) | `(width/2) - 2*(width/12)` = `width/3` (40 at width 120) |
-| `curvature` | wide spacer side-profile exponent | 1.5 (1 = sine barrel, >1 fuller; widest point smooth) |
+| `curvature` | wide spacer side-profile exponent | 2.0 (parabola / banana shallot; 1 = straight bicone, >2 fuller) |
 | `$fn` | render resolution | 128 |
 
 `--parts flower` drives `bead_star.scad` with `roundness=20,
@@ -215,16 +215,16 @@ side. It is a double cone / barrel:
   The face is a flat annulus around the bore.
 - Hole throat 20 mm, plain straight bore, **no mouth fillet yet** at
   either end.
-- The side is a smooth barrel, not a straight bicone:
-  `r(z) = R_face + (R_max - R_face) * sin(pi*z/H)^curvature`.
-  `curvature` is the family knob for how curved the bead is:
-  1.0 = sine barrel, 1.5 = fuller barrel with near-vertical ends
-  (default), 2.0 = more rounded. The widest point is smooth for every
-  value >= 1.
+- The side is a parabola by default — the banana-shallot profile:
+  `r(z) = R_max - (R_max - R_face) * abs(1 - 2*z/H)^curvature`,
+  with `curvature = 2`. The widest point at mid-height is smooth, and
+  the ends taper into the flat faces. `curvature = 1` is a straight
+  bicone; values above 2 keep the middle fuller and steepen the taper
+  into the faces. The widest point is smooth for every value >= 1.
 - The equatorial bulge is only 10 mm over a 60 mm half-height
-  (roughly 14 deg maximum overhang), so the body prints support-free.
-  The plain bore also removes the top-mouth countersink overhang that
-  a filleted mouth would add.
+  (roughly 18 deg maximum overhang at the faces), so the body prints
+  support-free. The plain bore also removes the top-mouth countersink
+  overhang that a filleted mouth would add.
 
 ## Approved mouth recipe (cylinder letter bead)
 

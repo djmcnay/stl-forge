@@ -67,7 +67,7 @@
     "face_diameter": 40,
     "face_radius": 20,
     "R_max": 30,
-    "curvature": 1.5,
+    "curvature": 2.0,
     "$fn": 128,
     "mouth": "plain vertical bore (bead_string_hole_plain)"
   },
