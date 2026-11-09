@@ -207,8 +207,9 @@ side. It is a double cone / barrel:
 
 - `height = width` (120 mm at defaults), not the letter bead's
   `width/2`.
-- Widest point at `z = height/2` (60 mm at defaults, also the letter
-  bead's height), with diameter `width` (120 mm).
+- Widest point at `z = height/2` (60 mm at defaults), with diameter
+  equal to the letter bead's height = `width/2` = 60 mm. The spacer is
+  the letter bead's 120 x 60 proportions turned upright.
 - Top/bottom face diameter = letter bead height - 2 x letter face
   fillet = `(width/2) - 2*(width/12)` = `width/3` = 40 mm at defaults.
   The face is a flat annulus around the bore.
@@ -220,10 +221,10 @@ side. It is a double cone / barrel:
   1.0 = sine barrel, 1.5 = fuller barrel with near-vertical ends
   (default), 2.0 = more rounded. The widest point is smooth for every
   value >= 1.
-- At `curvature = 1.5` the largest overhang is about 44 deg from
-  vertical, so the bottom half prints support-free; the top half is
-  self-supporting. The plain bore also removes the top-mouth
-  countersink overhang that a filleted mouth would add.
+- The equatorial bulge is only 10 mm over a 60 mm half-height
+  (roughly 14 deg maximum overhang), so the body prints support-free.
+  The plain bore also removes the top-mouth countersink overhang that
+  a filleted mouth would add.
 
 ## Approved mouth recipe (cylinder letter bead)
 

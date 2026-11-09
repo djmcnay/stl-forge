@@ -8,8 +8,9 @@
 
     Form (defaults, width 120):
       - overall height = width = 120 mm (the letter bead's width)
-      - widest point at mid-height: diameter = width = 120 mm (z = 60, which
-        is also the letter bead's height)
+      - widest point at mid-height: diameter = letter bead height = width/2
+        = 60 mm (z = 60, which is also the letter bead's height). The spacer
+        is the letter bead's 120 x 60 proportions turned upright.
       - top/bottom face diameter = letter bead height - 2 * letter face fillet
         = (width/2) - 2*(width/12) = width/3 = 40 mm
       - hole throat = 20 mm, straight bore, NO mouth fillet yet
@@ -18,10 +19,10 @@
         1.0 = sine barrel, 1.5 = fuller barrel with vertical ends (default),
         2.0 = more rounded. The widest point is smooth for every value >= 1.
 
-    Print orientation: hole vertical, bottom face on the plate. At the default
-    curvature 1.5 the largest overhang is about 44 deg from vertical, so the
-    bottom half is effectively support-free; the top half is self-supporting.
-    The plain bore also removes the top-mouth countersink overhang.
+    Print orientation: hole vertical, bottom face on the plate. The equatorial
+    bulge is only 10 mm over a 60 mm half-height (roughly 14 deg maximum
+    overhang), so the whole body prints support-free. The plain bore also
+    removes the top-mouth countersink overhang.
 
     The face formula deliberately uses the LETTER bead's height (width/2) and
     face fillet (width/12), not the spacer's taller height.
@@ -29,7 +30,8 @@
 use <bead_common.scad>
 
 // ---- parameters -------------------------------------------------------
-// Enclosing diameter of the barrel at its widest point (mm)
+// Letter-bead width reference (mm). The spacer height = width and its
+// equatorial diameter = width/2 (the letter bead's height).
 width = 120;
 // Overall height along the hole axis (mm): the wide spacer is as tall as the
 // letter bead is wide.
@@ -49,8 +51,8 @@ curvature = 1.5;
 
 // ---- derived body dimensions ------------------------------------------
 H = height;
-R_max = width / 2;             // equator radius (widest point)
 letter_height = width / 2;     // the letter bead's height
+R_max = letter_height / 2;     // equator radius = half the letter bead height
 face_diameter = letter_height - 2 * fillet_radius;
 R_face = face_diameter / 2;    // top/bottom face radius
 R_throat = hole_diameter / 2;
