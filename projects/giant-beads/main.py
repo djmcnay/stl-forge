@@ -52,12 +52,14 @@ STL_MIN_BYTES = forge.STL_MIN_BYTES
 # --parts mapping: part name -> (template filename, -D overrides).
 # heart: bead_heart.scad at default roundness, star: bead_star.scad at template
 # defaults, flower: bead_star.scad driven into full flower (roundness 20),
-# spacer_wide: tapered barrel with the hole vertical.
+# spacer_wide: tapered barrel with the hole vertical, spacer_small: squat
+# doughnut with the hole vertical.
 PART_JOBS = {
     "heart": ("bead_heart.scad", {}),
     "star": ("bead_star.scad", {}),
     "flower": ("bead_star.scad", {"roundness": 20, "petal_depth": 3}),
     "spacer_wide": ("bead_spacer_wide.scad", {}),
+    "spacer_small": ("bead_spacer_small.scad", {}),
 }
 
 

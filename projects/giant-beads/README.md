@@ -4,7 +4,8 @@ A finished stl-forge project that generates parameterised, print-ready
 bead artefacts. Owned templates: `templates/bead.scad` (cylinder letter
 bead, two-colour two-body model), `templates/bead_heart.scad` (heart
 bead), `templates/bead_star.scad` (star/flower bead),
-`templates/bead_spacer_wide.scad` (wide tapered spacer, hole vertical).
+`templates/bead_spacer_wide.scad` (wide tapered spacer, hole vertical),
+`templates/bead_spacer_small.scad` (small doughnut spacer, hole vertical).
 The two provenance copies sit beside them verbatim:
 `templates/parametric_heart_reference.scad` and
 `templates/parametric_star_flower.scad` (see "Provenance" below).
@@ -17,7 +18,8 @@ are skill-root-relative):
 ```bash
 # The one-liner: word row + heart + star + flower
 python3 projects/giant-beads/main.py \
-    --width 120 --letters "C A M I L A" --parts heart,star,flower,spacer_wide
+    --width 120 --letters "C A M I L A" \
+    --parts heart,star,flower,spacer_wide,spacer_small
 
 # One bead preset (body + letter + assembly STLs plus the Bambu .3mf)
 python3 projects/giant-beads/main.py --preset bead_D
@@ -44,7 +46,8 @@ Flags:
 - `--parts LIST` — comma list, harmless if empty. `heart` -> bead_heart.scad
   at default roundness; `star` -> bead_star.scad at template defaults;
   `flower` -> bead_star.scad with `roundness=20` and `petal_depth=3`;
-  `spacer_wide` -> bead_spacer_wide.scad (tapered barrel, hole vertical).
+  `spacer_wide` -> bead_spacer_wide.scad (tapered barrel, hole vertical);
+  `spacer_small` -> bead_spacer_small.scad (doughnut, hole vertical).
 - `--preset NAME` — render one bead preset from `presets.json`
   (`bead_D`, `bead_default`, `bead_smooth`), exactly as the old forge.py
   preset suite did, including the Bambu-native `.3mf`.
@@ -77,6 +80,7 @@ Run the tests: `python3 -m pytest projects/giant-beads/tests -q`
 | star shape | `bead_star.stl` | `--parts star` |
 | flower shape | `bead_flower.stl` (bead_star.scad, roundness 20) | `--parts flower` |
 | wide spacer | `bead_spacer_wide.stl` | `--parts spacer_wide` |
+| small spacer | `bead_spacer_small.stl` | `--parts spacer_small` |
 | preset | `bead_<name>.stl` + `_body` / `_letter` splits + `.3mf` | `--preset` |
 
 ## Bead-family parameters
@@ -95,7 +99,7 @@ Run the tests: `python3 -m pytest projects/giant-beads/tests -q`
 | `r_mouth_max` | mouth-radius ceiling (mm) | `(height/2.25) - (fillet_radius + R_throat)` |
 | `r_mouth` | mouth radius (mm) | `max(0.5, min(0.5*hole_diameter, r_mouth_max))`; star adds `r_wall_max = width/120` |
 | `face_diameter` | wide spacer top/bottom face diameter (mm) | `(width/2) - 2*(width/12)` = `width/3` (40 at width 120) |
-| `curvature` | wide spacer side-profile exponent | 2.0 (parabola / banana shallot; 1 = straight bicone, >2 fuller) |
+| `curvature` | spacer shape dial | wide: 2.0 = parabola / banana shallot (1 = straight bicone, >2 fuller); small: 0.75 (0 = flat washer, 1 = full doughnut) |
 | `$fn` | render resolution | 128 |
 
 `--parts flower` drives `bead_star.scad` with `roundness=20,
@@ -225,6 +229,27 @@ side. It is a double cone / barrel:
   (roughly 18 deg maximum overhang at the faces), so the body prints
   support-free. The plain bore also removes the top-mouth countersink
   overhang that a filleted mouth would add.
+
+## bead_spacer_small.scad — small doughnut spacer
+
+The small spacer is the doughnut: a squat ring with the bore vertical.
+
+- Outer diameter = letter bead height = `width/2` = 60 mm.
+- Bore throat = 20 mm, plain straight vertical bore, **no mouth fillet
+  yet** at either face.
+- Overall height = letter bead height / 2 = `width/4` = 30 mm.
+- Looking down the hole: a Ø60 circle with a Ø20 hole and flat annular
+  top/bottom faces.
+- `curvature` (0..1) controls the outer edge:
+  0 = nearly flat washer with a small outer fillet (`H/8`);
+  1 = fully rounded doughnut, where the two outer fillets meet at
+  mid-height and the outer profile is a semicircle (radius `H/2`);
+  default 0.75 leaves a short vertical outer band.
+- The bore is the same 20 mm throat as the letter bead, so "at its
+  narrowest" is exact. A mouth fillet can be added later without
+  changing the doughnut body.
+- Printed hole-up, the bottom outer fillet is an overhang; lower
+  curvature is flatter and more forgiving, 1.0 is the curviest.
 
 ## Approved mouth recipe (cylinder letter bead)
 
