@@ -1,6 +1,6 @@
 {
   "project": "giant-beads",
-  "note": "Canonical default snapshot. Common family params: width, height, hole_diameter, bore_fillet_radius, fillet_radius, R_throat, r_mouth_max, r_mouth, $fn. Mouths: letter bead = revolved fillet-well; heart/star = swept ball fillet (star wall-capped); flower = plain bore; wide spacer = revolved fillet-well on a vertical axis. Update with any template default change.",
+  "note": "Canonical default snapshot. Common family params: width, height, hole_diameter, bore_fillet_radius, fillet_radius, R_throat, r_mouth_max, r_mouth, $fn. Mouths: letter bead = revolved fillet-well; heart/star = swept ball fillet (star wall-capped); flower = plain bore; wide spacer = plain vertical bore (no mouth fillet yet). Update with any template default change.",
   "bead_scad": {
     "part": "body",
     "width": 120,
@@ -64,13 +64,12 @@
     "fillet_radius": 10,
     "R_throat": 10,
     "letter_height": 60,
-    "r_mouth_max": 6.667,
-    "r_mouth": 6.667,
-    "face_radius": 16.667,
-    "face_diameter": 33.333,
+    "face_diameter": 40,
+    "face_radius": 20,
     "R_max": 60,
+    "curvature": 1.5,
     "$fn": 128,
-    "mouth": "revolved fillet-well (bead_string_hole_well), vertical hole"
+    "mouth": "plain vertical bore (bead_string_hole_plain)"
   },
   "bead_default": {
     "template": "bead.scad",

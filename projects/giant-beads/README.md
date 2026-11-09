@@ -94,6 +94,8 @@ Run the tests: `python3 -m pytest projects/giant-beads/tests -q`
 | `R_throat` | throat radius (mm) | `hole_diameter/2` |
 | `r_mouth_max` | mouth-radius ceiling (mm) | `(height/2.25) - (fillet_radius + R_throat)` |
 | `r_mouth` | mouth radius (mm) | `max(0.5, min(0.5*hole_diameter, r_mouth_max))`; star adds `r_wall_max = width/120` |
+| `face_diameter` | wide spacer top/bottom face diameter (mm) | `(width/2) - 2*(width/12)` = `width/3` (40 at width 120) |
+| `curvature` | wide spacer side-profile exponent | 1.5 (1 = sine barrel, >1 fuller; widest point smooth) |
 | `$fn` | render resolution | 128 |
 
 `--parts flower` drives `bead_star.scad` with `roundness=20,
@@ -207,21 +209,21 @@ side. It is a double cone / barrel:
   `width/2`.
 - Widest point at `z = height/2` (60 mm at defaults, also the letter
   bead's height), with diameter `width` (120 mm).
-- Linear taper from the widest point down to the top and bottom faces.
-- Top/bottom face diameter = `2 * (R_throat + r_mouth)` = 33.33 mm at
-  defaults: the letter bead's mouth-opening diameter, i.e. the radius
-  where the mouth fillet starts. The face is the well rim; there is no
-  extra flat land.
-- Hole throat 20 mm, with the same revolved fillet-well mouth as the
-  letter bead at both ends. The mouth dial is deliberately evaluated at
-  the letter bead's reference height (`width/2`), so `r_mouth` stays
-  6.667 mm and the hole really is the same size despite the taller
-  body.
-- The outer profile is a revolved polygon (`rotate_extrude`); the
-  faces and equator are sharp edges. The bottom half is a ~34 deg
-  overhang (support-free at the usual 45 deg limit); the top half is
-  self-supporting. The top mouth is a countersink, so it is the one
-  feature to watch when printing hole-up.
+- Top/bottom face diameter = letter bead height - 2 x letter face
+  fillet = `(width/2) - 2*(width/12)` = `width/3` = 40 mm at defaults.
+  The face is a flat annulus around the bore.
+- Hole throat 20 mm, plain straight bore, **no mouth fillet yet** at
+  either end.
+- The side is a smooth barrel, not a straight bicone:
+  `r(z) = R_face + (R_max - R_face) * sin(pi*z/H)^curvature`.
+  `curvature` is the family knob for how curved the bead is:
+  1.0 = sine barrel, 1.5 = fuller barrel with near-vertical ends
+  (default), 2.0 = more rounded. The widest point is smooth for every
+  value >= 1.
+- At `curvature = 1.5` the largest overhang is about 44 deg from
+  vertical, so the bottom half prints support-free; the top half is
+  self-supporting. The plain bore also removes the top-mouth
+  countersink overhang that a filleted mouth would add.
 
 ## Approved mouth recipe (cylinder letter bead)
 

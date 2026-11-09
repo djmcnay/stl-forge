@@ -3,29 +3,28 @@
     ==================================================
     A wide spacer bead for the giant-bead family. Unlike the letter/heart/star
     beads, it is printed with the string hole VERTICAL (the hole axis is Z and
-    the bottom face sits on the build plate), so the two mouths are the top and
-    bottom ends of the barrel rather than through the side.
+    the bottom face sits on the build plate), so the bore runs straight through
+    the top and bottom faces.
 
     Form (defaults, width 120):
       - overall height = width = 120 mm (the letter bead's width)
       - widest point at mid-height: diameter = width = 120 mm (z = 60, which
         is also the letter bead's height)
-      - straight taper from the face/base at each end out to the equator
-      - top/bottom face width = the letter bead's mouth opening where the
-        fillet starts: diameter = 2 * (R_throat + r_mouth) = 33.33 mm
-      - hole throat = 20 mm, same as the letter bead, with the same revolved
-        fillet-well mouth at both ends (valid here because each end wall is a
-        flat plane perpendicular to the hole axis)
+      - top/bottom face diameter = letter bead height - 2 * letter face fillet
+        = (width/2) - 2*(width/12) = width/3 = 40 mm
+      - hole throat = 20 mm, straight bore, NO mouth fillet yet
+      - the side is a smooth barrel, not a straight bicone. `curvature` is the
+        exponent in r(z) = R_face + (R_max - R_face)*sin(pi*z/H)^curvature:
+        1.0 = sine barrel, 1.5 = fuller barrel with vertical ends (default),
+        2.0 = more rounded. The widest point is smooth for every value >= 1.
 
-    The mouth dial deliberately uses the letter bead's reference height
-    (width / 2), not this barrel's taller height: "the hole should be the
-    same size by default" means the same throat and same r_mouth as the
-    letter bead. The face/base radius is then exactly the outer edge of that
-    mouth well, per the letter-bead hole protocol.
+    Print orientation: hole vertical, bottom face on the plate. At the default
+    curvature 1.5 the largest overhang is about 44 deg from vertical, so the
+    bottom half is effectively support-free; the top half is self-supporting.
+    The plain bore also removes the top-mouth countersink overhang.
 
-    Print orientation: hole vertical, bottom face on the plate. The taper is
-    ~34 deg from vertical at defaults, inside the usual 45 deg support-free
-    overhang limit.
+    The face formula deliberately uses the LETTER bead's height (width/2) and
+    face fillet (width/12), not the spacer's taller height.
 */
 use <bead_common.scad>
 
@@ -35,74 +34,73 @@ width = 120;
 // Overall height along the hole axis (mm): the wide spacer is as tall as the
 // letter bead is wide.
 height = width;
-// String-hole throat diameter at the centre plane (mm)
+// String-hole throat diameter (mm)
 hole_diameter = 20;
-// Flare arc radius (mm): family rule width / 8; retained, unused by the mouth.
+// Flare arc radius (mm): family rule width / 8; retained, unused by the plain
+// bore.
 bore_fillet_radius = width / 8;
-// Face fillet radius (mm): family rule width / 12. Retained for family
-// parameter symmetry; the spacer's tapered face meets the cone directly.
+// Face fillet radius (mm): family rule width / 12. Here it is used as the
+// letter bead's face-fillet value in the face-diameter formula below.
 fillet_radius = width / 12;
-// Derived hole values
+// Barrel curvature exponent: 1 = sine barrel, 1.5 = fuller barrel with
+// vertical ends, 2 = more rounded. Must be >= 1 so the widest point is smooth
+// and the ends do not cusp.
+curvature = 1.5;
+
+// ---- derived body dimensions ------------------------------------------
+H = height;
+R_max = width / 2;             // equator radius (widest point)
+letter_height = width / 2;     // the letter bead's height
+face_diameter = letter_height - 2 * fillet_radius;
+R_face = face_diameter / 2;    // top/bottom face radius
 R_throat = hole_diameter / 2;
 extra = 5;                     // mm bore overshoot past both faces
 
-// ---- mouth dial: same hole as the letter bead --------------------------
-// The letter bead's dial is evaluated at its own height (width / 2). Keeping
-// that reference height here means r_mouth is unchanged by the spacer's
-// taller body, so the hole really is the same size by default.
-letter_height = width / 2;
-r_mouth_max = (letter_height / 2.25) - (fillet_radius + R_throat);
-r_mouth = max(0.5, min(0.5 * hole_diameter, r_mouth_max));
-
-// ---- derived body dimensions ------------------------------------------
-R_max = width / 2;             // equator radius (widest point)
-R_face = R_throat + r_mouth;   // face/base radius = mouth well outer edge
-H = height;
-
 assert(width > 0, "width must be positive");
 assert(height > 0, "height must be positive");
-assert(hole_diameter < 2 * R_face, "hole throat must fit inside the face");
 assert(fillet_radius > 0, "fillet_radius must be positive");
-assert(r_mouth > 0, "mouth fillet collapsed: height too small for this dial set");
+assert(curvature >= 1, "curvature must be >= 1 (below 1 the ends cusp)");
+assert(R_face >= R_throat, "face diameter must be at least the hole diameter");
 assert(R_face <= R_max, "face radius must not exceed the equator radius");
 
-// Smooth bore surfaces; the tapered body is a revolved polygon and follows
-// $fn as well.
+// Smooth revolved surfaces.
 $fn = 128;
 
-// ---- body: double cone with flat ends ---------------------------------
-// Profile in the (r, z) half-plane. The widest point is a deliberate sharp
-// equator at z = H/2; the top/bottom faces are flat disks out to R_face.
-profile = [
-    [0, 0],
-    [R_face, 0],
-    [R_max, H / 2],
-    [R_face, H],
-    [0, H]
-];
+// ---- body: smooth barrel with flat ends -------------------------------
+// Radius as a function of height. sin(180*z/H) is 0 at the faces, 1 at the
+// equator; the exponent controls how full the barrel is. At curvature > 1 the
+// side is vertical at both the faces and the equator, and the widest point is
+// smooth (dr/dz = 0).
+function barrel_r(z) =
+    R_face + (R_max - R_face) * pow(sin(180 * z / H), curvature);
+
+n_profile = 96;                // profile samples over the full height
+profile = concat(
+    [[0, 0]],
+    [for (i = [0 : n_profile]) let(z = H * i / n_profile) [barrel_r(z), z]],
+    [[0, H]]
+);
 
 module spacer_solid() {
     rotate_extrude(angle = 360)
         polygon(profile);
 }
 
-// ---- string hole: same revolved fillet-well as the letter bead ---------
-// bead_string_hole_well() is authored along X with the hole centre at the
-// origin; rotate it 90 deg about Y to put the hole on Z, then lift to the
-// barrel mid-height. hole_entry_x = H/2 places the two wall planes exactly
-// at z = 0 and z = H.
+// ---- string hole: straight vertical bore ------------------------------
+// bead_string_hole_plain() is authored along X with the cylinder centred at
+// the origin; rotate it 90 deg about Y to put the bore on Z, then lift to the
+// barrel mid-height. hole_len = H/2 + extra clears both faces.
 module string_hole() {
     translate([0, 0, H / 2])
         rotate([0, 90, 0])
-            bead_string_hole_well(
-                hole_entry_x = H / 2,
+            bead_string_hole_plain(
                 R_throat = R_throat,
-                r_mouth = r_mouth,
-                extra = extra);
+                hole_len = H / 2 + extra);
 }
 
-echo(bead_spacer_wide_r_mouth = r_mouth,
+echo(bead_spacer_wide_face_dia = face_diameter,
      bead_spacer_wide_face_r = R_face,
+     bead_spacer_wide_curvature = curvature,
      bead_spacer_wide_width = width,
      bead_spacer_wide_height = height);
 
