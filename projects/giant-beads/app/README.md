@@ -1,62 +1,104 @@
-# stl-forge generation app
+# Giant beads app
 
-A native-Gradio control panel over the `projects/giant-beads` templates.
-Two tabs:
+A single-page, native-Gradio workbench for the five-bead family:
 
-- **STL Forge** - pick a template from `projects/giant-beads/templates/*.scad`;
-  its top parameter block is parsed into one control per literal-valued
-  parameter (`info=` from the file's own comments). Both tabs are live with
-  no Render button: template selection rebuilds the controls and every
-  control change renders straight through the OpenSCAD CLI
-  (`--export-format=binstl`, one `-D key=value` per control, defaults
-  round-trip cleanly) into a 1/3 : 2/3 column split - left = template
-  dropdown + controls + Reset, right = the interactive `gr.Model3D`
-  binary-STL orbit view with a full-width `gr.DownloadButton` (always
-  bound to the latest `<stem>_app.stl` render) and an appending session
-  log under it (one entry per render, newest at the bottom, full
-  OpenSCAD stderr on failure).
-- **Geometry Playground** - four sliders (width, points, roundness,
-  petal_depth) drive the star/petal sketch in `bead_star.scad` via a
-  tiny driver file that `use`s it (the .scad maths stays the single
-  source of truth); "Render sketch" shows a fast face-on PNG of
-  `star_2d` extruded 1 mm plus the echoed valley ratio.
+- **Letter bead** (`bead.scad`)
+- **Heart bead** (`bead_heart.scad`)
+- **Star bead** (`bead_star.scad`)
+- **Doughnut spacer** (`bead_spacer_small.scad`)
+- **Shallot spacer** (`bead_spacer_wide.scad`)
 
-Renders land ONLY in `app/.render-scratch/` (gitignored) - this app is a
-control panel, not a delivery mechanism.
+The page is arranged as a three-pane bench: family size on the left,
+the orbit view in the middle, and the selected bead's shape controls on
+the right. The goal is to size the whole set, shape one bead at a time,
+then download the STLs. It is not a CAD editor.
 
 ## Run
 
-From the skill root (the app builds its own venv; the Hermes venv is not
-a dependency):
+From the repo root:
 
-```
+```bash
 projects/giant-beads/app/.venv/bin/python projects/giant-beads/app/app.py
 ```
 
-Serves the master app at http://127.0.0.1:7863 (allowed_paths cover the
-scratch and templates dirs).
-
-Each tab also stands alone, per the sub-app contract:
-
-```
-app/.venv/bin/python app/forge_tab/app.py    # STL Forge only,  port 7864
-app/.venv/bin/python app/sketch_tab/app.py   # Playground only, port 7865
-```
+Serves at http://127.0.0.1:7863. Renders land only in the gitignored
+`app/.render-scratch/` directory.
 
 ## Build the venv (once)
 
+```bash
+uv venv projects/giant-beads/app/.venv
+uv pip install --python projects/giant-beads/app/.venv/bin/python gradio
 ```
-cd <skill root>
-uv venv app/.venv
-uv pip install --python app/.venv/bin/python gradio
-```
+
+The app was built and smoke-tested with Gradio 6.31.0 and OpenSCAD
+2026.10.11. OpenSCAD must be on `PATH`.
+
+## Family model
+
+**Global** (left column):
+
+- **Width**: the face/enclosing-circle diameter, 60 to 240 mm.
+- **String hole**: the throat diameter, 10 to 40 mm.
+- **Heights** are shown as a readout because the templates define them
+  from the family width:
+  - letter, heart, star: `width / 2`
+  - doughnut spacer: `width / 4`
+  - shallot spacer: `width`
+
+**Per bead** (right column):
+
+- Shape controls only (letter/font/size/weight, heart roundness, star
+  roundness/points/petal depth, doughnut curvature/mouth, shallot
+  curvature).
+- **Override family size** opens per-bead width and hole sliders. The
+  override belongs to that bead; switching beads does not leak it to a
+  sibling. This is how to make one extra-fat shallot without changing
+  the rest of the set.
+- **Reset this bead** restores that bead's shape defaults and clears its
+  size override.
+
+Every change renders the selected bead live through the OpenSCAD CLI.
+Sliders use `.change` with `always_last` so typing in the number box and
+dragging both work, while stale requests are dropped. Text fields apply
+on Enter or blur.
+
+## Downloads
+
+- **Download this bead** downloads the current render as
+  `giant-bead-<bead>.stl`.
+- **Build family zip** renders all five at the current family and
+  override settings, then reveals **Download family zip**. The zip
+  contains the five STLs plus `family-settings.txt` with the effective
+  parameters for the set.
+
+Both use `gr.DownloadButton`, so the browser's normal download folder
+and download prompt decide where the file lands. The app does not write
+into `~/Downloads` itself.
+
+## Design notes
+
+- Native Gradio components only. The theme is a `gr.themes.Base`
+  subclass in `theme.py` using the house palette (warm paper / deep
+  green-black / one brass accent), plus a small tier-2 CSS block for the
+  bead picker, viewer frame, monospace metadata, and a warm filter on the
+  Model3D canvas. No custom HTML or JavaScript.
+- The Model3D canvas filter desaturates and warms Gradio's default
+  lavender mesh so it sits with the brass accent rather than fighting it.
+- The viewer toolbar's Undo/Clear buttons are hidden; the app owns the
+  render state.
+- The page keeps the working surface first: family size, bead choice,
+  viewer, then the selected bead's controls.
 
 ## Layout
 
 ```
 app/
-  app.py               # master: composes the two tabs, launch(port=7863)
-  forge_tab/app.py     # tab 1: template dropdown + parameter controls + render
-  sketch_tab/app.py    # tab 2: star/petal sketch dials + face-on PNG
-  shared/scad.py       # OpenSCAD CLI helpers (render, parse, probe)
+  app.py          # Blocks layout, state, and event wiring
+  family.py       # bead specs, global/override rules, render cache, zip
+  theme.py        # native theme tokens + small CSS
+  shared/scad.py  # OpenSCAD parsing, -D formatting, render, STL probe
 ```
+
+`family.py` has no Gradio dependency, so its rules are covered by
+`tests/test_app_family.py` without launching a browser or OpenSCAD.

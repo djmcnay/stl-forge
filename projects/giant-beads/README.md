@@ -10,6 +10,19 @@ The two provenance copies sit beside them verbatim:
 `templates/parametric_heart_reference.scad` and
 `templates/parametric_star_flower.scad` (see "Provenance" below).
 
+## Interactive family app
+
+`app/` is a single-page Gradio workbench for the same five beads:
+
+```bash
+projects/giant-beads/app/.venv/bin/python projects/giant-beads/app/app.py
+```
+
+It keeps width and string hole global, offers a per-bead size override,
+renders the selected bead live in an orbit viewer, downloads the current
+STL, and can build a family zip containing all five STLs plus a settings
+note. See `app/README.md` for the layout and behaviour contract.
+
 ## One command, all artefacts
 
 Run these from the skill directory `` (the paths below

@@ -80,9 +80,9 @@ Build is headless through the OpenSCAD CLI (`--export-format=binstl`).
 The pipeline emits **binary STL by design** (80-byte header + uint32 facet
 count at offset 80 + 50 bytes/triangle; file size exactly `84 + 50*n`).
 Measure geometry from the STL vertex stream (`utilities/core/stl_probe.py`),
-never from preview proportions. The Gradio generation app is served with
-`projects/giant-beads/app/.venv/bin/python projects/giant-beads/app/app.py` at
-http://127.0.0.1:7863.
+never from preview proportions. The Gradio giant-bead family workbench is
+served with `projects/giant-beads/app/.venv/bin/python projects/giant-beads/app/app.py`
+at http://127.0.0.1:7863.
 
 Tests:
 

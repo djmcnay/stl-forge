@@ -441,50 +441,52 @@ from template work - do not reuse template gates here:
 
 ## Generation app (Gradio, in-skill)
 
-`projects/giant-beads/app/` is the principal's interactive builder: master `app.py` (port
-7863) composes the STL Forge tab (template dropdown, controls parsed
-from each template's own parameter block with the file's comments as
-text; a 1/3 : 2/3 column split, parameters
-plus Reset on the LEFT; on the RIGHT the binary-STL orbit view, a
-full-width Download STL button beneath it bound to the latest
-render, and an APPENDING session log stream below it: one timestamped
-line per render with the full OpenSCAD stderr on failure, seeded with a
-boot line, bounded at the last 200 entries; the page H1 is literally
-`# ⚒ STL-forge` and the tab label is plain `STL-forge`) and the Geometry
-Playground tab (live
-star/petal sketch dials rendered face-on through the real OpenSCAD
-functions - never re-implement those maths in Python). Run from the
-skill root with `projects/giant-beads/app/.venv/bin/python projects/giant-beads/app/app.py`; when that venv\'s
-python dies with `dyld ... Library not loaded libpython` (concurrent
-dispatches re-break this venv), launch instead with the Hermes venv
-python (`~/.hermes/hermes-agent/venv/bin/python projects/giant-beads/app/app.py`, gradio
-already installed) and repair the app venv in a quiet moment.
-The orbit viewer's only colour knob is `clear_color`; it is set dark
-violet `(0.10, 0.02, 0.16)` because the mesh material colour is NOT
-exposed by gradio 6.30 and the ground tone is what gives the grey mesh
-contrast. Iterate deliverables IN PLACE: while a shape is being designed
-in steps, OVERWRITE the same `<name>.stl` in the delivery folder each
-step (the principal-ordered overwrite rule) and never name new version
-files unbidden.
-Standing preferences baked in, and any UI change must keep them: NO
-Render button (renders are change-driven; selecting a template
-auto-renders its defaults so the view is never empty), a Reset button
-below the parameters restoring the template's file defaults, native
-Gradio components only (no custom HTML/CSS, no theming), renders ONLY
-into gitignored `projects/giant-beads/app/.render-scratch/`. Only literal-valued parameters
-become controls: driving a derived one (`height = width / 2`) would
-trip the template asserts, so defaults always round-trip. EVERY
-declared control carries explicit `interactive=True`: Gradio 6.30
-hydrates @gr.render-injected controls as DISABLED when interactivity
-is left to defaults (server-side handlers keep working, the front end
-locks, and the user sees sliders that read but do not move), so the
-explicit flag is the fix at the cause.
-For agent
-coding in this directory, Gradio's own skill is installed
-project-locally via `gradio skills add --opencode` (per
-gradio.app/guides/Gradio-skills-for-ai-coding-assistants); follow
-`.opencode/skills/gradio/SKILL.md` over training memory, since Gradio
-6 has moved several APIs.
+`projects/giant-beads/app/` is the principal's five-bead family
+workbench (port 7863, H1 `# Giant beads`). It is a single native-Gradio
+page, not a template browser:
+
+- The left column holds the global family width and string-hole
+  diameter, the derived-height readout, the bead picker, and the family
+  zip action.
+- The middle column is the interactive binary-STL orbit view with the
+  current bead's download button and a collapsed render log.
+- The right column holds only the selected bead's shape controls and a
+  per-bead family-size override (width and hole). The override belongs
+  to that bead and does not leak to its siblings.
+- Family heights are a rule, not a free dial: letter/heart/star
+  `width/2`, doughnut `width/4`, shallot `width`. Show them, do not
+  drive a derived `height` control into the templates.
+- No Render button: every change renders live. Sliders use `.change`
+  with `always_last` so number-box entry works; text fields apply on
+  Enter/blur. A per-bead Reset restores that bead's file defaults.
+- Per-bead downloads are `giant-bead-<bead>.stl`; the family zip is
+  built on demand (five STLs plus `family-settings.txt`) and then
+  downloaded through `gr.DownloadButton`. The browser owns the download
+  folder.
+
+Run from the skill root with
+`projects/giant-beads/app/.venv/bin/python projects/giant-beads/app/app.py`.
+The app venv is Gradio 6.31.0. If that venv\'s python dies with
+`dyld ... Library not loaded libpython`, launch instead with the Hermes
+venv python (`~/.hermes/hermes-agent/venv/bin/python projects/giant-beads/app/app.py`)
+and repair the app venv in a quiet moment.
+
+The UI uses native components only. `app/theme.py` is a
+`gr.themes.Base` subclass with the house palette plus a small tier-2
+CSS block (bead picker cards, viewer frame, monospace metadata, and a
+warm filter on the Model3D canvas); custom HTML and JavaScript are
+still out of bounds. The viewer's own Undo/Clear toolbar is hidden so
+the app state stays authoritative. Renders land ONLY in gitignored
+`projects/giant-beads/app/.render-scratch/`. File defaults come from
+each template's top literal parameter block; `app/family.py` owns the
+bead specs, global/override assembly, render cache, and zip, and has no
+Gradio dependency. Keep `tests/test_app_family.py` aligned with it.
+
+For agent coding in this directory, Gradio skills are installed
+globally (`huggingface-gradio`, `gradio-themes`, `gradio-design`,
+`impeccable`) and an older project-local `.opencode/skills/gradio/`
+copy still exists; prefer the global official skill. Gradio 6 moved
+`theme=`/`css=` to `launch()`; the app follows that split.
 
 ## Authoring for humans (MakerWorld-facing)
 

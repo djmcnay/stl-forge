@@ -1,1 +1,1 @@
-"""stl-forge generation app package (master app + two tabs + shared helpers)."""
+"""Giant-bead family workbench (native Gradio app)."""
