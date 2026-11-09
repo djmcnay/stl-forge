@@ -1,0 +1,19 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "servers": {
+      "solidcraft": {
+        "type": "local",
+        "command": [
+          "solidcraft-cli",
+          "mcp",
+          "--headless",
+          "--allow-path",
+          "/Users/djmcnay/GitHub/stl-forge",
+          "--allow-path",
+          "/Users/djmcnay/Downloads/stl-forge"
+        ]
+      }
+    }
+  }
+}
