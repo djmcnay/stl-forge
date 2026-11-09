@@ -1,0 +1,65 @@
+{
+  "schema": "stl-forge/card-sizes@1",
+  "validated_on": "2026-11-09",
+  "units": "mm",
+  "reading": {
+    "width_mm": "short side of the card",
+    "height_mm": "long side of the card",
+    "corner_radius_mm": "corner rounding (the card's curvature)"
+  },
+  "notes": [
+    "The print-industry standard corner radius is 1/8 in = 3.175 mm; 3.5 mm is the common metric die-line value and is what most card printers quote. The two are interchangeable at this scale.",
+    "Poker is often quoted as 63 x 88 mm; the exact imperial size is 63.5 x 88.9 mm (2.5 x 3.5 in). Geometry should use width_mm/height_mm (the exact values); nominal is for matching a publisher or printer spec sheet.",
+    "UNO / UNO Junior is 56 x 87 mm, the 'Standard USA' sleeve size. It is NOT bridge: bridge is 57 x 89 mm (2.25 x 3.5 in)."
+  ],
+  "cards": {
+    "poker": {
+      "label": "Poker / standard playing card",
+      "width_mm": 63.5,
+      "height_mm": 88.9,
+      "corner_radius_mm": 3.5,
+      "nominal": {
+        "width_mm": 63,
+        "height_mm": 88
+      },
+      "imperial": {
+        "width_in": 2.5,
+        "height_in": 3.5,
+        "corner_radius_in": 0.1378
+      },
+      "sources": [
+        "https://printninja.com/card-dimensions/ (poker 63.5 x 88.9; TCG nominal 63 x 88)",
+        "https://www.greenerprinter.com/blog/what-are-standard-playing-card-dimensions/ (2.5 x 3.5 in; 3.5 mm corner radius)",
+        "https://customprintedpaper.com/blog/playing-card-dimensions/ (standard corner radius ~3.5 mm / 0.138 in)"
+      ]
+    },
+    "bridge": {
+      "label": "Bridge (reference size, not used by the UNO Junior box)",
+      "width_mm": 57,
+      "height_mm": 89,
+      "corner_radius_mm": 3.5,
+      "imperial": {
+        "width_in": 2.25,
+        "height_in": 3.5
+      },
+      "sources": [
+        "https://print247.us/post/what-is-the-standard-playing-card-size (bridge 2.25 x 3.5 in; 3 mm-3.5 mm corner)",
+        "https://thepremierpackaging.com/playing-card-dimensions-guide/ (bridge 57 x 89 mm)"
+      ]
+    },
+    "uno-junior": {
+      "label": "UNO Junior",
+      "width_mm": 56,
+      "height_mm": 87,
+      "corner_radius_mm": 3.5,
+      "sleeve": "Standard USA card sleeve (56 x 87 mm)",
+      "not_bridge": "Bridge is 57 x 89 mm; UNO Junior is 1 mm narrower and 2 mm shorter.",
+      "sources": [
+        "https://boardgamegeek.com/boardgame/2223/uno/sleeves (Standard USA 56 x 87 mm)",
+        "https://www.thingiverse.com/thing:5146159 (UNO Junior card box: cards 87 x 56 mm)",
+        "https://www.reddit.com/r/boardgames/comments/13mjzv7/uno_cards_in_standard_size/ (UNO narrower than poker; bridge 56 x 88 in that thread)",
+        "https://www.scribd.com/document/1066891149/Uno-Cards-Printable-Guide (UNO die line: 3.5 mm rounded corners)"
+      ]
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "project": "cards",
+  "note": "Canonical defaults for the UNO Junior deck box. Card data lives in card-sizes.json; this file is the box parameter snapshot. Derived values are what the SolidCraft model computes, kept here so a new agent can check the model without opening it.",
+  "uno_junior_box": {
+    "card": "uno-junior",
+    "card_width_mm": 56,
+    "card_height_mm": 87,
+    "deck_thickness_mm": 15,
+    "wall_mm": 2,
+    "fit_clearance_mm": 0.6,
+    "entry_chamfer_mm": 1,
+    "thumb_arch_diameter_mm": 17.5,
+    "thumb_arch_radius_mm": 8.75,
+    "logo_width_mm": 45,
+    "logo_artwork_width_mm": 37.75,
+    "logo_artwork_height_mm": 35.11,
+    "logo_depth_mm": 0.8,
+    "derived_mm": {
+      "inner_width": 56.6,
+      "inner_depth": 15.6,
+      "inner_height": 87.6,
+      "outer_width": 60.6,
+      "outer_depth": 19.6,
+      "outer_height": 89.6
+    }
+  }
+}

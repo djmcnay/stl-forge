@@ -19,7 +19,8 @@ up and build from the templates.
 │   ├── core/            STL probe + preview annotation
 │   └── references/      CAD routes, Bambu, shape acceptance
 ├── projects/
-│   └── giant-beads/   giant pony / letter beads (see its README; app/ is per-project)
+│   ├── giant-beads/   giant pony / letter beads (see its README; app/ is per-project)
+│   └── cards/         card-game accessories (UNO Junior deck box first)
 ├── vault/           Obsidian vault for learnings (YYYYMMDD + tags; see vault/README.md)
 ```
 
@@ -49,6 +50,12 @@ Rules (full contract in `AGENTS.md`):
 
   See `projects/giant-beads/README.md` for the family, parameters
   and mouth recipe.
+
+- **`projects/cards/`** — playing-card accessories. The first part is a
+  parametric UNO Junior deck box (56 x 87 mm cards, 15 mm deck, 2 mm
+  walls, engraved Artemis logo). Validated card sizes and corner radii
+  live in `projects/cards/card-sizes.json`; the model is a SolidCraft
+  design at `projects/cards/solidcraft/uno-junior-box.sc`.
 
 - **Box family (utilities example)** — open-top storage boxes via
   `utilities/forge.py`:
