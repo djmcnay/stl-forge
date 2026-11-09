@@ -74,46 +74,42 @@ R = width / 2;
 H = height;
 c = fillet_radius;
 
-// A broad face that is only slightly wider than tall, like the reference:
-// the cheeks define the family width, while the ear lobes sit high on the
-// crown and outboard of the cheeks (their outer edges may extend past it).
-face_ry = 0.90 * R;
+// Measured from the supplied Etsy reference (face width = 2R):
+//   face ellipse       width 2R, height 1.714R
+//   ear span           2.192R, ear tops at 1.036R above centre
+//   inner ear          near-circle 0.392R diameter
+//   eyes              0.272R x 0.318R ovals, centres at y = -0.012R
+//   muzzle             0.906R x 0.732R ellipse, centre y = -0.394R
+face_ry = 0.857 * R;
 face_cy = 0.0;
 
-// Large high ears.  The lobes overlap the crown; their outer edge may sit
-// outside the cheek width, because the family width is defined by the
-// cheeks, not by the ears.
-ear_r = 0.35 * R * ear_size;
-ear_x = 0.86 * R;
-ear_y = 0.78 * R;
-// The inner-ear recess is an upright oval, shifted slightly inward/down.
-// The front recess may tuck a little into the ear's face fillet; the
-// build-plate etch stays clamped to the flat cap so its groove never runs
-// off the bottom edge.
-inner_ear_r = min(
-    0.19 * R * ear_size,
-    (ear_r - fillet_radius + 1.8) / 1.15);
-inner_ear_etch_r = min(
-    inner_ear_r,
-    (ear_r - fillet_radius - 1.2) / 1.15);
-inner_ear_x_scale = 0.90;
-inner_ear_y_scale = 1.15;
-inner_ear_dx = 0.04 * R;
-inner_ear_dy = -0.08 * R;
+// Large high ears, centred just outboard of the cheeks.
+ear_r = 0.386 * R * ear_size;
+ear_x = 0.710 * R;
+ear_y = 0.650 * R;
+// The inner-ear recess is nearly circular, centred slightly low in the ear.
+// Clamp it to the flat ear cap left by the fixed family face fillet.
+inner_ear_r = min(0.196 * R * ear_size,
+                  ear_r - fillet_radius - 0.6);
+inner_ear_etch_r = min(inner_ear_r,
+                       ear_r - fillet_radius - 1.2);
+inner_ear_dx = 0.006 * R;
+inner_ear_dy = -0.030 * R;
 
-// Eyes are large raised oval pads set high and close to the muzzle.
-eye_x = 0.44 * R * eye_spacing;
-eye_y = 0.36 * R;
-eye_r = 0.14 * R;
-eye_y_scale = 1.25;
-catchlight_r = 0.032 * R;
-catchlight_dx = -0.045 * R;
-catchlight_dy = 0.055 * R;
+// Eyes are large oval pads at the vertical centre, close to the muzzle.
+eye_x = 0.408 * R * eye_spacing;
+eye_y = -0.012 * R;
+eye_r = 0.136 * R;
+eye_y_scale = 1.17;
+catchlight_r = 0.020 * R;
+catchlight_dx = 0.030 * R;
+catchlight_dy = 0.075 * R;
 
-// The round bit around the nose and mouth is the muzzle.  It is the wide
-// cream oval of the reference; the nose/mouth sit high in its upper half.
-muzzle_cy = -0.32 * R;
-muzzle_r = 0.38 * R * muzzle_size;
+// The round bit around the nose and mouth is the muzzle: a wide cream
+// ellipse.  Nose and mouth sit in its upper half.
+muzzle_cy = -0.394 * R;
+muzzle_rx = 0.453 * R * muzzle_size;
+muzzle_ry = 0.366 * R * muzzle_size;
 nose_raise = 0.55 * detail_relief;
 mouth_raise = 0.45 * detail_relief;
 
@@ -146,8 +142,7 @@ module bear_outline_2d() {
 module inner_ears_2d(r = inner_ear_r) {
     for (s = [-1, 1])
         translate([s * (ear_x - inner_ear_dx), ear_y + inner_ear_dy])
-            scale([inner_ear_x_scale, inner_ear_y_scale])
-                circle(r = r);
+            circle(r = r);
 }
 
 // Eyes: oval black pads.  The catchlights are separate small raised dots.
@@ -172,18 +167,16 @@ module catchlights_2d() {
 // the muzzle_size dial scales the whole expression coherently.
 module muzzle_2d() {
     translate([0, muzzle_cy])
-        scale([muzzle_size, muzzle_size])
-            circle(r = 0.29 * R);
+        scale([muzzle_rx / (0.453 * R), muzzle_ry / (0.366 * R)])
+            circle(r = 0.453 * R);
 }
 
 module nose_2d() {
     translate([0, muzzle_cy])
         scale([muzzle_size, muzzle_size])
-            hull() {
-                translate([-0.090 * R, 0.280 * R]) circle(r = 0.060 * R);
-                translate([ 0.090 * R, 0.280 * R]) circle(r = 0.060 * R);
-                translate([ 0.000 * R, 0.160 * R]) circle(r = 0.050 * R);
-            }
+            translate([0, 0.153 * R])
+                scale([1, 0.696])
+                    circle(r = 0.171 * R);
 }
 
 function _qbez(p0, p1, p2, t) =
@@ -199,21 +192,21 @@ module mouth_2d() {
             line_w = 0.023 * R;
             // Short stem down from the nose, then the two soft "w" arcs.
             hull() {
-                translate([0, 0.120 * R]) circle(r = line_w / 2);
-                translate([0, 0.040 * R]) circle(r = line_w / 2);
+                translate([0, 0.034 * R]) circle(r = line_w / 2);
+                translate([0, -0.106 * R]) circle(r = line_w / 2);
             }
             for (s = [-1, 1]) {
                 n = 18;
                 for (i = [0 : n - 1]) {
                     p0 = _qbez(
-                        [0, 0.040 * R],
-                        [s * 0.070 * R, -0.050 * R],
-                        [s * 0.140 * R, -0.010 * R],
+                        [0, -0.106 * R],
+                        [s * 0.090 * R, -0.190 * R],
+                        [s * 0.170 * R, -0.150 * R],
                         i / n);
                     p1 = _qbez(
-                        [0, 0.040 * R],
-                        [s * 0.070 * R, -0.050 * R],
-                        [s * 0.140 * R, -0.010 * R],
+                        [0, -0.106 * R],
+                        [s * 0.090 * R, -0.190 * R],
+                        [s * 0.170 * R, -0.150 * R],
                         (i + 1) / n);
                     hull() {
                         translate([p0[0], p0[1]]) circle(r = line_w / 2);
@@ -362,7 +355,7 @@ module bottom_etch_2d() {
     _etch_ring(min(etch_width, catchlight_r * 0.35))
         catchlights_2d();
     // muzzle
-    _etch_ring(min(etch_width, muzzle_r * 0.25))
+    _etch_ring(min(etch_width, muzzle_rx * 0.25))
         muzzle_2d();
     // nose
     _etch_ring(min(etch_width, 0.052 * R * muzzle_size * 0.55))

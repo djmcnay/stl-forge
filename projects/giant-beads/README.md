@@ -200,7 +200,9 @@ widest part of the cheeks, `height = width / 2` is the body thickness,
 the bore and face fillets keep their family defaults, and the bottom
 stays flat on the build plate. The face is a broad, near-round ellipse
 with two large high ear lobes; the ears sit outboard of the cheeks, so
-the overall ear span is wider than the family width. The inner-ear shapes are a
+the overall ear span is wider than the family width.  The face, ears,
+inner ears, eyes and muzzle are traced as flat ellipses/arcs from the
+supplied reference and then extruded with the family's face fillets. The inner-ear shapes are a
 shallow recess on the front face; the eye pads and muzzle (the round
 snout carrying the nose and mouth) are raised; catchlights, nose and
 mouth are embossed on top. The build-plate face carries shallow
