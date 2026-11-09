@@ -350,7 +350,7 @@ def bead_meta(state: dict, slug: str, result: "RenderResult") -> str:
     hole = effective_hole(state, slug)
     diameter, height = bead_dimensions(slug, width)
     size = (
-        f"{fmt_num(width)} mm wide × {fmt_num(height)} mm thick"
+        f"{fmt_num(width)} mm cheek width × {fmt_num(height)} mm thick"
         if slug == "bear"
         else f"Ø{fmt_num(diameter)} × {fmt_num(height)} mm"
     )
@@ -433,7 +433,7 @@ def settings_text(state: dict) -> str:
         diameter, height = bead_dimensions(bead.slug, width)
         overridden = bool(state["beads"][bead.slug]["override"])
         size = (
-            f"{fmt_num(width)} mm wide x {fmt_num(height)} mm thick"
+            f"{fmt_num(width)} mm cheek width x {fmt_num(height)} mm thick"
             if bead.slug == "bear"
             else f"Ø{fmt_num(diameter)} x {fmt_num(height)} mm"
         )
