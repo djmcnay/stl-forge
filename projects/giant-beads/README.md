@@ -233,26 +233,45 @@ build-plate faces (`detail_relief` scales depth).
 Source images: the principal-supplied Defender profile drawing and
 `https://www.the-blueprints.com/blueprints-depot-restricted/cars/landrover/land_rover_defender_90_1990-83624.jpg`.
 
-## bead_defender_rear.scad — Defender 90 rear bead
+## bead_defender_rear.scad — Defender 90 rear bead (first pass)
 
-A rear-end bead with the boxy Defender body, rear door, rear window,
-side quarter lights, vertical tail lights, bumper, mudflaps and the
-large centre spare wheel. `width` is the vehicle width; silhouettes are
-30 mm thick with the same gentle 4 mm default fillet and exposed edge
-fillet/etch-depth sliders. Rear-door, hinge, light and spare-wheel
-detail is etched on both flat faces.
+Hand-drawn first pass: boxy body, rear door, rear window, quarter lights,
+tail lights, bumper, mudflaps and the centre spare wheel, etched on both flat
+faces with a 4 mm edge fillet. Superseded by `bead_defender_rear_v2.scad` below;
+kept because the app panel still points at it. `width` is the vehicle width,
+`height` 30 mm.
 
-This template is superseded, not yet rewritten. The rebuild base is
-`references/defender/rear-bead-sketch.png` + `rear-bead-sketch.json`:
-one stroke per feature, doubled panel edges collapsed, deleted parts absent,
-silhouette taken from the principal's trace ink. Regenerate with
-`python3 projects/giant-beads/tools/bead_sketch.py`. Levels: silhouette,
-etched (one depth), and four separate raised heights (lights, spare tyre, steel
-wheel, waist seam). `references/defender/rear-parts-by-colour.png` (from
-`tools/part_map.py`) is the decision record behind it, not the build input.
-The pipeline and the rule behind it ("the trace is the geometry - recolour or
-derive, never redraw") are documented in `tools/README.md`; per-view data lives
-in `tools/views/`.
+## bead_defender_rear_v2.scad — Defender 90 rear bead (from the approved trace)
+
+The first build off the approved clean sketch. Nothing is drawn in the template:
+`templates/bead_defender_rear_data.scad` is generated from
+`references/defender/rear-bead-sketch.json` by `tools/bead_scad.py`, and the
+template turns that data into a bead.
+
+- **Silhouette** extruded with a tight 2 mm edge fillet, both faces — enough to
+  soften the rim without rounding the shape off.
+- **One etch depth** on both faces: rear door, rear window, alpine lights,
+  number plate, roof gutter, bumper top edge, and the wheel detail (8 rim
+  holes, 5 nuts, hub), which is cut at the raised wheel's own height.
+- **Four raised levels**, each a fraction of the bead thickness:
+  lights `height / 20` (domes), spare tyre `height / 10`,
+  steel wheel `height / 15`, waist seam `height / 20`. The bumper cross member
+  is flush with the car, so it is not raised.
+- **String hole** through the width at mid-thickness, family default 20 mm.
+
+`width`, `height`, `hole_diameter`, `fillet_radius` and `etch_depth`
+(`0.6 * detail_relief`) are the family parameters; the raised heights are
+derived from `height`. Rebuild the geometry with
+
+```bash
+python3 projects/giant-beads/tools/bead_scad.py                     # sketch -> SCAD data
+python3 utilities/forge.py --presets projects/giant-beads/presets.json \
+    --only bead_defender_rear_v2 --out .tmp/out                     # STL + previews
+```
+
+`bead_defender_rear.scad` (the hand-drawn first pass) stays in the templates dir
+until this one is approved; the app still shows the old one. The level story and
+the trace pipeline behind it are in `tools/README.md`.
 
 Source images: `https://freecadfloorplans.com/wp-content/uploads/2023/05/land-rover-defender.jpg.webp`
 and the principal-supplied Defender photo.

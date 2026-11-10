@@ -46,6 +46,14 @@
       "preview": "assembly",
       "template": "bead.scad",
       "width": 120
+    },
+    "bead_defender_rear_v2": {
+      "template": "bead_defender_rear_v2.scad",
+      "width": 120,
+      "height": 30,
+      "hole_diameter": 20,
+      "fillet_radius": 2,
+      "detail_relief": 1.0
     }
   }
 }

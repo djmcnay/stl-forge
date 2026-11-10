@@ -110,6 +110,23 @@
     "silhouette_height": 128,
     "construction": "Defender 90 rear silhouette; gentle slabbed face/bottom fillet; shallow spare-wheel/door/light etches on both faces"
   },
+  "bead_defender_rear_v2_scad": {
+    "width": 120,
+    "height": 30,
+    "hole_diameter": 20,
+    "bore_fillet_radius": 15,
+    "fillet_radius": 2,
+    "R_throat": 10,
+    "detail_relief": 1.0,
+    "etch_depth": 0.6,
+    "etch_w": 1.0,
+    "lights_height": 1.5,
+    "tyre_height": 3.0,
+    "wheel_height": 2.0,
+    "seam_height": 1.5,
+    "$fn": 128,
+    "construction": "built from rear-bead-sketch.json via tools/bead_scad.py; silhouette extruded with a 2 mm edge fillet; one etch depth on both faces; lights, spare tyre, steel wheel and waist seam raised by height/20, /10, /15, /20"
+  },
   "bead_heart_scad": {
     "width": 120,
     "height": 60,

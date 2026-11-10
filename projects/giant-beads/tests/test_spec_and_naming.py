@@ -16,6 +16,7 @@ TEMPLATE_DEFAULTS = {
     "bead_bear_scad": "bead_bear.scad",
     "bead_defender_profile_scad": "bead_defender_profile.scad",
     "bead_defender_rear_scad": "bead_defender_rear.scad",
+    "bead_defender_rear_v2_scad": "bead_defender_rear_v2.scad",
     "bead_heart_scad": "bead_heart.scad",
     "bead_star_scad": "bead_star.scad",
     "bead_flower_scad": "bead_flower.scad",
@@ -185,7 +186,8 @@ def test_project_presets_only_beads():
     data = json.loads(
         (PROJECT_DIR / "presets.json").read_text(encoding="utf-8"))
     presets = data["presets"]
-    assert sorted(presets) == ["bead_D", "bead_default", "bead_smooth"]
+    assert sorted(presets) == ["bead_D", "bead_default", "bead_defender_rear_v2",
+                              "bead_smooth"]
     for name, p in presets.items():
         assert p["template"].startswith("bead")
         if name != "bead_smooth":

@@ -4,8 +4,12 @@ One path, repeated per elevation. The rear is done; the side and the front are
 the same walk with a new view module.
 
 ```
-photo ──▶ traced overlay ──▶ part map ──▶ (principal signs off) ──▶ bead sketch ──▶ bead-sketch.json ──▶ SCAD
-             pink ink        recoloured ink      the spec              one stroke per feature      the build input
+photo ──▶ traced overlay ──▶ part map ──▶ (principal signs off) ──▶ bead sketch ──▶ bead-sketch.json
+             pink ink        recoloured ink      the spec              one stroke per feature   the build input
+                                                                                                │
+                                                        templates/…_data.scad ◀── bead_scad.py ─┘
+                                                                 │
+                                                        model .scad ──▶ STL + previews
 ```
 
 ## The rule that governs everything
@@ -39,7 +43,8 @@ All of them land in `references/<view>/` (here `references/defender/`).
 | `rear-parts.json` | per-part ink loops (closed, even-odd) | ink-exact reference, **not** a build input |
 | `rear-bead-sketch.png` | clean base: one stroke per feature | what gets built |
 | `rear-bead-sketch-overlay.png` | the same lines over the photo | how you check it still looks like a Defender |
-| `rear-bead-sketch.json` | silhouette polygon + parts + levels | **the build input the SCAD reads** |
+| `rear-bead-sketch.json` | silhouette polygon + parts + levels | **the build input** |
+| `templates/bead_defender_rear_data.scad` | that JSON as SCAD arrays | generated, do not edit |
 
 The two JSONs are deliberately different things. `rear-parts.json` is the ink as
 drawn, doubling and all; `rear-bead-sketch.json` is the resolved geometry. When
@@ -71,8 +76,18 @@ python3 projects/giant-beads/tools/part_map.py            # part map + parts.jso
 python3 projects/giant-beads/tools/part_map.py --check -v # per-part pixel counts, no render
 python3 projects/giant-beads/tools/bead_sketch.py         # sketch + photo overlay + build json
 python3 projects/giant-beads/tools/bead_sketch.py --check # fit of sketch to trace ink, no render
-python3 -m pytest projects/giant-beads/tests/test_views.py -q
+python3 projects/giant-beads/tools/bead_scad.py           # sketch json -> template data
+python3 utilities/forge.py --presets projects/giant-beads/presets.json \
+    --only bead_defender_rear_v2 --out .tmp/out           # STL + previews
+python3 -m pytest projects/giant-beads/tests/test_views.py \
+    projects/giant-beads/tests/test_bead_data.py -q
 ```
+
+`bead_scad.py` reports what it converted: profile points, strokes, rings, pads
+and lamps. It also cleans the outline: the sketch is traced on pixel cracks, so
+it carries sub-pixel wobble that shows up in CAD as a faceted wall. Points that
+sit within 0.2 mm of the chord between their neighbours are dropped — the shape
+moves by less than a fifth of the etch width, and the wall extrudes flat.
 
 `part_map.py` prints what it did to the ink — pixels kept, removed by request,
 added by request — and refuses to finish if a removal does not match the size it
@@ -100,7 +115,14 @@ on the rear that is 2.7 px mean (0.25 mm on a 120 mm bead).
 5. **Diff the sheets against the trace** by eye before showing anyone: open
    `*-parts-by-colour.png` next to the overlay. If a stroke changed colour
    across its length, the probes are competing and a `bias` needs adjusting.
-6. **Add the view to the tests** by doing nothing — `test_views.py`
+6. **Generate the SCAD data** and build the model:
+   `python3 tools/bead_scad.py --view <view>` writes
+   `templates/bead_defender_<view>_data.scad`; the model template
+   (`bead_defender_<view>_v2.scad` style) is hand-written and reads that file
+   with `include`. Units: the data is millimetres at the reference width,
+   y up, origin at the centre of the silhouette, and the template scales the
+   face plane by `width / DATA_WIDTH` while keeping depths in millimetres.
+7. **Add the view to the tests** by doing nothing — `test_views.py`
    parametrises over `viewdata.available()` and will pick it up. It checks the
    contract, that every role is a known level, and that the silhouette closes.
 
@@ -123,6 +145,7 @@ build if a data block reappears in an engine.
 * `overlay_trace.py` — chamfer-fit a sketch onto its photo and report the
   alignment error. CPU only, reproducible.
 * `stl_volume.py` — signed volume of a binary STL (`python3 stl_volume.py x.stl`).
+* `bead_scad.py` — sketch JSON → template data (the only pixel→millimetre step).
 * `levels.py` — the level vocabulary.
 * `viewdata.py` — view loader, contract check, output paths.
 * `views/` — one module per elevation.
