@@ -27,6 +27,6 @@ Do not rebuild the 3D beads from the earlier 120 x 58 / 120 x 128 guesses. Rebui
 - Orange: visible side door seam, handle and hinges. The 90 has one side door; the rear quarter is fixed bodywork.
 - Cyan: front door window, rear side window, alpine roof window and window divisions.
 - Yellow: road-wheel tyres, rims, hubs and wheel nuts.
-- Amber: spare wheel behind the rear body.
-- Included: side step.
+- Amber: spare wheel behind the rear body (full tyre, rim and hub, dashed where hidden).
+- Included: side step, drawn as its own separate outline below the body sill.
 - Omitted on purpose: wing mirror, mudflaps, exhaust.
