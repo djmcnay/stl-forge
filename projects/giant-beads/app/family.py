@@ -13,7 +13,7 @@ Height is a family rule, not a free dial:
     letter / bear / heart / star   height = width / 2
     doughnut spacer         height = width / 4
     shallot spacer          height = width
-    Defender profile / rear        height = 30
+    Defender profile / rear        height = width / 2  (same as the letters)
 
 That keeps the eight templates proportional and honours the assertions
 inside the .scad files.
@@ -389,8 +389,6 @@ def bead_dimensions(slug: str, width: float) -> tuple[float, float]:
         return width / 2, width
     if slug == "doughnut":
         return width / 2, width / 4
-    if slug in {"defender_profile", "defender_rear"}:
-        return width, 30.0
     return width, width / 2
 
 
@@ -422,7 +420,7 @@ def family_summary(width: float) -> str:
         f"Letter, bear, heart, star **{fmt_num(width / 2)} mm**  \n"
         f"Doughnut **{fmt_num(width / 4)} mm** · "
         f"Shallot **{fmt_num(width)} mm**  \n"
-        "Defender profile and rear **30 mm thick**"
+        f"Defender profile and rear **{fmt_num(width / 2)} mm thick**"
     )
 
 

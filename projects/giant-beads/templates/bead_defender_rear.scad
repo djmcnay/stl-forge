@@ -14,7 +14,7 @@
 use <bead_defender_common.scad>
 
 width = 120;
-height = 30;
+height = width / 2;   // family rule
 hole_diameter = 20;
 bore_fillet_radius = width / 8;    // retained family name; plain bore
 fillet_radius = 4;

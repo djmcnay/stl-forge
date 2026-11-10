@@ -261,23 +261,34 @@ bead from `templates/bead_defender_rear_data.scad`, which
 no geometry: regenerate the data after any sketch change and commit it with the
 template, or `tests/test_bead_data.py` fails as stale.
 
-Parameters, as specified: `width` and `height` from the family (120 x 30),
-`etch_depth` from the family value `0.6 * detail_relief`, and a **2 mm** edge
-fillet - tight on purpose, so the boxy Defender read survives. The raised levels
-are fractions of the bead thickness:
+Parameters, as specified: `width` and `height` from the family (`height =
+width / 2`, so 120 x 60 - the 30 mm this file used to quote was a hardcode in
+the superseded pair, now fixed there too), `etch_depth` from the family value
+`0.6 * detail_relief`, and a **2 mm** edge fillet - tight on purpose, so the
+boxy Defender read survives. The raised levels are fractions of the bead
+thickness:
 
-| level | height | at H = 30 |
+| level | height | at H = 60 |
 | --- | --- | --- |
-| lights (domes) | height / 20 | 1.5 mm |
-| spare tyre | height / 10 | 3.0 mm |
-| steel wheel | height / 15 | 2.0 mm |
-| waist seam | height / 20 | 1.5 mm |
+| lights (domes) | height / 30 | 2.0 mm |
+| spare tyre | height / 10 | 6.0 mm |
+| steel wheel | height / 15 | 4.0 mm |
+| waist seam | height / 30 | 2.0 mm |
+
+Every raised pad has a 1 mm roundover on its top edge and a 1 mm cove where it
+meets the face. The road wheels are recessed by `height / 20` (3 mm) with a
+quarter-round back up to the face, because on the real car they sit ahead of
+the rear panel: the legs of the silhouette are lower than the body.
 
 The tyre is an annulus (outer edge to the steel wheel's edge), so the wheel sits
 as a disc inside it and the two steps read. The bumper cross member stays flush
 with the car, so only those four levels are raised. Etches are one depth on both
 faces; the wheel detail (8 rim holes, 5 nuts, hub) is cut at the raised wheel's
 own height so it is not buried.
+
+**Nothing protrudes from the bottom.** The bead is printed on that face, so it
+is flat apart from grooves: the raised levels are repeated there as flat etch
+outlines (tyre and wheel rings, seam lines, lamp circles) instead of relief.
 
 One CAD-only change to the sketch: `bead_scad.py` drops profile points within
 0.2 mm of their neighbours' chord. The sketch is traced on pixel cracks, and the
@@ -303,7 +314,12 @@ Seen in the first build, for the principal to rule on:
 3. The roof gutter etch sits within the 2 mm fillet band at the very top of the
    roof, so the groove shallows out at its ends.
 4. `bead_defender_rear.scad` (the hand-drawn first pass) and the app panel still
-   point at the old geometry until v2 is approved.
+   point at the old geometry until v2 is approved. Its height now follows the
+   family rule like v2's does; expect the app's defender beads to render 60 mm
+   thick rather than 30.
+5. The tread recess is 3 mm deep with a 3 mm quarter-round. If "a lot more
+   rounded" means a bigger radius, the recess has to get deeper with it - a
+   quarter-round can only be as deep as it is wide.
 
 ## Side sketch stage
 

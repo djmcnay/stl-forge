@@ -239,7 +239,8 @@ Hand-drawn first pass: boxy body, rear door, rear window, quarter lights,
 tail lights, bumper, mudflaps and the centre spare wheel, etched on both flat
 faces with a 4 mm edge fillet. Superseded by `bead_defender_rear_v2.scad` below;
 kept because the app panel still points at it. `width` is the vehicle width,
-`height` 30 mm.
+`height = width / 2` (the family rule - it used to hardcode 30 mm here, which is
+where the whole 30 mm confusion came from).
 
 ## bead_defender_rear_v2.scad — Defender 90 rear bead (from the approved trace)
 
@@ -248,15 +249,22 @@ The first build off the approved clean sketch. Nothing is drawn in the template:
 `references/defender/rear-bead-sketch.json` by `tools/bead_scad.py`, and the
 template turns that data into a bead.
 
-- **Silhouette** extruded with a tight 2 mm edge fillet, both faces — enough to
-  soften the rim without rounding the shape off.
+- **Silhouette** extruded with a tight 2 mm edge fillet on the top face only:
+  the bottom is the build plate and stays flat.
 - **One etch depth** on both faces: rear door, rear window, alpine lights,
   number plate, roof gutter, bumper top edge, and the wheel detail (8 rim
   holes, 5 nuts, hub), which is cut at the raised wheel's own height.
-- **Four raised levels**, each a fraction of the bead thickness:
-  lights `height / 20` (domes), spare tyre `height / 10`,
-  steel wheel `height / 15`, waist seam `height / 20`. The bumper cross member
-  is flush with the car, so it is not raised.
+- **The bottom carries no relief at all.** It sits on the plate, so it is flat
+  apart from grooves: every raised level is repeated there as a flat etch
+  outline, and nothing stands up.
+- **Four raised levels** on the top face, each a fraction of the bead
+  thickness: lights `height / 30` (domes), spare tyre `height / 10`,
+  steel wheel `height / 15`, waist seam `height / 30`. Each has a 1 mm
+  roundover on its top edge and a 1 mm cove where it meets the face. The bumper
+  cross member is flush with the car, so it is not raised.
+- **The road wheels sit behind the rear**: their tread bands are recessed by
+  `height / 20` with a quarter-round back up to the face, so they read as
+  wheels set forward rather than as part of the rear panel.
 - **String hole** through the width at mid-thickness, family default 20 mm.
 
 `width`, `height`, `hole_diameter`, `fillet_radius` and `etch_depth`

@@ -100,14 +100,37 @@ def test_template_renders_a_watertight_solid(tmp_path):
     stl = tmp_path / "bead.stl"
     subprocess.run(
         [str(OPENSCAD), "--export-format=binstl", "-o", str(stl),
-         "-D", "width=60", "-D", "height=15", "-D", "hole_diameter=8",
-         "-D", "fillet_radius=1.5", "-D", "$fn=48", str(TEMPLATE)],
+         "-D", "width=60", "-D", "hole_diameter=8", "-D", "fillet_radius=1.5",
+         "-D", "$fn=48", str(TEMPLATE)],
         check=True, capture_output=True)
     data = stl.read_bytes()
     n = struct.unpack_from("<I", data, 80)[0]
     assert n > 1000
     assert len(data) == 84 + 50 * n, "not a binary STL"
     assert b"OpenSCAD" in data[:80]
+
+
+@REQUIRES_OPENSCAD
+def test_build_plate_is_flat(tmp_path):
+    """The bottom sits on the plate, so every vertex there is at z = 0.
+
+    Etches are grooves: they must not take the plate below the first layer.
+    """
+    stl = tmp_path / "bead.stl"
+    subprocess.run(
+        [str(OPENSCAD), "--export-format=binstl", "-o", str(stl),
+         "-D", "width=60", "-D", "$fn=32", str(TEMPLATE)],
+        check=True, capture_output=True)
+    data = stl.read_bytes()
+    n = struct.unpack_from("<I", data, 80)[0]
+    zs = []
+    for i in range(n):
+        f = struct.unpack_from("<12f", data, 84 + 50 * i)
+        zs.extend([f[5], f[8], f[11]])
+    assert min(zs) == pytest.approx(0.0, abs=1e-4)
+    # the bead is width / 2 thick (30 at width 60) and the spare tyre is the
+    # tallest thing on it (height / 10)
+    assert max(zs) == pytest.approx(30 + 3.0, abs=0.2)
 
 
 @REQUIRES_OPENSCAD
@@ -126,7 +149,12 @@ def test_template_declares_the_family_parameters():
     for name in ("width", "height", "hole_diameter", "bore_fillet_radius",
                  "fillet_radius", "R_throat", "$fn"):
         assert re.search(rf"(?m)^{re.escape(name)}\s*=", text), name
+    # height follows the family rule, not a hardcoded slab thickness
+    assert re.search(r"(?m)^height\s*=\s*width\s*/\s*2;", text)
     # the raised heights are fractions of the family thickness, as specified
-    for name, div in (("lights_height", 20), ("tyre_height", 10),
-                      ("wheel_height", 15), ("seam_height", 20)):
+    for name, div in (("lights_height", 30), ("tyre_height", 10),
+                      ("wheel_height", 15), ("seam_height", 30)):
         assert re.search(rf"(?m)^{name}\s*=\s*height\s*/\s*{div};", text), name
+    # the road wheels sit behind the rear: a recess with a fillet back to the face
+    assert re.search(r"(?m)^tread_low\s*=\s*height\s*/\s*20;", text)
+    assert re.search(r"(?m)^tread_fillet\s*=\s*tread_low;", text)

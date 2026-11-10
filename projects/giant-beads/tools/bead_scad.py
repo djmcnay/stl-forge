@@ -40,6 +40,8 @@ TEMPLATES = os.path.join(PROJECT, "templates")
 DEFAULT_VIEW = "rear"
 ARC_STEP_DEG = 7.5          # corner sampling for rounded rectangles
 OUTLINE_TOL_MM = 0.2        # see simplify(): removes the pixel-trace wobble
+TREAD_TOP_PX = 1132         # the bumper's bottom edge: below it the profile is
+                            # the road wheels, which sit behind the rear
 
 
 # ---- pixel frame -> millimetre frame -----------------------------------
@@ -102,6 +104,21 @@ def simplify(pts, tol):
     return [ring[i] for i in keep[:-1]]
 
 
+def clip_below(pts, y):
+    """Keep the part of a closed polygon at or below the line y (mm)."""
+    out = []
+    n = len(pts)
+    for i in range(n):
+        a, b = pts[i], pts[(i + 1) % n]
+        a_in, b_in = a[1] <= y, b[1] <= y
+        if a_in:
+            out.append(a)
+        if a_in != b_in:
+            t = (y - a[1]) / (b[1] - a[1])
+            out.append([round(a[0] + t * (b[0] - a[0]), 3), y])
+    return out
+
+
 def round_rect_loop(frame, box, radius):
     """A rounded rectangle as a closed polyline, corners sampled by angle."""
     x0, y0, x1, y1 = box
@@ -143,8 +160,9 @@ def ring_array(group, frame):
 
 def collect(doc, frame):
     """Sort the sketch parts into the arrays the SCAD template consumes."""
-    out = dict(silhouette=simplify(frame.ring(doc["silhouette"][:-1]),
-                                   OUTLINE_TOL_MM),
+    sil = simplify(frame.ring(doc["silhouette"][:-1]), OUTLINE_TOL_MM)
+    out = dict(silhouette=sil,
+               tread=[clip_below(sil, frame.xy(0, TREAD_TOP_PX)[1])],
                strokes=[], rings=[], wheel_rings=[], tyre=[], wheel=[],
                seam=[], lights=[])
     for part in doc["parts"]:
@@ -267,6 +285,10 @@ def text_of(doc, frame, data, view_name):
     chunks.append("")
     chunks.append(emit_list("RAISED_SEAM", data["seam"],
                             comment="waist seam pads, one closed polygon each"))
+    chunks.append("")
+    chunks.append(emit_list("TYRE_TREAD", data["tread"],
+                            comment="road-wheel footprint: the profile below "
+                                    "the bumper, where the wheels sit"))
     chunks.append("")
     chunks.append(emit_list("LIGHTS", data["lights"],
                             comment="round lamps: centre and radius"))
