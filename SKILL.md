@@ -297,14 +297,14 @@ non-circular family (heart, star, flower), not just the heart:
   the quarter-arc as erosion z-slices: a uniform `offset(r=-u)` of the outline
   per slab, 32 slabs, each slab taking its BASE point's inset so the chords
   stay inscribed and match bead.scad's polyline arcs. `hull()` is not a
-  substitute - it fills any cleft the outline has. bead_heart.scad and
-  bead_star.scad ship these fillets at the shared family default
-  `fillet_radius = width / 12` (10 mm at width 120); when porting a new
-  non-circular family, mirror bead_heart.scad's slab construction verbatim
-  (the `n_fillet`, `fillet_u`, `fillet_z` tables and the
-  bottom/mid/top stack), never invent a fresh arc scheme.
-  bead_bear.scad's first pass is a straight extrusion with no face
-  fillet so the approved detail field stays flat and supported.
+  substitute - it fills any cleft the outline has. bead_heart.scad,
+  bead_star.scad and bead_bear.scad ship these fillets at the shared
+  family default `fillet_radius = width / 12` (10 mm at width 120); when
+  porting a new non-circular family, mirror bead_heart.scad's slab
+  construction verbatim (the `n_fillet`, `fillet_u`, `fillet_z` tables
+  and the bottom/mid/top stack), never invent a fresh arc scheme.
+  bead_bear uses n_fillet=128 because its broad face makes the terraces
+  visible at the heart/star count.
 - SLAB COUNT IS A FAMILY DECISION, not a per-template dial: heart and star
   ship the SAME n_fillet (32 - about 0.3 mm steps at a 10 mm radius, which
   shows as fine terraced bands in previews; that banding is the family

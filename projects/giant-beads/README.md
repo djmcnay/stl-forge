@@ -198,15 +198,18 @@ leaves only a 60 mm flat face: `120*0.45 = 54 < 60` fits, while 0.75 ->
 The bear uses the letter bead's outer-family rules: `width` is the
 widest part of the cheeks, `height = width / 2` is the body thickness,
 the bore is a plain 20 mm tunnel, and the bottom stays flat on the build
-plate. The first pass is a straight extrusion with no face fillet, so
-the approved detail field stays flat and supported. The face is a broad, gently elliptical shape with two large high ear
+plate. The face and bottom use the family's quarter-round fillets; the
+detail field inside the fillet stays flat and supported, and the muzzle
+is pulled just inside the flat top. The face is a broad, gently elliptical shape with two large high ear
 lobes; the ears sit outboard of the cheeks, so the overall ear span is
 wider than the family width.  The face, ears,
 inner ears, eyes and muzzle are traced as flat ellipses/arcs from the
-supplied reference and extruded straight in this first pass. The inner-ear shapes are a
-shallow recess on the front face, clipped where the head overlaps them; the eye pads and muzzle (the round
-snout carrying the nose and mouth) are raised; catchlights, nose and
-mouth are embossed on top. The build-plate face carries shallow
+supplied reference and extruded with the family face fillets. The inner-ear shapes are a
+shallow recess on the front face, clipped where the head overlaps them.
+The eye pads and muzzle (the round snout carrying the nose and mouth)
+are raised to 2.5% of the bead height; the muzzle has a softened top
+edge; the nose and mouth are etched into it; the pupils are shallow
+holes like the inner ears. The build-plate face carries shallow
 contour-groove etches for the inner ears, eyes, pupils, muzzle, nose
 and mouth, in the same print-friendly language as the letter bead's
 bottom groove. The mouth is a fillable line groove rather than a

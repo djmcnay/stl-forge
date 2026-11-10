@@ -1,12 +1,12 @@
 /*
-    BEAD BEAR - first-pass extruded face bead.
-    ========================================
+    BEAD BEAR - filleted face bead.
+    ==============================
 
-    The approved 2D face sketch is extruded straight from the build-plate
-    face to the front face.  There is deliberately NO face fillet in this
-    first pass: the whole front face stays flat, so every raised/recessed
-    detail is supported by the body and cannot overhang the chin.  A
-    softened edge can be added after the print shape is approved.
+    The approved face sketch is extruded between the family's quarter-round
+    face fillets.  The front and build-plate faces stay flat inside those
+    fillets, so all raised/recessed detail is supported and cannot overhang
+    the chin.  The muzzle is pulled just inside the top flat so its bottom
+    edge remains on the supported face.
 
     The string hole is a plain 20 mm bore along X through the side walls.
 
@@ -25,7 +25,7 @@ height = width / 2;
 
 hole_diameter = 20;
 bore_fillet_radius = width / 8;   // retained family name; plain bore here
-fillet_radius = width / 12;       // retained family name; no face fillet yet
+fillet_radius = width / 12;       // family face fillet
 R_throat = hole_diameter / 2;
 extra = 5;
 
@@ -46,7 +46,7 @@ assert(detail_relief > 0, "detail_relief must be positive");
 
 R = width / 2;
 H = height;
-c = fillet_radius;                 // reserved; not used in this pass
+c = fillet_radius;
 
 // ---- approved face-sketch proportions ---------------------------------
 // Traced from the supplied reference and normalised to width = 2R.
@@ -61,9 +61,11 @@ ear_r = 0.4137 * R * ear_size;
 ear_x = 0.7610 * R;
 ear_y = 0.6967 * R;
 
-inner_r = 0.2102 * R * ear_size;
 inner_dx = 0.0322 * R;
 inner_dy = 0.0322 * R;
+inner_r = min(
+    0.2102 * R * ear_size,
+    ear_r - c - sqrt(inner_dx * inner_dx + inner_dy * inner_dy) - 0.5);
 
 eye_x = 0.4373 * R * eye_spacing;
 eye_y = -0.0128 * R;
@@ -75,7 +77,7 @@ pupil_ry = 0.0537 * R;
 pupil_dx = 0.0322 * R;
 pupil_dy = 0.0803 * R;
 
-muzzle_cy = -0.4127 * R;
+muzzle_cy = -0.3627 * R;   // pulled up 3 mm to clear the face fillet
 muzzle_rx = 0.4855 * R * muzzle_size;
 muzzle_ry = 0.3698 * R * muzzle_size;
 
@@ -94,12 +96,13 @@ mouth_ctrl_x = 0.0912 * R;
 mouth_w = 0.025 * R;
 
 // Feature heights
+eye_raise = 0.025 * H * detail_relief;
+muzzle_raise = 0.025 * H * detail_relief;
+muzzle_fillet = min(0.8 * detail_relief, 0.55 * muzzle_raise);
 inner_recess = 1.2 * detail_relief;
-eye_raise = 1.1 * detail_relief;
-pupil_raise = 0.45 * detail_relief;
-muzzle_raise = 1.1 * detail_relief;
-nose_raise = 0.55 * detail_relief;
-mouth_raise = 0.45 * detail_relief;
+pupil_recess = inner_recess;
+nose_etch = 0.6 * detail_relief;
+mouth_etch = 0.6 * detail_relief;
 etch_depth = 1.0;
 etch_width = 0.8;
 
@@ -197,6 +200,46 @@ module mouth_2d() {
         }
 }
 
+// ---- filleted body -----------------------------------------------------
+n_fillet = 128;
+fillet_u = [for (i = [0 : n_fillet])
+                c - c * cos(-90 + 90 * i / n_fillet)];
+fillet_z = [for (i = [0 : n_fillet])
+                c + c * sin(-90 + 90 * i / n_fillet)];
+
+module bear_solid() {
+    union() {
+        for (i = [0 : n_fillet - 1])
+            translate([0, 0, fillet_z[i]])
+                linear_extrude(height = fillet_z[i + 1] - fillet_z[i] + 0.005)
+                    offset(r = -fillet_u[i])
+                        outer_2d();
+        if (H - 2 * c > 0.001)
+            translate([0, 0, c])
+                linear_extrude(height = H - 2 * c)
+                    outer_2d();
+        for (k = [0 : n_fillet - 1])
+            translate([0, 0, H - fillet_z[k + 1]])
+                linear_extrude(height = fillet_z[k + 1] - fillet_z[k] + 0.005)
+                    offset(r = -fillet_u[k])
+                        outer_2d();
+    }
+}
+
+module raised_fillet(h, fr, n = 16) {
+    base = max(0.01, h - fr);
+    linear_extrude(height = base) children();
+    for (i = [0 : n - 1]) {
+        z0 = base + fr * i / n;
+        z1 = base + fr * (i + 1) / n;
+        t = (i + 1) / n;
+        inset = fr * (1 - sqrt(max(0, 1 - t * t)));
+        translate([0, 0, z0])
+            linear_extrude(height = z1 - z0 + 0.002)
+                offset(r = -inset) children();
+    }
+}
+
 // ---- bottom-face etch -------------------------------------------------
 module _etch_ring(w) {
     difference() {
@@ -218,7 +261,7 @@ module bottom_etch_2d() {
 // ---- solid -------------------------------------------------------------
 module bear_body() {
     difference() {
-        linear_extrude(height = H) outer_2d();
+        bear_solid();
         // plain string-hole bore along X, centred at mid-thickness
         translate([0, 0, H / 2])
             rotate([0, 90, 0])
@@ -235,16 +278,22 @@ module bear_body() {
 }
 
 module bear_details() {
-    translate([0, 0, H])
-        linear_extrude(height = eye_raise) eyes_2d();
-    translate([0, 0, H + eye_raise])
-        linear_extrude(height = pupil_raise) pupils_2d();
-    translate([0, 0, H])
-        linear_extrude(height = muzzle_raise) muzzle_2d();
-    translate([0, 0, H + muzzle_raise])
-        linear_extrude(height = nose_raise) nose_2d();
-    translate([0, 0, H + muzzle_raise])
-        linear_extrude(height = mouth_raise) mouth_2d();
+    difference() {
+        union() {
+            translate([0, 0, H])
+                linear_extrude(height = eye_raise) eyes_2d();
+            translate([0, 0, H])
+                raised_fillet(muzzle_raise, muzzle_fillet) muzzle_2d();
+        }
+        // pupil holes, like the inner-ear pockets
+        translate([0, 0, H + eye_raise - pupil_recess])
+            linear_extrude(height = pupil_recess + 0.5) pupils_2d();
+        // etched nose and mouth in the muzzle top
+        translate([0, 0, H + muzzle_raise - nose_etch])
+            linear_extrude(height = nose_etch + 0.5) nose_2d();
+        translate([0, 0, H + muzzle_raise - mouth_etch])
+            linear_extrude(height = mouth_etch + 0.5) mouth_2d();
+    }
 }
 
 union() {
