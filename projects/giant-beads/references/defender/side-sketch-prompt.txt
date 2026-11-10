@@ -1,0 +1,19 @@
+Convert this photograph of the side of a Land Rover Defender into a clean black-and-white technical line drawing, exactly like a blueprint outline prepared for CAD tracing. Pure white background, crisp uniform black outlines only, no grey, no shading, no hatching, no gradients, no textures, no photographic detail, no background scenery. Keep the vehicle perfectly straight-on from the side, facing left, centred, and keep the same proportions as the reference.
+
+Draw only these features as simple, closed, evenly weighted black lines:
+- One continuous outer silhouette of the body: the flat roof, the small radius where the roof meets the windscreen, the stepped bonnet, the front grille panel, the straight sill line, the flat rear body and the squared rear corner.
+- The front bumper as one horizontal bar at the lower front of the vehicle, with its bracket lines.
+- The roof window at the very top of the cabin as one long rounded rectangle.
+- The front door window and the rear side window as two large rounded rectangles, separated by one straight vertical division.
+- The door shut line as one single clean vertical line running from the sill up to the roof, uninterrupted and unadorned. This line has nothing attached to it: no hinges, no latch, no bolts, no small blocks and no protruding tabs.
+- One short horizontal line for the door handle.
+- The front wheel arch and the rear wheel arch as clean semicircular arcs cut into the body.
+- Two road wheels, front and rear: one circle for the tyre, a circle inside for the steel rim, a small circle for the raised hub, and a ring of small round wheel-nut holes. Show the tyres as smooth circles with no tread.
+- The running board below the door as one long low rectangle with a short vertical support at each end.
+- The front headlight as one circle on the front panel, with one small circle for the indicator beside it.
+- The spare wheel at the back: where it protrudes past the rear body, drawn as one clean arc segment following the tyre, so the back of the vehicle shows a clear rounded bulge.
+- The roof gutter as one straight line along the top of the body below the roof.
+
+The area below the sill between the two wheels contains only the running board and empty white space. Nothing else hangs down there.
+
+Deliberately omit the wing mirror, the mud flaps, the door hinges, the exhaust, the jack, any lettering or badges, the interior seats and steering wheel, and all tyre tread detail.

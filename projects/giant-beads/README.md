@@ -242,6 +242,18 @@ large centre spare wheel. `width` is the vehicle width; silhouettes are
 fillet/etch-depth sliders. Rear-door, hinge, light and spare-wheel
 detail is etched on both flat faces.
 
+This template is superseded, not yet rewritten. The rebuild base is
+`references/defender/rear-bead-sketch.png` + `rear-bead-sketch.json`:
+one stroke per feature, doubled panel edges collapsed, deleted parts absent,
+silhouette taken from the principal's trace ink. Regenerate with
+`python3 projects/giant-beads/tools/bead_sketch.py`. Levels: silhouette,
+etched (one depth), and four separate raised heights (lights, spare tyre, steel
+wheel, waist seam). `references/defender/rear-parts-by-colour.png` (from
+`tools/part_map.py`) is the decision record behind it, not the build input.
+The pipeline and the rule behind it ("the trace is the geometry - recolour or
+derive, never redraw") are documented in `tools/README.md`; per-view data lives
+in `tools/views/`.
+
 Source images: `https://freecadfloorplans.com/wp-content/uploads/2023/05/land-rover-defender.jpg.webp`
 and the principal-supplied Defender photo.
 

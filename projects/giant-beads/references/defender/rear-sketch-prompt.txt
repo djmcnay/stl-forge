@@ -1,0 +1,17 @@
+Convert this photograph of the rear of a Land Rover Defender into a clean black-and-white technical line drawing, exactly like a blueprint outline prepared for CAD tracing. Pure white background, crisp uniform black outlines only, no grey, no shading, no hatching, no gradients, no textures, no photographic detail, no background scenery. Keep the vehicle perfectly straight-on from the rear, centred, and keep the same proportions as the reference.
+
+Draw only these features as simple, closed, evenly weighted black lines:
+- One continuous outer silhouette of the body, including the flat roof edge, the squared rear corners and the lower body sides.
+- The rear door outline as a single rectangle across the middle of the body.
+- The rear door window as one large rectangle with rounded corners, plus the two small Alpine quarter windows in the upper rear corners.
+- The spare wheel mounted on the rear door as one perfect circle for the tyre, and inside it concentric circles for the steel wheel rim, the central hub and the ring of wheel-nut holes. Show the tyre as a smooth circle only.
+- The rear wheel arches and the road wheels visible below the body on both sides, each as a clean arc and circle.
+- The rear cross-member and the bumper as plain straight lines.
+- The number plate as one empty white rectangle on the left of the rear door.
+- Circular outlines around each light cluster at the rear corners, and around the small round lamp low on the right.
+- The roof connection where the roof panel meets the body: one straight horizontal line plus the two small roof-to-side joints at the top corners.
+- Simple straight lines for the door hinges and the handle.
+
+Deliberately omit the mud flaps, the exhaust, the tow bracket, the jack, the number plate lettering, the badge lettering, interior seats and the ladder-like fine detail in the wheel.
+
+Even line weight throughout, sharp corners, high contrast, monochrome, flat 2D elevation view only, nothing in perspective.
