@@ -14,6 +14,8 @@ PARAM_DEFAULTS = json.loads(
 TEMPLATE_DEFAULTS = {
     "bead_scad": "bead.scad",
     "bead_bear_scad": "bead_bear.scad",
+    "bead_defender_profile_scad": "bead_defender_profile.scad",
+    "bead_defender_rear_scad": "bead_defender_rear.scad",
     "bead_heart_scad": "bead_heart.scad",
     "bead_star_scad": "bead_star.scad",
     "bead_flower_scad": "bead_flower.scad",

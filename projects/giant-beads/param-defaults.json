@@ -86,6 +86,30 @@
     "n_fillet": 128,
     "fillet_slice_overlap": 0.005
   },
+  "bead_defender_profile_scad": {
+    "width": 120,
+    "height": 30,
+    "hole_diameter": 20,
+    "bore_fillet_radius": 15,
+    "fillet_radius": 4,
+    "R_throat": 10,
+    "detail_relief": 1.0,
+    "$fn": 128,
+    "silhouette_height": 58,
+    "construction": "Defender 90 side silhouette; gentle slabbed face/bottom fillet; shallow door/window/wheel etches on both faces"
+  },
+  "bead_defender_rear_scad": {
+    "width": 120,
+    "height": 30,
+    "hole_diameter": 20,
+    "bore_fillet_radius": 15,
+    "fillet_radius": 4,
+    "R_throat": 10,
+    "detail_relief": 1.0,
+    "$fn": 128,
+    "silhouette_height": 128,
+    "construction": "Defender 90 rear silhouette; gentle slabbed face/bottom fillet; shallow spare-wheel/door/light etches on both faces"
+  },
   "bead_heart_scad": {
     "width": 120,
     "height": 60,

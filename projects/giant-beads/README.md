@@ -2,17 +2,20 @@
 
 A finished stl-forge project that generates parameterised, print-ready
 bead artefacts. Owned templates: `templates/bead.scad` (cylinder letter
-bead, two-colour two-body model), `templates/bead_heart.scad` (heart
-bead), `templates/bead_star.scad` (star/flower bead),
-`templates/bead_spacer_wide.scad` (wide tapered spacer, hole vertical),
-`templates/bead_spacer_small.scad` (small doughnut spacer, hole vertical).
+bead, two-colour two-body model), `templates/bead_bear.scad` (bear face),
+`templates/bead_defender_profile.scad` (Defender 90 side profile),
+`templates/bead_defender_rear.scad` (Defender 90 rear end),
+`templates/bead_heart.scad` (heart bead), `templates/bead_star.scad`
+(star/flower bead), `templates/bead_spacer_wide.scad` (wide tapered
+spacer, hole vertical), `templates/bead_spacer_small.scad` (small
+doughnut spacer, hole vertical).
 The two provenance copies sit beside them verbatim:
 `templates/parametric_heart_reference.scad` and
 `templates/parametric_star_flower.scad` (see "Provenance" below).
 
 ## Interactive family app
 
-`app/` is a single-page Gradio workbench for the same six beads:
+`app/` is a single-page Gradio workbench for the same eight beads:
 
 ```bash
 projects/giant-beads/app/.venv/bin/python projects/giant-beads/app/app.py
@@ -20,7 +23,7 @@ projects/giant-beads/app/.venv/bin/python projects/giant-beads/app/app.py
 
 It keeps width and string hole global, offers a per-bead size override,
 renders the selected bead live in an orbit viewer, downloads the current
-STL, and can build a family zip containing all six STLs plus a settings
+STL, and can build a family zip containing all eight STLs plus a settings
 note. See `app/README.md` for the layout and behaviour contract.
 
 ## One command, all artefacts
@@ -215,6 +218,32 @@ and mouth, in the same print-friendly language as the letter bead's
 bottom groove. The mouth is a fillable line groove rather than a
 contour ring so it stays printable at small widths. Dials: `ear_size`,
 `eye_spacing`, `muzzle_size`, `detail_relief`.
+
+## bead_defender_profile.scad — Defender 90 side bead
+
+A side-profile bead traced from the Land Rover Defender 90 side drawing:
+boxy roof, raked windscreen, vertical rear body, front bumper, two steel
+wheels and the rear-mounted spare. `width` is the vehicle length; the
+bead is 30 mm thick. Edge fillets default to 4 mm, deliberately gentler
+than the letter bead's 10 mm, and are exposed as an app slider. Doors,
+windows, wheel arches, steel-wheel rims/spokes, spare wheel, grille,
+vents and bumpers are shallow etch grooves repeated on the front and
+build-plate faces (`detail_relief` scales depth).
+
+Source images: the principal-supplied Defender profile drawing and
+`https://www.the-blueprints.com/blueprints-depot-restricted/cars/landrover/land_rover_defender_90_1990-83624.jpg`.
+
+## bead_defender_rear.scad — Defender 90 rear bead
+
+A rear-end bead with the boxy Defender body, rear door, rear window,
+side quarter lights, vertical tail lights, bumper, mudflaps and the
+large centre spare wheel. `width` is the vehicle width; silhouettes are
+30 mm thick with the same gentle 4 mm default fillet and exposed edge
+fillet/etch-depth sliders. Rear-door, hinge, light and spare-wheel
+detail is etched on both flat faces.
+
+Source images: `https://freecadfloorplans.com/wp-content/uploads/2023/05/land-rover-defender.jpg.webp`
+and the principal-supplied Defender photo.
 
 ## bead_heart.scad — heart bead
 

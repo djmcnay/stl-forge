@@ -54,8 +54,9 @@ entanglements (a second fillet, a dome) he has not mentioned.
 
 Completed one-command projects live under `projects/` - currently
 `projects/giant-beads/`: a self-contained builder (`main.py`), its own
-`presets.json`, `templates/` (bead, bead_bear, bead_heart, bead_star,
-bead_flower, sharing the common mouth module `bead_common.scad`) and an input-contract
+`presets.json`, `templates/` (bead, bead_bear, bead_defender_rear,
+bead_defender_profile, bead_heart, bead_star, bead_flower, sharing the
+common mouth module `bead_common.scad`) and an input-contract
 test suite. NOTE: the legacy `--parts flower` flag still drives
 bead_star.scad at roundness 20 (the pre-template flower); the REAL flower
 template is `bead_flower.scad` and wiring main.py/presets to it is an
@@ -443,7 +444,7 @@ from template work - do not reuse template gates here:
 
 ## Generation app (Gradio, in-skill)
 
-`projects/giant-beads/app/` is the principal's six-bead family
+`projects/giant-beads/app/` is the principal's eight-bead family
 workbench (port 7863, H1 `# Giant beads`). It is a single native-Gradio
 page, not a template browser:
 
@@ -459,13 +460,14 @@ page, not a template browser:
   action and the description "All STL files as a zip folder." The
   override belongs to that bead and does not leak to its siblings.
 - Family heights are a rule, not a free dial: letter/bear/heart/star
-  `width/2`, doughnut `width/4`, shallot `width`. Show them, do not
+  `width/2`, doughnut `width/4`, shallot `width`, Defender profile/rear
+  30 mm. Show them, do not
   drive a derived `height` control into the templates.
 - No Render button: every change renders live. Sliders use `.change`
   with `always_last` so number-box entry works; text fields apply on
   Enter/blur. A per-bead Reset restores that bead's file defaults.
 - Per-bead downloads are `giant-bead-<bead>.stl`; the family zip is
-  built on demand (six STLs plus `family-settings.txt`) and then
+  built on demand (eight STLs plus `family-settings.txt`) and then
   downloaded through `gr.DownloadButton`. The browser owns the download
   folder.
 

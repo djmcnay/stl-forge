@@ -13,8 +13,9 @@ Height is a family rule, not a free dial:
     letter / bear / heart / star   height = width / 2
     doughnut spacer         height = width / 4
     shallot spacer          height = width
+    Defender profile / rear        height = 30
 
-That keeps the six templates proportional and honours the assertions
+That keeps the eight templates proportional and honours the assertions
 inside the .scad files.
 """
 from __future__ import annotations
@@ -41,6 +42,8 @@ _TEMPLATE_DEFAULTS = {
     for stem in (
         "bead",
         "bead_bear",
+        "bead_defender_profile",
+        "bead_defender_rear",
         "bead_heart",
         "bead_star",
         "bead_spacer_small",
@@ -176,6 +179,50 @@ BEADS: tuple[BeadSpec, ...] = (
                 "Scales the recessed and raised face details.",
                 minimum=0.50, maximum=1.50, step=0.10,
                 default=_td("bead_bear", "detail_relief"),
+            ),
+        ),
+    ),
+    BeadSpec(
+        slug="defender_profile",
+        label="Defender profile",
+        template="bead_defender_profile.scad",
+        blurb="A Defender 90 side silhouette with etched windows, doors and steel wheels.",
+        output="giant-bead-defender-profile.stl",
+        kind="defender_profile",
+        controls=(
+            ControlSpec(
+                "fillet_radius", "slider", "Edge fillet",
+                "Gentle face and bottom fillet, mm.",
+                minimum=2.0, maximum=8.0, step=0.5,
+                default=_td("bead_defender_profile", "fillet_radius"),
+            ),
+            ControlSpec(
+                "detail_relief", "slider", "Etch depth",
+                "Scales the door, window and wheel grooves.",
+                minimum=0.50, maximum=1.50, step=0.10,
+                default=_td("bead_defender_profile", "detail_relief"),
+            ),
+        ),
+    ),
+    BeadSpec(
+        slug="defender_rear",
+        label="Defender rear",
+        template="bead_defender_rear.scad",
+        blurb="A Defender 90 rear end with a spare wheel, lights and rear-door etches.",
+        output="giant-bead-defender-rear.stl",
+        kind="defender_rear",
+        controls=(
+            ControlSpec(
+                "fillet_radius", "slider", "Edge fillet",
+                "Gentle face and bottom fillet, mm.",
+                minimum=2.0, maximum=8.0, step=0.5,
+                default=_td("bead_defender_rear", "fillet_radius"),
+            ),
+            ControlSpec(
+                "detail_relief", "slider", "Etch depth",
+                "Scales the rear-door, light and spare-wheel grooves.",
+                minimum=0.50, maximum=1.50, step=0.10,
+                default=_td("bead_defender_rear", "detail_relief"),
             ),
         ),
     ),
@@ -342,6 +389,8 @@ def bead_dimensions(slug: str, width: float) -> tuple[float, float]:
         return width / 2, width
     if slug == "doughnut":
         return width / 2, width / 4
+    if slug in {"defender_profile", "defender_rear"}:
+        return width, 30.0
     return width, width / 2
 
 
@@ -349,11 +398,16 @@ def bead_meta(state: dict, slug: str, result: "RenderResult") -> str:
     width = effective_width(state, slug)
     hole = effective_hole(state, slug)
     diameter, height = bead_dimensions(slug, width)
-    size = (
-        f"{fmt_num(width)} mm cheek width × {fmt_num(height)} mm thick"
-        if slug == "bear"
-        else f"Ø{fmt_num(diameter)} × {fmt_num(height)} mm"
-    )
+    if slug == "bear":
+        size = f"{fmt_num(width)} mm cheek width × {fmt_num(height)} mm thick"
+    elif slug == "defender_profile":
+        size = (f"{fmt_num(width)} mm long × {fmt_num(width * 58 / 120)} mm tall"
+                f" × {fmt_num(height)} mm thick")
+    elif slug == "defender_rear":
+        size = (f"{fmt_num(width)} mm wide × {fmt_num(width * 128 / 120)} mm tall"
+                f" × {fmt_num(height)} mm thick")
+    else:
+        size = f"Ø{fmt_num(diameter)} × {fmt_num(height)} mm"
     return (
         f"{size}  ·  Ø{fmt_num(hole)} mm hole  \n"
         f"`{result.facets:,} facets · {scad.human_bytes(result.bytes)}"
@@ -367,7 +421,8 @@ def family_summary(width: float) -> str:
         "**Heights from this width**  \n"
         f"Letter, bear, heart, star **{fmt_num(width / 2)} mm**  \n"
         f"Doughnut **{fmt_num(width / 4)} mm** · "
-        f"Shallot **{fmt_num(width)} mm**"
+        f"Shallot **{fmt_num(width)} mm**  \n"
+        "Defender profile and rear **30 mm thick**"
     )
 
 
@@ -425,6 +480,7 @@ def settings_text(state: dict) -> str:
         "",
         "Height rule: letter/bear/heart/star = width/2, "
         "doughnut = width/4, shallot = width.",
+        "Defender beads are 30 mm thick.",
         "",
     ]
     for bead in BEADS:
@@ -432,11 +488,16 @@ def settings_text(state: dict) -> str:
         hole = effective_hole(state, bead.slug)
         diameter, height = bead_dimensions(bead.slug, width)
         overridden = bool(state["beads"][bead.slug]["override"])
-        size = (
-            f"{fmt_num(width)} mm cheek width x {fmt_num(height)} mm thick"
-            if bead.slug == "bear"
-            else f"Ø{fmt_num(diameter)} x {fmt_num(height)} mm"
-        )
+        if bead.slug == "bear":
+            size = f"{fmt_num(width)} mm cheek width x {fmt_num(height)} mm thick"
+        elif bead.slug == "defender_profile":
+            size = (f"{fmt_num(width)} mm long x {fmt_num(width * 58 / 120)} mm tall"
+                    f" x {fmt_num(height)} mm thick")
+        elif bead.slug == "defender_rear":
+            size = (f"{fmt_num(width)} mm wide x {fmt_num(width * 128 / 120)} mm tall"
+                    f" x {fmt_num(height)} mm thick")
+        else:
+            size = f"Ø{fmt_num(diameter)} x {fmt_num(height)} mm"
         lines += [
             f"{bead.label}  ({bead.template})",
             f"  size   : {size}",
@@ -464,7 +525,7 @@ def build_family_zip(
         state: dict,
         progress: Callable[..., None] | None = None,
 ) -> tuple[Path, list[RenderResult]]:
-    """Render all six beads and return a ready-to-download zip."""
+    """Render all eight beads and return a ready-to-download zip."""
     results: list[RenderResult] = []
     total = len(BEADS)
     for index, bead in enumerate(BEADS, start=1):

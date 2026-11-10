@@ -1,9 +1,11 @@
 # Giant beads app
 
-A single-page, native-Gradio workbench for the six-bead family:
+A single-page, native-Gradio workbench for the eight-bead family:
 
 - **Letter bead** (`bead.scad`)
 - **Bear bead** (`bead_bear.scad`)
+- **Defender profile bead** (`bead_defender_profile.scad`)
+- **Defender rear bead** (`bead_defender_rear.scad`)
 - **Heart bead** (`bead_heart.scad`)
 - **Star bead** (`bead_star.scad`)
 - **Doughnut spacer** (`bead_spacer_small.scad`)
@@ -53,20 +55,22 @@ The app was built and smoke-tested with Gradio 6.31.0 and OpenSCAD
 **Global** (left column):
 
 - **Width**: the full face width, 60 to 240 mm. For the bear this is
-  the widest part of the cheeks; its ear span deliberately reaches
-  wider than that.
+  the widest part of the cheeks; for the Defender profile it is the
+  vehicle length, and for the Defender rear the vehicle width.
 - **String hole**: the throat diameter, 10 to 40 mm.
 - **Heights** are shown as a readout because the templates define them
   from the family width:
   - letter, bear, heart, star: `width / 2`
   - doughnut spacer: `width / 4`
   - shallot spacer: `width`
+  - Defender profile and rear: `30 mm thick`
 
 **Per bead** (right column):
 
 - Shape controls only (letter/font/size/weight, bear ears/eye
-  spacing/muzzle/relief, heart roundness, star roundness/points/petal
-  depth, doughnut curvature/mouth, shallot curvature).
+  spacing/muzzle/relief, Defender edge fillet/etch depth, heart
+  roundness, star roundness/points/petal depth, doughnut
+  curvature/mouth, shallot curvature).
 - **Override family size** opens per-bead width and hole sliders. The
   override belongs to that bead; switching beads does not leak it to a
   sibling. This is how to make one extra-fat shallot without changing
@@ -83,9 +87,9 @@ on Enter or blur.
 
 - **Download bead** downloads the current render as
   `giant-bead-<bead>.stl`.
-- **Download family** renders all six at the current family and
+- **Download family** renders all eight at the current family and
   override settings, then swaps itself to a ready download button. The
-  zip contains the six STLs plus `family-settings.txt` with the
+  zip contains the eight STLs plus `family-settings.txt` with the
   effective parameters for the set. The adjacent description says
   "All STL files as a zip folder."
 

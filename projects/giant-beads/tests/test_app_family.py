@@ -16,9 +16,10 @@ if str(PROJECT_DIR) not in sys.path:
 from app import family  # noqa: E402
 
 
-def test_family_has_the_six_requested_beads():
+def test_family_has_the_eight_requested_beads():
     assert family.BEAD_SLUGS == (
-        "letter", "bear", "heart", "star", "doughnut", "shallot")
+        "letter", "bear", "defender_profile", "defender_rear",
+        "heart", "star", "doughnut", "shallot")
 
 
 def test_default_state_is_the_family_defaults():
@@ -56,6 +57,8 @@ def test_per_bead_override_does_not_leak_to_siblings():
 def test_family_height_rules_are_proportional():
     assert family.bead_dimensions("letter", 120) == (120, 60)
     assert family.bead_dimensions("bear", 120) == (120, 60)
+    assert family.bead_dimensions("defender_profile", 120) == (120, 30)
+    assert family.bead_dimensions("defender_rear", 120) == (120, 30)
     assert family.bead_dimensions("heart", 120) == (120, 60)
     assert family.bead_dimensions("star", 120) == (120, 60)
     assert family.bead_dimensions("doughnut", 120) == (60, 30)
@@ -78,6 +81,7 @@ def test_doughnut_mouth_can_be_independent():
 def test_family_summary_tracks_width():
     summary = family.family_summary(120)
     assert "bear" in summary
+    assert "Defender" in summary
     assert "60 mm" in summary
     assert "30 mm" in summary
     assert "120 mm" in summary
