@@ -167,6 +167,47 @@ def test_etched_boxes_clear_the_face_fillet(generated):
                 part["id"] + " sits on the filleted shoulder")
 
 
+def test_the_cove_is_a_fillet_not_a_saucer(generated):
+    """The pads meet the face in a fillet, widest on the face.
+
+    Inverted, it built a flat disc standing off the face around every lamp,
+    every seam and the spare wheel - the saucers on the principal's picture.
+    """
+    text = TEMPLATE.read_text()
+    assert re.search(r"(?m)^function cove_out\(i\) = pad_cove - sqrt\(", text)
+    # the term inside the root has to be (pad_cove - cove_h), not cove_h: that
+    # is what puts the widest ring on the face and the narrowest at the top
+    assert "(pad_cove - cove_h(i))" in text, "the cove is inverted again"
+
+
+def test_the_plate_etch_hides_what_the_spare_hides(generated):
+    """Turn the bead over: the wheel still hides the window behind it."""
+    text = TEMPLATE.read_text()
+    block = text[text.index("module plate_etch_2d"):text.index("module outline_raised_2d")]
+    assert "etch_face_2d()" in block
+    assert "RAISED_TYRE" in block and "circle(r = t[2] * S)" in block, (
+        "the plate etch is not masked by the spare tyre")
+    assert "plate_etch_2d();" in text[text.index("build plate"):
+                                       text.index("wheel detail sits")]
+
+
+def test_the_string_hole_has_the_family_well(generated):
+    """The rope hole keeps the family's fillet well, not a plain bore."""
+    text = TEMPLATE.read_text()
+    assert "use <bead_common.scad>" in text
+    assert "bead_string_hole_well(" in text
+    assert re.search(r"(?m)^r_mouth = max\(0\.5, min\(0\.5 \* hole_diameter, "
+                     r"r_mouth_max\)\);", text)
+
+
+def test_the_recess_rim_is_rounded(generated):
+    """No hard line where the body's face drops into the wheel recess."""
+    text = TEMPLATE.read_text()
+    cut = text[text.index("module wheel_cutout"):text.index("module wheel_solid")]
+    assert "rim_inset(i)" in cut, "the recess rim is a hard edge"
+    assert re.search(r"(?m)^function rim_inset\(i\) = 0\.25 \+ fillet_radius", text)
+
+
 def test_the_two_faces_are_mirrored():
     """Turn the bead over and you see the car from the other side."""
     text = TEMPLATE.read_text()

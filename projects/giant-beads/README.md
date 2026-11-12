@@ -280,7 +280,16 @@ template turns that data into a bead.
   box by the smallest amount that clears the fillet plus half; the generator
   reports every move. At a 1 mm fillet only the two upper lamps move - the
   alpine windows already fit where the sketch drew them.
-- **String hole** through the width at mid-thickness, family default 20 mm.
+- **The string hole** runs through the width at mid-thickness (family default
+  20 mm) with the family's fillet-well mouth - a quarter-round gravitational
+  well at both entrances - shared with the other beads through
+  `templates/bead_common.scad`.
+- **No hard lines.** Every pad meets the face in a fillet that is widest on the
+  face (the cove), and the drop from the body's face into the wheel recess is a
+  quarter round, so the bottom of the cross member is not a step.
+- **The bottom only shows what the face shows.** The build-plate etch repeats
+  the face's lines mirrored, but the spare wheel hides part of the door and the
+  window, so those grooves stop at the spare tyre's rim.
 
 `width`, `height`, `hole_diameter`, `fillet_radius` and `etch_depth`
 (`0.6 * detail_relief`) are the family parameters; the raised heights are

@@ -312,6 +312,28 @@ mesh check was dropped: the terraces the offsets leave made it ambiguous, and
 the property that actually matters is that the surface starts flush with the
 wall and turns upward, which is checked directly.
 
+**The saucers were an inverted cove.** `cove_out(i)` used
+`pad_cove - sqrt(pad_cove^2 - cove_h^2)`, which is 0 on the face and `pad_cove`
+at the top of the blend: the ring grew outwards as it rose, so every lamp, every
+seam and the steel wheel stood in a flat disc a millimetre off the face. The
+same inversion that the wheel's cove had. The root is now
+`pad_cove^2 - (pad_cove - cove_h)^2`, so the blend is widest on the face and
+vanishes at the pad's top.
+
+**Nothing on the bead has a hard line.** The cut that drops from the body's face
+into the wheel recess now flares out over `fillet_radius` as it reaches the
+face, so the bottom of the cross member is a quarter round rather than a step.
+
+**The build-plate etch hides what the spare hides.** The plate carries the same
+lines as the face, mirrored - but the spare wheel covers part of the door and
+the window, so those grooves are masked by the spare tyre's own circle. An etch
+appears on the bottom only where it would be visible on the face.
+
+**The string hole keeps the family's mouth.** `bead_common.scad`'s
+`bead_string_hole_well()` cuts the quarter-round fillet well at both entrances -
+the gravitational well the rope sits in - with the same `r_mouth` dial as the
+other beads, rather than the plain bore with sharp rims the first build had.
+
 **The two faces are mirror images in line.** The bead is viewed from the front
 on one side and from behind on the other, so the build-plate etch is mirrored in
 x: the number plate stays on the same hand as the raised face, and the offset

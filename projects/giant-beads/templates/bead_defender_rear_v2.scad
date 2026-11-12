@@ -33,6 +33,7 @@
 */
 
 include <bead_defender_rear_data.scad>
+use <bead_common.scad>       // the family mouth: bead_string_hole_well()
 
 // ---- family parameters ------------------------------------------------
 width = 120;
@@ -60,6 +61,9 @@ tread_low = height / 20;           // how far the road wheels sit below the face
 
 // ---- derived ----------------------------------------------------------
 R_throat = hole_diameter / 2;
+// Family mouth: same dial as bead.scad, so the six beads share one well.
+r_mouth_max = (height / 2.25) - (fillet_radius + R_throat);
+r_mouth = max(0.5, min(0.5 * hole_diameter, r_mouth_max));
 extra = 5;
 H = height;
 c = fillet_radius;
@@ -129,6 +133,16 @@ module etch_wheel_2d() {
     for (t = ETCH_WHEEL_RINGS) ring_2d(t);
 }
 
+// The face etch as it would be seen from the other side: the spare wheel hides
+// the door and window behind it, so those grooves stop at its rim.
+module plate_etch_2d() {
+    difference() {
+        etch_face_2d();
+        for (t = RAISED_TYRE)
+            translate([t[0] * S, t[1] * S]) circle(r = t[2] * S);
+    }
+}
+
 // The raised levels drawn flat: their outlines as grooves.  Used on the build
 // plate, where nothing may stand up.
 module outline_raised_2d() {
@@ -181,8 +195,12 @@ function round_h(i) = pad_fillet * i / n_round;
 function round_inset(i) = pad_fillet - sqrt(max(0.0001, pad_fillet * pad_fillet
                                                - round_h(i) * round_h(i)));
 function cove_h(i) = pad_cove * i / n_round;
+// Widest on the face and vanishing at the pad's top: the arc is a quarter
+// round tangent to the face at its foot.  The old form had it the other way up,
+// which built a saucer standing off the face round every lamp and pad.
 function cove_out(i) = pad_cove - sqrt(max(0.0001, pad_cove * pad_cove
-                                           - cove_h(i) * cove_h(i)));
+                                           - (pad_cove - cove_h(i))
+                                             * (pad_cove - cove_h(i))));
 
 module pad(h) {
     top = H + h;
@@ -242,12 +260,27 @@ wheel_top = H - tread_low;         // where the surface leaves the side wall
 wheel_rise = tread_low - 0.2;      // how far it swells back out, under the face
 n_wheel = 6 * n_fillet;         // fine enough that the steps never read as terraces
 
-// removes the body over the wheel footprint, so the wheel is what is left
+// Removes the body over the wheel footprint, so the wheel is what is left.
+// The cut flares out as it reaches the face, rounding the edge between the
+// body's face and the wheel's recess: nothing on this bead is allowed a hard
+// line, and the bottom of the cross member was the last one.
 module wheel_cutout() {
-    translate([0, 0, wheel_top - 0.05])
-        linear_extrude(height = tread_low + 0.15)
+    h0 = wheel_top - 0.05;
+    translate([0, 0, h0])
+        linear_extrude(height = H - fillet_radius - h0)
             offset(r = 0.25) tread_2d();
+    for (i = [0 : n_fillet - 1])
+        translate([0, 0, H - fillet_radius + tread_h(i)])
+            linear_extrude(height = tread_h(i + 1) - tread_h(i) + 0.005)
+                offset(r = rim_inset(i)) tread_2d();
 }
+
+// Quarter round from the vertical pocket wall (0.25 mm proud of the footprint,
+// so the wall is never subtracted from itself) out to the face.
+function tread_h(i) = fillet_radius * i / n_fillet;
+function rim_inset(i) = 0.25 + fillet_radius
+                        - sqrt(max(0.0001, fillet_radius * fillet_radius
+                                     - tread_h(i) * tread_h(i)));
 
 // The surface, sampled by angle so the slices near the wall - where the curve
 // is steepest - stay thin.  d is the inward offset, z the height reached there.
@@ -276,7 +309,7 @@ module etch_cuts() {
         linear_extrude(height = etch_depth + 0.1)
             mirror([1, 0, 0])
                 union() {
-                    etch_face_2d();
+                    plate_etch_2d();
                     outline_raised_2d();
                 }
     // the wheel detail sits on the raised steel wheel, so it is cut from the
@@ -296,10 +329,12 @@ module bead() {
             raised_detail();
         }
         etch_cuts();
-        // string hole: through the width, at mid-thickness (family convention)
+        // String hole: through the width at mid-thickness, with the family's
+        // quarter-round fillet well at both mouths - the gravitational well the
+        // rope sits in - rather than a plain bore with sharp rims.
         translate([0, 0, H / 2])
-            rotate([0, 90, 0])
-                cylinder(h = width + 2 * extra, r = R_throat, center = true);
+            bead_string_hole_well(hole_entry_x = width / 2, R_throat = R_throat,
+                                  r_mouth = r_mouth, extra = extra);
     }
 }
 
