@@ -264,15 +264,12 @@ template turns that data into a bead.
   steel wheel `height / 15`, waist seam `height / 30`. Each has a 1 mm
   roundover on its top edge and a 1 mm cove where it meets the face. The bumper
   cross member is flush with the car, so it is not raised.
-- **The road wheels are squashed tyres.** The chassis line runs across the
-  bottom of the body; each wheel below it is sunk by `height / 20` and its
-  outline is the trace (near-straight sides, the traced round bottom) - from
-  behind a tyre is a tread band, so nothing there is a circle. In the other two
-  directions it is round: a dome that peaks on the wheel's centre line at the
-  chassis line and is *tangent* to the leg's side walls and to its bottom, so a
-  cut across it and a cut down it are both circular arcs, and there is no ledge
-  where the wheel meets the bead's own side. That is the only curvature the 3 mm
-  recess can carry, which is what "squashed 3D model" means for the wheels.
+- **The road wheels are tyres under the body.** The chassis line runs across
+  the bottom of the body; each wheel below it is the footprint itself, stopping
+  `height / 20` below the face, with its edge rolled over by a shoulder of the
+  same radius. The tread is flat and the shoulder owns the whole margin, so no
+  flat face ever sits against the leg's wall: the contour is a quarter round
+  from the side wall into the tread, and there is no shelf.
 - **The outline is de-staircased**: the mild flare beside the rear lamps is a
   curve in the real car, but the raster trace came back as ~1 mm steps. The
   generator smooths the ring and rescales it so the bead is still exactly the

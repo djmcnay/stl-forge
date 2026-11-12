@@ -16,6 +16,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import numpy as np
 import pytest
 
 from conftest import PROJECT_DIR
@@ -107,39 +108,28 @@ def test_the_outline_is_the_trace(generated):
             "the outline has invented a point at %.1f,%.1f" % (p[0], p[1]))
 
 
-def test_the_wheel_is_round_in_profile(generated):
-    """A squashed tyre: a dome, not a flat tab and not a circle from behind."""
+def test_the_wheel_has_a_rolled_shoulder(generated):
+    """A tyre: flat tread height / 20 down, with its edge rolled over.
+
+    The shelf this replaces was a horizontal face at the recess floor running
+    the length of each leg - left behind by every shape that dipped inside the
+    footprint and exposed the floor beside it.  The wheel is now the footprint
+    itself, full height under the shoulder, with only the shoulder rolled: no
+    flat face can sit against the leg's wall.
+    """
     text = TEMPLATE.read_text()
     _frame, data = generated[1], generated[2]
     assert len(data["tread_crown"]) == len(data["tread"]) == 2
-    rise = bead_scad.TREAD_LOW_MM - 0.2
-    for (xc, hw, yd), loop in zip(data["tread_crown"], data["tread"]):
-        xs = [p[0] for p in loop]
-        ys = [p[1] for p in loop]
-        assert xc == pytest.approx((min(xs) + max(xs)) / 2.0, abs=0.01)
-        assert hw == pytest.approx((max(xs) - min(xs)) / 2.0, abs=0.01)
-        # the dome has to reach the whole wheel to die into the recess floor
-        assert yd == pytest.approx(data["tread_y"] - min(ys), abs=0.01)
-        assert hw > 4.0 and yd > 10.0 and rise > 0
-    # the template builds that dome as a squashed sphere scaled by the wheel's
-    # own half width and depth, which is what makes it tangent to the side wall
-    assert re.search(r"scale\(\[hw, yd, crown_rise\]\) sphere\(r = 1", text)
-    assert re.search(r"(?m)^\s*hw = max\(TREAD_CROWN\[k\]\[1\] \* S \+ 0\.05",
-                     text)
-    # the apex must stay under the face plane, or the wheel stops being recessed
-    assert re.search(r"(?m)^crown_rise\s*=\s*tread_low\s*-\s*0\.2;", text)
-
-
-def test_the_dome_is_clipped_by_the_footprint(generated):
-    """The tyre may not swell out past the wheel it belongs to."""
-    text = TEMPLATE.read_text()
-    block = text[text.index("module wheel_dome"):text.index("module wheel_solid")]
-    assert "intersection()" in block, "the dome is not clipped"
-    assert "tread_one_2d(k)" in block, "the dome is not clipped by the footprint"
-    for loop in generated[2]["tread"]:
-        for i in range(len(loop)):
-            a, b = loop[i], loop[(i + 1) % len(loop)]
-            assert math.hypot(b[0] - a[0], b[1] - a[1]) > 1e-6
+    assert re.search(r"(?m)^wheel_top\s*=\s*H\s*-\s*tread_low;", text)
+    assert re.search(r"(?m)^wheel_shoulder\s*=\s*tread_low;", text)
+    block = text[text.index("module wheel_solid"):text.index("// ---- cuts")]
+    # full footprint from the plate up to where the shoulder starts
+    assert "linear_extrude(height = wheel_top - wheel_shoulder) tread_one_2d(k)" \
+        in block, "the wheel has no full-height body under the shoulder"
+    # then the footprint eroded by a quarter circle, slice by slice
+    assert "offset(r = -inset) tread_one_2d(k)" in block, (
+        "the shoulder is not a rolled edge of the footprint")
+    assert "wheel_shoulder - sqrt(" in block
 
 
 def test_tread_is_one_footprint_per_road_wheel(generated):
@@ -247,6 +237,44 @@ def test_template_renders_a_watertight_solid(tmp_path):
     assert n > 1000
     assert len(data) == 84 + 50 * n, "not a binary STL"
     assert b"OpenSCAD" in data[:80]
+
+
+@REQUIRES_OPENSCAD
+def test_no_flat_shelf_at_the_wheel(generated, tmp_path):
+    """The shelf: a horizontal face at the tread level sitting on the leg's wall.
+
+    This is the one fault that survived four rounds of pictures, so it is
+    checked on the mesh rather than on a render: every horizontal face at the
+    tread height has to be at least most of a shoulder in from the footprint.
+    """
+    stl = tmp_path / "bead.stl"
+    subprocess.run(
+        [str(OPENSCAD), "--export-format=binstl", "-o", str(stl),
+         "-D", "width=60", "-D", "$fn=32", str(TEMPLATE)],
+        check=True, capture_output=True)
+    raw = stl.read_bytes()
+    n = struct.unpack_from("<I", raw, 80)[0]
+    tris = np.frombuffer(raw, dtype=np.uint8, count=n * 50, offset=84)
+    tris = tris.reshape(n, 50)
+    face = np.frombuffer(tris[:, :48].tobytes(), dtype="<f4").reshape(n, 4, 3)
+    normal, verts = face[:, 0, :], face[:, 1:4, :]
+
+    _text, frame, data, _doc = generated
+    scale = 60.0 / frame.width_mm
+    tread_z = 30.0 - 1.5                     # height - tread_low at width 60
+    wheels = [[[p[0] * scale, p[1] * scale] for p in loop]
+              for loop in data["tread"]]
+    flat = (np.abs(normal[:, 2]) > 0.95) & (np.abs(
+        verts[:, :, 2].mean(axis=1) - tread_z) < 0.2)
+    assert flat.sum(), "no tread face at all"
+    for centre in verts[flat].mean(axis=1):
+        near = min(bead_scad.edge_distance((centre[0], centre[1]), loop)
+                   for loop in wheels)
+        # the shoulder's slices leave terraces, so this is deliberately loose:
+        # what it catches is a flat face that reaches the wall, which is the
+        # shelf.  The broken version sat at 0.00 mm.
+        assert near > 0.6, (
+            "flat face %.2f mm from the wheel wall - that is the shelf" % near)
 
 
 @REQUIRES_OPENSCAD

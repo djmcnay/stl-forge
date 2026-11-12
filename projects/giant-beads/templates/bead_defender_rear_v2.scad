@@ -225,55 +225,46 @@ module raised_detail() {
 
 // ---- road wheels ------------------------------------------------------
 // The chassis line is the bottom of the body.  The two road wheels hang below
-// it, so each is a column of its own: the body is cut back to `wheel_top` over
-// the wheel footprint, and the wheel fills that footprint up to `wheel_top`.
-// The step at the chassis line is the line the principal marked.
+// it, so each is a column of its own: the body is cut back over the wheel
+// footprint, and the wheel is what fills it.
 //
-// Looked at straight on, a tyre is a curved rectangle - no car has wheels that
-// read as a circle from behind.  The bead is a squashed 3D model of the car,
-// though, and in the other two directions the wheel has to be round: it is a
-// squashed tyre.  Each wheel is a dome that peaks on its centre line at the
-// chassis line and dies into the recess floor at the sides and at the bottom,
-// so a cut across it is a circular arc and a cut down it is a circular arc.
-wheel_top = H - tread_low;         // shoulder level: the recessed wheel face
-crown_rise = tread_low - 0.2;      // apex just under the face plane
+// Straight on the wheel is a curved rectangle - a tyre seen from behind is a
+// tread band, not a circle.  It sits `tread_low` (height / 20) below the face
+// with a flat tread, and its edge is rolled over with a shoulder of the same
+// radius, so the tread turns into the leg's side wall through a quarter round.
+// That round is the contour the principal drew.
+//
+// There is no flat shelf anywhere on it: a dome that dipped inside the
+// footprint left the recess floor exposed as a horizontal ledge along both
+// sides of each leg - which is exactly what got crossed out.
+wheel_top = H - tread_low;              // tread height below the face
+wheel_shoulder = tread_low;             // shoulder round, same as the recess
+n_wheel = 3 * n_fillet;          // the shoulder is the one curve the eye reads
 
-// A unit sphere scaled by (hw, yd, crown_rise): half the wheel's width, the
-// depth of the leg below the chassis line, and the relief.  Those first two
-// scales are the footprint's own, so the surface turns *vertical* at the wheel's
-// sides and *horizontal* at the bottom of the leg: it becomes the side wall with
-// no edge, no step and no ledge - the tyre shoulder - instead of the 3 mm shelf
-// that used to run along the top of each leg.
-
-// removes the body over the wheel footprint, so the wheels are what is left
+// removes the body over the wheel footprint, so the wheel is what is left
 module wheel_cutout() {
-    translate([0, 0, wheel_top - 0.05])
-        linear_extrude(height = tread_low + 0.15)
+    translate([0, 0, wheel_top - wheel_shoulder - 0.05])
+        linear_extrude(height = wheel_shoulder + tread_low + 0.15)
             offset(r = 0.25) tread_2d();
 }
 
-module wheel_column(k) {
-    linear_extrude(height = wheel_top) tread_one_2d(k);
-}
-
-// The dome.  Its apex sits on the wheel's centre line, on the chassis line,
-// just under the face plane, and it is a hair wider and deeper than the
-// footprint so the cut that trims it lands on a steep, not a tangent, surface.
-module wheel_dome(k) {
-    xc = TREAD_CROWN[k][0] * S;
-    hw = max(TREAD_CROWN[k][1] * S + 0.05, 0.5);
-    yd = max(TREAD_CROWN[k][2] * S + 0.05, 1.0);
-    intersection() {
-        linear_extrude(height = H) tread_one_2d(k);
-        translate([xc, TREAD_Y, wheel_top])
-            scale([hw, yd, crown_rise]) sphere(r = 1, $fn = 2 * $fn);
-    }
-}
-
+// Flat tread with a rolled shoulder.  Stacked erosion slices, the family
+// method: the slice `u` above the shoulder's foot is the footprint inset by the
+// quarter circle, so the top face is the footprint pulled in by the full
+// radius and the side of the wheel is a true round.
 module wheel_solid() {
     for (k = [0 : len(TYRE_TREAD) - 1]) {
-        wheel_column(k);
-        wheel_dome(k);
+        linear_extrude(height = wheel_top - wheel_shoulder) tread_one_2d(k);
+        for (i = [0 : n_wheel - 1]) {
+            u0 = wheel_shoulder * i / n_wheel;
+            u1 = wheel_shoulder * (i + 1) / n_wheel;
+            inset = wheel_shoulder - sqrt(max(0.0001,
+                                              wheel_shoulder * wheel_shoulder
+                                              - u0 * u0));
+            translate([0, 0, wheel_top - wheel_shoulder + u0])
+                linear_extrude(height = u1 - u0 + 0.005)
+                    offset(r = -inset) tread_one_2d(k);
+        }
     }
 }
 

@@ -292,23 +292,24 @@ mistakes are worth remembering:
   round bottom. Reworking the outline into a semicircle made it read as a mud
   flap, and it broke the rule that the trace is the geometry. The outline is
   now exactly the trace again, checked by `test_the_outline_is_the_trace`.
-- *In profile* it is round. The bead is a squashed 3D model of the car, so the
-  wheel is a squashed tyre: a dome (`wheel_dome`) whose apex sits on the wheel's
-  centre line, on the chassis line, 0.2 mm under the face plane. A cut across
-  the wheel and a cut down it are both circular arcs - the principal's pink
-  line - rather than a flat tab. The dome is a unit sphere scaled by
-  `(hw, yd, crown_rise)`: the footprint's own half width, the depth of the leg
-  below the chassis line, and the relief. Because the first two are the
-  footprint's own scales, the surface turns **vertical** where it meets the
-  leg's side walls and **horizontal** where it reaches the bottom of the leg,
-  so it becomes the side wall with no edge at all.
+- *The shelf* was the recess floor. Every shape that dipped inside the wheel's
+  footprint exposed that floor as a horizontal face running the length of each
+  leg, opening onto the bead's own side wall - the thing the principal crossed
+  out, three times, because four renders of it did not show it clearly.
 
-  That is what killed the shelf. The body is cut back over the footprint from
-  `wheel_top` up, so the recess used to leave a 3 mm horizontal ledge running
-  the length of each leg, opening onto the bead's outer side wall - the thing
-  the principal crossed out. The dome now fills that edge with a tangent
-  shoulder, and the only step left is the one on the chassis line, where the
-  body's own face ends.
+**What the wheel is now.** The footprint itself, from the plate up, stopping
+`tread_low` below the face, with its edge rolled over by a shoulder of the same
+radius as the recess. The tread is flat and never comes closer than that
+shoulder to the leg's wall, so there is no flat face at the wall and no shelf;
+and the contour is a quarter round from the vertical side wall into the tread -
+the shape the principal drew on the profile, and the only curvature a 3 mm
+recess can carry.
+
+`test_no_flat_shelf_at_the_wheel` renders the bead and checks this on the mesh
+rather than on a picture: every horizontal face at the tread height must be at
+least part of a shoulder in from the footprint boundary. It is deliberately
+loose - the shoulder's slices leave shallow terraces - because the fault it
+guards is a flat face that reaches the wall, which sits at zero.
 
 The dome is cut by the wheel's footprint and stops 0.3 mm inside it, because a
 round surface tangent to the side wall meets it in a knife edge. The footprint
