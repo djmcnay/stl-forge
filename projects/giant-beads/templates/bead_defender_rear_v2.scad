@@ -37,7 +37,7 @@ width = 120;
 height = width / 2;                // family rule (60 mm at width 120)
 hole_diameter = 20;
 bore_fillet_radius = width / 8;    // retained family name; plain bore
-fillet_radius = 2;                 // deliberately tight: keep the boxy read
+fillet_radius = 1;                 // deliberately tight: keep the boxy read
 detail_relief = 1.0;
 $fn = 128;
 
@@ -52,8 +52,8 @@ wheel_height = height / 15;
 seam_height = height / 30;
 
 // ---- edge treatment ---------------------------------------------------
-pad_fillet = min(1.0, seam_height / 2);   // roundover on a pad's top edge
-pad_cove = min(1.0, seam_height / 2);     // concave fillet where it meets the face
+pad_fillet = min(fillet_radius, seam_height / 2);  // roundover on a pad's top edge
+pad_cove = min(fillet_radius, seam_height / 2);    // concave cove at its foot
 tread_low = height / 20;           // how far the road wheels sit below the face
 tread_cove = 2 * tread_low;        // the rolled blend where a wheel meets the
                                    // chassis line: bigger than the step, so it

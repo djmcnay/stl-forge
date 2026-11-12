@@ -49,10 +49,12 @@ TREAD_SPLIT_MM = 0.3        # the clip must clear the chassis line itself, or a
 # The template rounds the face edge with `fillet_radius`, which pulls the flat
 # face in by that much all the way round.  Anything drawn closer than that to
 # the outline ends up overhanging the rounded shoulder, so a feature is pushed
-# inwards until it clears the fillet plus half as much again.
-FILLET_MM = 2.0             # matches fillet_radius in the template
+# inwards until it clears the fillet, plus half as much again for etched lines
+# and a fixed move for the lamps.
+FILLET_MM = 1.0             # matches fillet_radius in the template
 FACE_MARGIN_MM = FILLET_MM / 2   # extra margin on etched lines
 PAD_COVE_MM = 1.0           # matches pad_cove in the template
+LAMP_NUDGE_MM = 3.0         # the principal's figure for a lamp sat too close
 
 
 # ---- pixel frame -> millimetre frame -----------------------------------
@@ -216,33 +218,45 @@ def edge_distance(pt, ring):
                for i in range(len(ring)))
 
 
-def nudge_inside(centre, radius, ring, clearance):
-    """Move a circle along +x/-x until it clears `clearance` from the outline.
+def _inward_normal(centre, ring):
+    """Unit normal of the nearest outline edge, pointing into the body."""
+    i = min(range(len(ring)),
+            key=lambda k: _seg_dist(centre, ring[k], ring[(k + 1) % len(ring)]))
+    a, b = ring[i], ring[(i + 1) % len(ring)]
+    dx, dy = b[0] - a[0], b[1] - a[1]
+    L = math.hypot(dx, dy) or 1.0
+    nx, ny = -dy / L, dx / L
+    mid = ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2)
+    # the interior is the side the centre of the bead lies on
+    if nx * (0 - mid[0]) + ny * (0 - mid[1]) < 0:
+        nx, ny = -nx, -ny
+    return nx, ny, _seg_dist(centre, ring[i], b)
 
-    The nearest point of the outline gives the direction to move in; the circle
-    is pushed until its edge is `clearance` away, so a feature drawn tight
-    against the flank stops hanging over the filleted shoulder.  Vertical
-    nudging is deliberately not attempted: up and down is where the windows and
-    lamps *belong*.
+
+def nudge_inside(centre, radius, ring, clearance, least=0.0):
+    """Slide a circle inwards until it clears the outline.
+
+    A feature drawn tight against the flank ends up overhanging the filleted
+    shoulder, so it is moved along the inward normal of the nearest edge.  At
+    least `least` millimetres, and further if the geometry needs it - the move
+    is always the smallest that puts the whole shape on the flat face.
     """
     want = clearance + radius
-    for _ in range(60):
+    if edge_distance(centre, ring) >= want - 1e-6:
+        return centre, 0.0, True          # already wholly on the flat face
+    moved = 0.0
+    for _ in range(80):
         d = edge_distance(centre, ring)
-        if d >= want - 1e-6:
-            return centre, True
-        # step away from the nearest outline point, in x only: up and down is
-        # where these features belong
-        i = min(range(len(ring)),
-                key=lambda k: _seg_dist(centre, ring[k], ring[(k + 1) % len(ring)]))
-        a, b = ring[i], ring[(i + 1) % len(ring)]
-        dx, dy = b[0] - a[0], b[1] - a[1]
-        L2 = dx * dx + dy * dy
-        t = 0.0 if L2 == 0 else max(0.0, min(1.0, ((centre[0] - a[0]) * dx
-                                                   + (centre[1] - a[1]) * dy) / L2))
-        nearest = (a[0] + t * dx, a[1] + t * dy)
-        away = -1.0 if nearest[0] > centre[0] else 1.0
-        centre = [centre[0] + away * max(0.02, want - d), centre[1]]
-    return centre, edge_distance(centre, ring) >= want - 1e-6
+        if d >= want - 1e-6 and moved >= least - 1e-6:
+            return centre, moved, True
+        shortfall = max(0.0, want - d)
+        step = max(shortfall, least - moved)
+        if step <= 1e-9:
+            step = 0.02
+        nx, ny, _ = _inward_normal(centre, ring)
+        centre = [centre[0] + nx * step, centre[1] + ny * step]
+        moved += step
+    return centre, moved, edge_distance(centre, ring) >= want - 1e-6
 
 
 def nudge_box(box, ring, clearance):
@@ -320,18 +334,20 @@ def collect(doc, frame):
                 c = frame.xy(*c_px)
                 r = frame.r(r_px)
                 # the cove is part of the dome's footprint, so the target is
-                # the face fillet only: this is the smallest move that keeps
-                # the whole raised shape on the flat face
-                c, ok = nudge_inside(c, r + PAD_COVE_MM, silhouette, FILLET_MM)
+                # the face fillet only: the smallest move that keeps the whole
+                # raised shape on the flat face, and never less than the
+                # principal's 3 mm
+                before = c
+                c, moved, ok = nudge_inside(c, r + PAD_COVE_MM, silhouette,
+                                            FILLET_MM, least=LAMP_NUDGE_MM)
                 if not ok:
                     raise SystemExit("lamp at %.1f,%.1f cannot clear the face "
                                      "fillet - shrink it or move it by hand"
                                      % (c[0], c[1]))
                 out["lights"].append([c[0], c[1], r])
-                shift = c[0] - frame.xy(*c_px)[0]
-                if abs(shift) > 0.01:
-                    out["nudges"].append("lamp at %+.0f,%+.0f moved %+.2f mm"
-                                         % (c_px[0], c_px[1], shift))
+                if moved > 0.01:
+                    out["nudges"].append("lamp at %+.0f,%+.0f moved %.2f mm"
+                                         % (c_px[0], c_px[1], moved))
 
     # the tyre pad is an annulus: its outer edge minus the steel wheel's edge
     if len(out["tyre"]) == 1 and len(out["wheel"]) == 1:

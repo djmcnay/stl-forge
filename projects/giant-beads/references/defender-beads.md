@@ -264,8 +264,9 @@ template, or `tests/test_bead_data.py` fails as stale.
 Parameters, as specified: `width` and `height` from the family (`height =
 width / 2`, so 120 x 60 - the 30 mm this file used to quote was a hardcode in
 the superseded pair, now fixed there too), `etch_depth` from the family value
-`0.6 * detail_relief`, and a **2 mm** edge fillet - tight on purpose, so the
-boxy Defender read survives. The raised levels are fractions of the bead
+`0.6 * detail_relief`, and a **1 mm** edge fillet - tight on purpose, so the
+boxy Defender read survives.  The pad roundover and cove follow the fillet
+down, so all the rolling on the face is one radius. The raised levels are fractions of the bead
 thickness:
 
 | level | height | at H = 60 |
@@ -290,13 +291,21 @@ on one side and from behind on the other, so the build-plate etch is mirrored in
 x: the number plate stays on the same hand as the raised face, and the offset
 spare offsets the other way.
 
-**Detail is nudged inboard to clear the face fillet.** The 2 mm edge fillet
-pulls the flat face in by 2 mm all the way round, so anything drawn tighter than
-that to the outline overhangs the rounded shoulder. `bead_scad.py` measures each
-raised dome and each etched box against the outline and slides it towards the
-centre line until it clears - the smallest move that keeps it on the flat face.
-On the rear that is the two upper lamps (3.4 mm each) and both alpine windows
-(1.2 mm); the report prints every move.
+**Detail is nudged inboard to clear the face fillet.** The edge fillet pulls the
+flat face in all the way round, so anything drawn tighter than that to the
+outline overhangs the rounded shoulder. `bead_scad.py` measures each raised dome
+and each etched box against the outline and slides it towards the centre until
+it clears:
+
+- an **etched box** moves by the smallest amount that clears the fillet plus
+  half again.  At a 1 mm fillet the alpine windows (1.92 / 2.00 mm clear) already
+  fit, so they stay exactly where the sketch drew them;
+- a **lamp** sat too close moves by **3 mm** - the principal's figure - or
+  further if the fillet needs it.  On the rear that is the two upper lamps; the
+  four lower and mid lamps are already clear and are untouched.
+
+The report prints every move, so a future change to the fillet shows up as a
+different list rather than a silent shift.
 
 The tyre is an annulus (outer edge to the steel wheel's edge), so the wheel sits
 as a disc inside it and the two steps read. The bumper cross member stays flush
@@ -329,15 +338,16 @@ Seen in the first build, for the principal to rule on:
    the spare wheel's raised disc. That is the family convention and it leaves
    7 mm of material above the bore, but the hole could be moved if it looks
    wrong on the print.
-3. The roof gutter etch sits within the 2 mm fillet band at the very top of the
-   roof, so the groove shallows out at its ends.
+3. The roof gutter etch runs close to the fillet band at the very top of the
+   roof. At a 1 mm fillet it clears, but the groove is shallower than the rest at
+   its extreme ends where the roof curve pulls in.
 4. `bead_defender_rear.scad` (the hand-drawn first pass) and the app panel still
    point at the old geometry until v2 is approved. Its height now follows the
    family rule like v2's does; expect the app's defender beads to render 60 mm
    thick rather than 30.
-5. The tread recess is 3 mm deep with a 3 mm quarter-round. If "a lot more
-   rounded" means a bigger radius, the recess has to get deeper with it - a
-   quarter-round can only be as deep as it is wide.
+5. The wheel step is 3 mm deep with a 6 mm cove, so the cove is a partial arc
+   and the wheel meets the chassis line at a slight angle rather than
+   tangentially. Deepen `tread_low` if you want it tangent.
 
 ## Side sketch stage
 

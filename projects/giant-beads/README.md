@@ -249,7 +249,7 @@ The first build off the approved clean sketch. Nothing is drawn in the template:
 `references/defender/rear-bead-sketch.json` by `tools/bead_scad.py`, and the
 template turns that data into a bead.
 
-- **Silhouette** extruded with a tight 2 mm edge fillet on the top face only:
+- **Silhouette** extruded with a tight 1 mm edge fillet on the top face only:
   the bottom is the build plate and stays flat.
 - **One etch depth** on both faces: rear door, rear window, alpine lights,
   number plate, roof gutter, bumper top edge, and the wheel detail (8 rim
@@ -268,9 +268,11 @@ template turns that data into a bead.
   bottom of the body, and each wheel below it is sunk by `height / 20` and
   rolled back up with a cove of twice that radius, so they read as tyres
   tucking under the body rather than as part of the rear panel.
-- **Detail clears the face fillet.** The 2 mm fillet pulls the flat face in by
-  2 mm, so the upper lamps and alpine windows are nudged inboard by the
-  generator until they sit wholly on the flat face (reported on every run).
+- **Detail clears the face fillet.** A raised lamp sitting tighter than the
+  fillet moves inboard by 3 mm (further if the fillet needs it) and an etched
+  box by the smallest amount that clears the fillet plus half; the generator
+  reports every move. At a 1 mm fillet only the two upper lamps move - the
+  alpine windows already fit where the sketch drew them.
 - **String hole** through the width at mid-thickness, family default 20 mm.
 
 `width`, `height`, `hole_diameter`, `fillet_radius` and `etch_depth`

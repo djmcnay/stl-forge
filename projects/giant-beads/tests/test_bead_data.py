@@ -84,6 +84,26 @@ def test_tread_is_one_footprint_per_road_wheel(generated):
     assert xs[0][1] < 0 < xs[1][0], "the wheels must not meet in the middle"
 
 
+def test_lamps_that_intrude_move_by_the_agreed_amount(generated):
+    """A lamp sat too close to the flank moves in by the principal's figure."""
+    _text, frame, data, doc = generated
+    ring = frame.ring(doc["silhouette"][:-1])
+    want = bead_scad.FILLET_MM + bead_scad.PAD_COVE_MM
+    for part in doc["parts"]:
+        if part["id"] != "lights":
+            continue
+        for c_px, r_px in zip(part["centres"], part["radii"]):
+            was = frame.xy(*c_px)
+            r = frame.r(r_px)
+            if bead_scad.edge_distance(was, ring) >= want + r:
+                continue          # already wholly on the flat face: leave it
+            now = min(data["lights"],
+                      key=lambda l: (l[0] - was[0]) ** 2 + (l[1] - was[1]) ** 2)
+            moved = ((now[0] - was[0]) ** 2 + (now[1] - was[1]) ** 2) ** 0.5
+            assert moved >= bead_scad.LAMP_NUDGE_MM - 1e-3, (
+                "intruding lamp only moved %.2f mm" % moved)
+
+
 def test_raised_detail_clears_the_face_fillet(generated):
     """Nothing raised may hang over the rounded shoulder of the face."""
     _text, frame, data, doc = generated
