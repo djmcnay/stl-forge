@@ -272,9 +272,12 @@ module wheel_cove() {
         translate([0, 0, wheel_top + h0])
             linear_extrude(height = h1 - h0 + 0.005)
                 intersection() {
-                    // the cove sits on the wheel's face, which its own roundover
-                    // has already pulled in, so it can never overhang it
-                    offset(r = -tread_shoulder) tread_2d();
+                    // The cove has to fit entirely within the wheel's flat face:
+                    // the face is already rolled back by tread_shoulder, and the
+                    // cove reaches tread_cove further in, so the wheel's outline
+                    // must be shrunk by both before clipping.  Without that the
+                    // cove grows a lip out past the wheel and hangs in the air.
+                    offset(r = -(tread_shoulder + tread_cove)) tread_2d();
                     translate([-width, TREAD_Y - d, 0])
                         square([2 * width, d + 0.05]);
                 }

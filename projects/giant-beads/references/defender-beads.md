@@ -287,10 +287,21 @@ the face, its own face edge is rolled over by half that again so it reads as a
 tyre rather than a tab, and a cove of twice the step rolls it back up to the
 chassis line.
 
-Two faults in the first cut of that, both now fixed and covered by tests:
+**Each wheel ends in a semicircle.** The trace drew the bottom of each wheel like
+a mud flap - straight sides, flat bottom, small corner radii. A wheel seen from
+behind is the bottom of a circle, so `bead_scad.py` rebuilds every run of the
+outline below the chassis line as a semicircular tip of radius half its width
+(8.8 mm on the rear). This is the one place the generator changes the shape
+rather than deriving it, so it is confined to the tips and reported on every
+run.
+
+Three faults on the way there, all now fixed and covered by tests:
 
 - the cove profile was inverted, so instead of a fillet it built a thin ledge
-  floating over each wheel - the "artifact above the wheels" in the render;
+  floating over each wheel - the "artifact above the wheels";
+- the cove was clipped to the wheel's outline but it reaches further in than the
+  outline allows, so it grew a lip out past the wheel. It is now clipped at
+  `tread_shoulder + tread_cove` inside the wheel footprint;
 - the wheel had no rollover of its own, so it stayed a flat-topped box.
 
 **The two faces are mirror images in line.** The bead is viewed from the front

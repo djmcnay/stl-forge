@@ -51,7 +51,6 @@
       "template": "bead_defender_rear_v2.scad",
       "width": 120,
       "hole_diameter": 20,
-      "fillet_radius": 2,
       "detail_relief": 1.0
     }
   }

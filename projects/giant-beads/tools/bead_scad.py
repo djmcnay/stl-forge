@@ -55,6 +55,8 @@ FILLET_MM = 1.0             # matches fillet_radius in the template
 FACE_MARGIN_MM = FILLET_MM / 2   # extra margin on etched lines
 PAD_COVE_MM = 1.0           # matches pad_cove in the template
 LAMP_NUDGE_MM = 3.0         # the principal's figure for a lamp sat too close
+TREAD_SHOULDER_MM = 3.0     # matches tread_shoulder in the template
+TREAD_LOW_MM = 3.0          # matches tread_low in the template
 
 
 # ---- pixel frame -> millimetre frame -----------------------------------
@@ -200,6 +202,63 @@ def smooth_gentle(pts, keep=0.45, passes=3):
     return [[round(p[0], 3), round(p[1], 3)] for p in out]
 
 
+def semicircle_wheel_tips(pts, tread_y, arc_step_deg=6.0):
+    """End each road wheel in a semicircle.
+
+    The trace draws the bottom of each wheel like a mud flap: straight sides, a
+    flat bottom and small corner radii.  A wheel seen from behind is the bottom
+    of a circle, so every run of the outline below the chassis line is rebuilt
+    with the same width and depth but a semicircular tip of radius half its
+    width.  This changes the shape, so it is confined to the wheel tips and
+    reported on every run.
+    """
+    n = len(pts)
+    below = [p[1] < tread_y for p in pts]
+    if not below.count(True):
+        return pts, 0
+
+    # start the walk at a vertex above the line: the below-runs are then
+    # contiguous, and a polygon does not care which vertex its list starts on
+    start = next(i for i in range(n) if not below[i])
+    ring = pts[start:] + pts[:start]
+    flags = below[start:] + below[:start]
+
+    out, i, changed = [], 0, 0
+    while i < len(ring):
+        if not flags[i]:
+            out.append(ring[i])
+            i += 1
+            continue
+        j = i
+        while j < len(ring) and flags[j]:
+            j += 1
+        run = ring[i:j]
+        prev_pt = out[-1] if out else ring[-1]
+        next_pt = ring[j] if j < len(ring) else ring[0]
+        xs = [p[0] for p in run]
+        x0, x1 = min(xs), max(xs)
+        y_bot = min(p[1] for p in run)
+        r = (x1 - x0) / 2.0
+        cx = (x0 + x1) / 2.0
+        y_side = y_bot + r
+        if r <= 0.5 or y_side > tread_y:
+            out.extend(run)                 # too shallow for a semicircle
+            i = j
+            continue
+        # walk the run in the ring's direction: down one side, round the tip,
+        # up the other
+        left_first = prev_pt[0] <= next_pt[0]
+        steps = max(6, int(round(180.0 / arc_step_deg)))
+        # y grows downward in the sketch frame, so the tip dips by -sin
+        arc = [[round(cx + r * math.cos(math.radians(a)), 3),
+                round(y_side - r * math.sin(math.radians(a)), 3)]
+               for a in (180.0 - 180.0 * k / steps for k in range(steps + 1))]
+        out.extend(arc if left_first else arc[::-1])
+        changed += 1
+        i = j
+    return out, changed
+
+
 def normalise_span(pts, width):
     """Scale the cleaned outline back to exactly the family width.
 
@@ -339,10 +398,11 @@ def nudge_box(box, ring, clearance):
 def collect(doc, frame):
     """Sort the sketch parts into the arrays the SCAD template consumes."""
     sil = frame.ring(doc["silhouette"][:-1])
-    sil = normalise_span(simplify(simplify(smooth_gentle(sil),
-                                           OUTLINE_TOL_MM), OUTLINE_TOL_MM),
-                         frame.width_mm)
-    out = dict(silhouette=sil,
+    sil = simplify(simplify(smooth_gentle(sil), OUTLINE_TOL_MM), OUTLINE_TOL_MM)
+    sil, wheel_tips = semicircle_wheel_tips(sil, frame.xy(0, TREAD_TOP_PX)[1]
+                                            - TREAD_SPLIT_MM)
+    sil = normalise_span(sil, frame.width_mm)
+    out = dict(silhouette=sil, wheel_tips=wheel_tips,
                tread=clip_below(sil, frame.xy(0, TREAD_TOP_PX)[1]
                                 - TREAD_SPLIT_MM),
                tread_y=round(frame.xy(0, TREAD_TOP_PX)[1] - TREAD_SPLIT_MM, 3),
@@ -548,6 +608,9 @@ def report(res, view_name=DEFAULT_VIEW):
     print("  %d profile points (%d before the %.2f mm wobble clean-up)"
           % (len(res["data"]["silhouette"]),
              len(res["doc"]["silhouette"]) - 1, OUTLINE_TOL_MM))
+    if res["data"].get("wheel_tips"):
+        print("  wheel tips rebuilt as semicircles: %d"
+              % res["data"]["wheel_tips"])
     for note in res["data"]["nudges"]:
         print("  cleared to fit the face fillet: " + note)
     for key, label in (("strokes", "etched polylines"),

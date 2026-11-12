@@ -85,11 +85,44 @@ def test_silhouette_is_cleaned_but_faithful(generated):
         assert abs(a[0] - b[0]) + abs(a[1] - b[1]) > 1e-6
 
 
+def test_each_wheel_ends_in_a_semicircle(generated):
+    """A wheel seen from behind is the bottom of a circle."""
+    _text, frame, data, doc = generated
+    assert data["wheel_tips"] == 2
+    line = data["tread_y"]
+    for loop in data["tread"]:
+        tip = [p for p in loop if p[1] < line - 4]
+        xs = [p[0] for p in tip]
+        ys = [p[1] for p in tip]
+        r = (max(xs) - min(xs)) / 2.0
+        cx = (min(xs) + max(xs)) / 2.0
+        cy = min(ys) + r             # millimetres, y up: the tip is the low end
+        arc = [p for p in tip if p[1] < cy - 1e-6]
+        assert len(arc) >= 6, "no arc points"
+        for p in arc:
+            assert abs(math.hypot(p[0] - cx, p[1] - cy) - r) < 0.35, (
+                "wheel tip is not circular at %.1f,%.1f" % (p[0], p[1]))
+
+
+def test_nothing_hangs_outside_the_wheel(generated):
+    """The recess roll must stay inside the wheel, not grow a lip on its edge."""
+    _text, _frame, data, _doc = generated
+    reach = bead_scad.TREAD_SHOULDER_MM + 2 * bead_scad.TREAD_LOW_MM
+    for loop in data["tread"]:
+        pts = loop
+        for i in range(len(pts)):
+            a, b = pts[i], pts[(i + 1) % len(pts)]
+            assert math.hypot(b[0] - a[0], b[1] - a[1]) > 1e-6
+    # the cove is clipped at this inset in the template; keep the two in step
+    text = TEMPLATE.read_text()
+    assert "offset(r = -(tread_shoulder + tread_cove)) tread_2d();" in text, (
+        "the cove must be clipped inside the wheel face (reach %.1f mm)" % reach)
+
+
 def test_tread_is_one_footprint_per_road_wheel(generated):
     """The chassis line separates two wheels, not one band across the bottom."""
-    _text, frame, data, doc = generated
+    _text, _frame, data, _doc = generated
     assert len(data["tread"]) == 2
-    line = bead_scad.Frame(doc)
     tread_y = data["tread_y"]
     for loop in data["tread"]:
         ys = [p[1] for p in loop]
