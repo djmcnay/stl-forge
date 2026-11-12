@@ -294,12 +294,21 @@ mistakes are worth remembering:
   now exactly the trace again, checked by `test_the_outline_is_the_trace`.
 - *In profile* it is round. The bead is a squashed 3D model of the car, so the
   wheel is a squashed tyre: a dome (`wheel_dome`) whose apex sits on the wheel's
-  centre line, on the chassis line, 0.2 mm under the face plane, and which dies
-  into the recess floor at the sides and at the bottom of its own footprint. A
-  cut across the wheel and a cut down it are both circular arcs - the
-  principal's pink line - rather than a flat tab. The dome is a unit sphere
-  scaled by `(hw / dome_t, yd / dome_t, crown_rise / dome_c(dome_t))` with
-  `dome_t = 0.55`, so its footprint reach and its drop are the same fraction.
+  centre line, on the chassis line, 0.2 mm under the face plane. A cut across
+  the wheel and a cut down it are both circular arcs - the principal's pink
+  line - rather than a flat tab. The dome is a unit sphere scaled by
+  `(hw, yd, crown_rise)`: the footprint's own half width, the depth of the leg
+  below the chassis line, and the relief. Because the first two are the
+  footprint's own scales, the surface turns **vertical** where it meets the
+  leg's side walls and **horizontal** where it reaches the bottom of the leg,
+  so it becomes the side wall with no edge at all.
+
+  That is what killed the shelf. The body is cut back over the footprint from
+  `wheel_top` up, so the recess used to leave a 3 mm horizontal ledge running
+  the length of each leg, opening onto the bead's outer side wall - the thing
+  the principal crossed out. The dome now fills that edge with a tangent
+  shoulder, and the only step left is the one on the chassis line, where the
+  body's own face ends.
 
 The dome is cut by the wheel's footprint and stops 0.3 mm inside it, because a
 round surface tangent to the side wall meets it in a knife edge. The footprint

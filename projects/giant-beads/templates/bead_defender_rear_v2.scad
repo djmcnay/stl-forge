@@ -237,12 +237,13 @@ module raised_detail() {
 // so a cut across it is a circular arc and a cut down it is a circular arc.
 wheel_top = H - tread_low;         // shoulder level: the recessed wheel face
 crown_rise = tread_low - 0.2;      // apex just under the face plane
-dome_t = 0.55;                     // how far out the dome reaches at full drop
 
-// A dome that drops `rise` at `reach` from its apex: the ellipsoid's height
-// that does it, and the factor that turns a unit sphere into that ellipsoid.
-function dome_c(reach_frac) = 1 - sqrt(1 - reach_frac * reach_frac);
-function dome_scale(rise, reach_frac) = rise / dome_c(reach_frac);
+// A unit sphere scaled by (hw, yd, crown_rise): half the wheel's width, the
+// depth of the leg below the chassis line, and the relief.  Those first two
+// scales are the footprint's own, so the surface turns *vertical* at the wheel's
+// sides and *horizontal* at the bottom of the leg: it becomes the side wall with
+// no edge, no step and no ledge - the tyre shoulder - instead of the 3 mm shelf
+// that used to run along the top of each leg.
 
 // removes the body over the wheel footprint, so the wheels are what is left
 module wheel_cutout() {
@@ -256,21 +257,16 @@ module wheel_column(k) {
 }
 
 // The dome.  Its apex sits on the wheel's centre line, on the chassis line,
-// just under the face plane; scaled by (a, b, cz) the unit sphere becomes the
-// squashed tyre.  Anything outside the footprint is clipped away and anything
-// that would dip below the floor is already inside the column, so the relief
-// fades out cleanly where the tyre meets the edge of its own footprint.
+// just under the face plane, and it is a hair wider and deeper than the
+// footprint so the cut that trims it lands on a steep, not a tangent, surface.
 module wheel_dome(k) {
     xc = TREAD_CROWN[k][0] * S;
-    hw = max(TREAD_CROWN[k][1] * S - 0.3, 0.5);   // never a knife edge
-    yd = max(TREAD_CROWN[k][2] * S, 1.0);
-    a = hw / dome_t;
-    b = yd / dome_t;
-    cz = dome_scale(crown_rise, dome_t);
+    hw = max(TREAD_CROWN[k][1] * S + 0.05, 0.5);
+    yd = max(TREAD_CROWN[k][2] * S + 0.05, 1.0);
     intersection() {
         linear_extrude(height = H) tread_one_2d(k);
-        translate([xc, TREAD_Y, wheel_top + crown_rise - cz])
-            scale([a, b, cz]) sphere(r = 1, $fn = 2 * $fn);
+        translate([xc, TREAD_Y, wheel_top])
+            scale([hw, yd, crown_rise]) sphere(r = 1, $fn = 2 * $fn);
     }
 }
 

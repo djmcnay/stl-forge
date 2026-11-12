@@ -121,10 +121,11 @@ def test_the_wheel_is_round_in_profile(generated):
         # the dome has to reach the whole wheel to die into the recess floor
         assert yd == pytest.approx(data["tread_y"] - min(ys), abs=0.01)
         assert hw > 4.0 and yd > 10.0 and rise > 0
-    # the template builds that dome as a squashed sphere, not stacked strips
-    assert re.search(r"(?m)^function dome_scale\(rise, reach_frac\) = "
-                     r"rise / dome_c\(reach_frac\);", text)
-    assert re.search(r"scale\(\[a, b, cz\]\) sphere\(r = 1", text)
+    # the template builds that dome as a squashed sphere scaled by the wheel's
+    # own half width and depth, which is what makes it tangent to the side wall
+    assert re.search(r"scale\(\[hw, yd, crown_rise\]\) sphere\(r = 1", text)
+    assert re.search(r"(?m)^\s*hw = max\(TREAD_CROWN\[k\]\[1\] \* S \+ 0\.05",
+                     text)
     # the apex must stay under the face plane, or the wheel stops being recessed
     assert re.search(r"(?m)^crown_rise\s*=\s*tread_low\s*-\s*0\.2;", text)
 

@@ -269,10 +269,10 @@ template turns that data into a bead.
   outline is the trace (near-straight sides, the traced round bottom) - from
   behind a tyre is a tread band, so nothing there is a circle. In the other two
   directions it is round: a dome that peaks on the wheel's centre line at the
-  chassis line and dies into the recess floor at the sides and at the bottom,
-  so a cut across it and a cut down it are both circular arcs. That is the only
-  curvature the 3 mm recess can carry, which is what "squashed 3D model" means
-  for the wheels.
+  chassis line and is *tangent* to the leg's side walls and to its bottom, so a
+  cut across it and a cut down it are both circular arcs, and there is no ledge
+  where the wheel meets the bead's own side. That is the only curvature the 3 mm
+  recess can carry, which is what "squashed 3D model" means for the wheels.
 - **The outline is de-staircased**: the mild flare beside the rear lamps is a
   curve in the real car, but the raster trace came back as ~1 mm steps. The
   generator smooths the ring and rescales it so the bead is still exactly the
