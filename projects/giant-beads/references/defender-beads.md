@@ -283,8 +283,15 @@ meets the face.
 ahead of the rear panel. The chassis line runs across the bottom of the body
 (derived from the trace: the profile below it *is* the two wheels, and comes
 back as two loops, not one band). Each wheel is sunk `height / 20` (3 mm) below
-the face and rolled back up to that line with a cove of twice that radius, so
-it reads as a tyre tucking under the body rather than a flat tab.
+the face, its own face edge is rolled over by half that again so it reads as a
+tyre rather than a tab, and a cove of twice the step rolls it back up to the
+chassis line.
+
+Two faults in the first cut of that, both now fixed and covered by tests:
+
+- the cove profile was inverted, so instead of a fillet it built a thin ledge
+  floating over each wheel - the "artifact above the wheels" in the render;
+- the wheel had no rollover of its own, so it stayed a flat-topped box.
 
 **The two faces are mirror images in line.** The bead is viewed from the front
 on one side and from behind on the other, so the build-plate etch is mirrored in
@@ -317,6 +324,13 @@ own height so it is not buried.
 is flat apart from grooves: the raised levels are repeated there as flat etch
 outlines (tyre and wheel rings, seam lines, lamp circles) instead of relief.
 
+**The outline is de-staircased.** The trace is raster, so a flank that flares
+gently comes back as a staircase of ~1 mm steps - visible as a hard line beside
+the rear lamps. `bead_scad.py` smooths the ring, simplifies it twice at 0.2 mm,
+and then scales it about its own centre so the bead is still exactly 120 mm
+across (the smoothing pulls the extremes in by ~0.6 mm, and the width is a
+family parameter). A test fails if any short edge pair still forms a step.
+
 One CAD-only change to the sketch: `bead_scad.py` drops profile points within
 0.2 mm of their neighbours' chord. The sketch is traced on pixel cracks, and the
 sub-pixel wobble came out of the extruder as a faceted wall - visible in preview,
@@ -347,7 +361,8 @@ Seen in the first build, for the principal to rule on:
    thick rather than 30.
 5. The wheel step is 3 mm deep with a 6 mm cove, so the cove is a partial arc
    and the wheel meets the chassis line at a slight angle rather than
-   tangentially. Deepen `tread_low` if you want it tangent.
+   tangentially. Deepen `tread_low` if you want it tangent. The wheel's own
+   roundover is 3 mm; widen it if the tyre should look fatter.
 
 ## Side sketch stage
 

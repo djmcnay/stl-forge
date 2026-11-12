@@ -58,6 +58,8 @@ tread_low = height / 20;           // how far the road wheels sit below the face
 tread_cove = 2 * tread_low;        // the rolled blend where a wheel meets the
                                    // chassis line: bigger than the step, so it
                                    // reads as a tyre tucking under the body
+tread_shoulder = tread_cove / 2;   // roundover on the wheel's own face edge, so
+                                   // it is a tyre and not a tab
 
 // ---- derived ----------------------------------------------------------
 R_throat = hole_diameter / 2;
@@ -230,11 +232,13 @@ module raised_detail() {
 // as a tyre going up under the body instead of a flat tab.
 wheel_top = H - tread_low;
 n_tread = 2 * n_fillet;
-// width of the cove at a height h above the wheel face: a quarter circle of
-// radius tread_cove, truncated where the step runs out
+// Width of the cove at a height h above the wheel face.  The arc of radius
+// tread_cove is tangent to the wheel face at the end away from the chassis line
+// and climbs towards that line; truncated where the step runs out.  Read it as
+// "how far the roll reaches in from the line", so it is widest on the floor.
 function cove_w(h) = tread_cove - sqrt(max(0.0001, tread_cove * tread_cove
-                                           - min(h, tread_cove) *
-                                             min(h, tread_cove)));
+                                           - (tread_cove - min(h, tread_cove))
+                                             * (tread_cove - min(h, tread_cove))));
 
 // removes the body over the wheel footprint, so the wheels are what is left
 module wheel_cutout() {
@@ -242,12 +246,24 @@ module wheel_cutout() {
         linear_extrude(height = tread_low + 0.05) tread_2d();
 }
 
+// The wheel is a column with its face edge rolled over all the way round: that
+// is what makes it read as a wheel from behind rather than a flat tab.
 module wheel_solid() {
-    linear_extrude(height = wheel_top) tread_2d();
+    linear_extrude(height = wheel_top - tread_shoulder) tread_2d();
+    for (i = [0 : n_tread - 1]) {
+        t0 = tread_shoulder * i / n_tread;
+        t1 = tread_shoulder * (i + 1) / n_tread;
+        r0 = tread_shoulder - sqrt(max(0.0001, tread_shoulder * tread_shoulder
+                                       - t0 * t0));
+        translate([0, 0, wheel_top - tread_shoulder + t0])
+            linear_extrude(height = t1 - t0 + 0.005)
+                offset(r = -r0) tread_2d();
+    }
 }
 
-// Additive cove: at the wheel face it reaches tread_cove in from the chassis
-// line, and it vanishes where the step ends.
+// Additive cove: it reaches tread_cove in from the chassis line at the wheel
+// face and vanishes where the step ends, so the wheel rolls up into the body.
+// The cove is never outside the wheel footprint.
 module wheel_cove() {
     for (i = [0 : n_tread - 1]) {
         h0 = tread_low * i / n_tread;
@@ -256,8 +272,10 @@ module wheel_cove() {
         translate([0, 0, wheel_top + h0])
             linear_extrude(height = h1 - h0 + 0.005)
                 intersection() {
-                    tread_2d();
-                    translate([0, TREAD_Y - d, 0])
+                    // the cove sits on the wheel's face, which its own roundover
+                    // has already pulled in, so it can never overhang it
+                    offset(r = -tread_shoulder) tread_2d();
+                    translate([-width, TREAD_Y - d, 0])
                         square([2 * width, d + 0.05]);
                 }
     }

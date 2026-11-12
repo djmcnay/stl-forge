@@ -161,7 +161,61 @@ def clip_below(pts, y):
                    [round(b[0], 3), round(b[1], 3)]]
     if len(run) > 2:
         pieces.append(run)
-    return [p for p in pieces if len(p) >= 3]
+    return [[p for i, p in enumerate(piece)
+             if i == 0 or p != piece[i - 1]]
+            for piece in pieces if len(piece) >= 3]
+
+
+def _turn(pts, i):
+    """Interior angle at vertex i, in degrees (180 = dead straight)."""
+    n = len(pts)
+    a, b, c = pts[i - 1], pts[i], pts[(i + 1) % n]
+    v1 = (a[0] - b[0], a[1] - b[1])
+    v2 = (c[0] - b[0], c[1] - b[1])
+    l1 = math.hypot(*v1)
+    l2 = math.hypot(*v2)
+    if l1 < 1e-9 or l2 < 1e-9:
+        return 180.0
+    cosang = (v1[0] * v2[0] + v1[1] * v2[1]) / (l1 * l2)
+    return math.degrees(math.acos(max(-1.0, min(1.0, cosang))))
+
+
+def smooth_gentle(pts, keep=0.45, passes=3):
+    """Flatten the staircase in the outline.
+
+    The trace is raster, so a flank that flares gently comes back as a
+    staircase of ~1 mm steps.  Each vertex is pulled towards the midpoint of its
+    neighbours and the ring is simplified afterwards, which turns the steps into
+    the curve they were always meant to be.  The move is bounded by `keep` and
+    by the simplification tolerance, so the profile stays the traced shape - the
+    corners it does soften are the ones the trace already rounded.
+    """
+    out = [list(p) for p in pts]
+    for _ in range(passes):
+        n = len(out)
+        out = [[out[i][0] + keep * ((out[i - 1][0] + out[(i + 1) % n][0]) / 2
+                                    - out[i][0]),
+                out[i][1] + keep * ((out[i - 1][1] + out[(i + 1) % n][1]) / 2
+                                    - out[i][1])] for i in range(n)]
+    return [[round(p[0], 3), round(p[1], 3)] for p in out]
+
+
+def normalise_span(pts, width):
+    """Scale the cleaned outline back to exactly the family width.
+
+    The smoothing and simplification above pull the extremes in by a fraction of
+    a millimetre; the bead width is a family parameter, so the profile is scaled
+    about its own centre afterwards.  Both axes take the same factor, so the
+    shape is unchanged - only its size.
+    """
+    xs = [p[0] for p in pts]
+    ys = [p[1] for p in pts]
+    span = max(xs) - min(xs)
+    cx = (max(xs) + min(xs)) / 2
+    cy = (max(ys) + min(ys)) / 2
+    k = width / span if span else 1.0
+    return [[round((p[0] - cx) * k + cx, 3), round((p[1] - cy) * k + cy, 3)]
+            for p in pts]
 
 
 def round_rect_loop(frame, box, radius):
@@ -284,7 +338,10 @@ def nudge_box(box, ring, clearance):
 
 def collect(doc, frame):
     """Sort the sketch parts into the arrays the SCAD template consumes."""
-    sil = simplify(frame.ring(doc["silhouette"][:-1]), OUTLINE_TOL_MM)
+    sil = frame.ring(doc["silhouette"][:-1])
+    sil = normalise_span(simplify(simplify(smooth_gentle(sil),
+                                           OUTLINE_TOL_MM), OUTLINE_TOL_MM),
+                         frame.width_mm)
     out = dict(silhouette=sil,
                tread=clip_below(sil, frame.xy(0, TREAD_TOP_PX)[1]
                                 - TREAD_SPLIT_MM),

@@ -9,6 +9,7 @@ Two things are guarded here:
    broken primitive fails here rather than in the slicer.
 """
 import json
+import math
 import re
 import struct
 import subprocess
@@ -55,6 +56,21 @@ def test_face_is_exactly_the_family_width(generated):
     assert frame.width_mm == doc["bead_width_mm"]
     xs = [p[0] for p in data["silhouette"]]
     assert max(xs) - min(xs) == pytest.approx(frame.width_mm, abs=0.02)
+
+
+def test_outline_has_no_raster_staircase(generated):
+    """The flank is a curve: no pair of consecutive near-square steps."""
+    _text, _frame, data, _doc = generated
+    sil = data["silhouette"]
+    for i in range(len(sil)):
+        ang = bead_scad._turn(sil, i)
+        # a step shows up as a sharp turn between two short edges
+        a, b, c = sil[i - 1], sil[i], sil[(i + 1) % len(sil)]
+        short = max(math.hypot(b[0] - a[0], b[1] - a[1]),
+                    math.hypot(c[0] - b[0], c[1] - b[1]))
+        if short < 2.0:
+            assert ang > 100.0, (
+                "staircase step at %.1f,%.1f (%.0f deg)" % (b[0], b[1], ang))
 
 
 def test_silhouette_is_cleaned_but_faithful(generated):

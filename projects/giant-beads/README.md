@@ -265,9 +265,14 @@ template turns that data into a bead.
   roundover on its top edge and a 1 mm cove where it meets the face. The bumper
   cross member is flush with the car, so it is not raised.
 - **The road wheels sit behind the rear**: the chassis line runs across the
-  bottom of the body, and each wheel below it is sunk by `height / 20` and
-  rolled back up with a cove of twice that radius, so they read as tyres
-  tucking under the body rather than as part of the rear panel.
+  bottom of the body, and each wheel below it is sunk by `height / 20`, has its
+  own face edge rolled over by half that again, and rolls back up to the
+  chassis line with a cove of twice the step - so it reads as a tyre tucking
+  under the body rather than as part of the rear panel.
+- **The outline is de-staircased**: the mild flare beside the rear lamps is a
+  curve in the real car, but the raster trace came back as ~1 mm steps. The
+  generator smooths the ring and rescales it so the bead is still exactly the
+  family width.
 - **Detail clears the face fillet.** A raised lamp sitting tighter than the
   fillet moves inboard by 3 mm (further if the fillet needs it) and an etched
   box by the smallest amount that clears the fillet plus half; the generator
