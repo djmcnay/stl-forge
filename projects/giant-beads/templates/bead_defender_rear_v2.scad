@@ -225,45 +225,40 @@ module raised_detail() {
 
 // ---- road wheels ------------------------------------------------------
 // The chassis line is the bottom of the body.  The two road wheels hang below
-// it, so each is a column of its own: the body is cut back over the wheel
+// it, so each is a form of its own: the body is cut back over the wheel
 // footprint, and the wheel is what fills it.
 //
 // Straight on the wheel is a curved rectangle - a tyre seen from behind is a
-// tread band, not a circle.  It sits `tread_low` (height / 20) below the face
-// with a flat tread, and its edge is rolled over with a shoulder of the same
-// radius, so the tread turns into the leg's side wall through a quarter round.
-// That round is the contour the principal drew.
+// tread band, not a circle.  Its surface leaves the leg's side wall *vertically*
+// and rounds over into the body, which is the contour the principal drew, and
+// it keeps rounding all the way to its own centre: a quarter-ellipse in the
+// distance from the wheel's edge, never a flat pad and never a step.
 //
-// There is no flat shelf anywhere on it: a dome that dipped inside the
-// footprint left the recess floor exposed as a horizontal ledge along both
-// sides of each leg - which is exactly what got crossed out.
-wheel_top = H - tread_low;              // tread height below the face
-wheel_shoulder = tread_low;             // shoulder round, same as the recess
-n_wheel = 3 * n_fillet;          // the shoulder is the one curve the eye reads
+// Everything here is a stack of the footprint's own inward offsets, so there is
+// no horizontal face anywhere except the shoulder's shallow terraces, and in
+// particular none sitting against the leg's wall - that flat ledge is what the
+// principal crossed out, twice.
+wheel_top = H - tread_low;         // where the surface leaves the side wall
+wheel_rise = tread_low - 0.2;      // how far it swells back out, under the face
+n_wheel = 6 * n_fillet;         // fine enough that the steps never read as terraces
 
 // removes the body over the wheel footprint, so the wheel is what is left
 module wheel_cutout() {
-    translate([0, 0, wheel_top - wheel_shoulder - 0.05])
-        linear_extrude(height = wheel_shoulder + tread_low + 0.15)
+    translate([0, 0, wheel_top - 0.05])
+        linear_extrude(height = tread_low + 0.15)
             offset(r = 0.25) tread_2d();
 }
 
-// Flat tread with a rolled shoulder.  Stacked erosion slices, the family
-// method: the slice `u` above the shoulder's foot is the footprint inset by the
-// quarter circle, so the top face is the footprint pulled in by the full
-// radius and the side of the wheel is a true round.
+// The surface, sampled by angle so the slices near the wall - where the curve
+// is steepest - stay thin.  d is the inward offset, z the height reached there.
 module wheel_solid() {
     for (k = [0 : len(TYRE_TREAD) - 1]) {
-        linear_extrude(height = wheel_top - wheel_shoulder) tread_one_2d(k);
+        dmax = TREAD_CROWN[k][1] * S;
         for (i = [0 : n_wheel - 1]) {
-            u0 = wheel_shoulder * i / n_wheel;
-            u1 = wheel_shoulder * (i + 1) / n_wheel;
-            inset = wheel_shoulder - sqrt(max(0.0001,
-                                              wheel_shoulder * wheel_shoulder
-                                              - u0 * u0));
-            translate([0, 0, wheel_top - wheel_shoulder + u0])
-                linear_extrude(height = u1 - u0 + 0.005)
-                    offset(r = -inset) tread_one_2d(k);
+            th = 90 * i / n_wheel;
+            d = dmax * (1 - cos(th));
+            z = wheel_top + wheel_rise * sin(th);
+            linear_extrude(height = z) offset(r = -d) tread_one_2d(k);
         }
     }
 }

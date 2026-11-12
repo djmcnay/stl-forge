@@ -264,12 +264,13 @@ template turns that data into a bead.
   steel wheel `height / 15`, waist seam `height / 30`. Each has a 1 mm
   roundover on its top edge and a 1 mm cove where it meets the face. The bumper
   cross member is flush with the car, so it is not raised.
-- **The road wheels are tyres under the body.** The chassis line runs across
-  the bottom of the body; each wheel below it is the footprint itself, stopping
-  `height / 20` below the face, with its edge rolled over by a shoulder of the
-  same radius. The tread is flat and the shoulder owns the whole margin, so no
-  flat face ever sits against the leg's wall: the contour is a quarter round
-  from the side wall into the tread, and there is no shelf.
+- **The road wheels are a curve, not a pad.** The chassis line runs across the
+  bottom of the body; each wheel below it is the footprint itself, and its
+  surface is a quarter ellipse in the distance from the wheel's own edge: it
+  leaves the leg's side wall *vertically*, at `height / 20` below the face, and
+  rounds over to its centre just under the face plane. No flat pad, no step and
+  no ledge anywhere on it — the surface is built from the footprint's own
+  inward offsets, so it can never leave a horizontal face sitting on the wall.
 - **The outline is de-staircased**: the mild flare beside the rear lamps is a
   curve in the real car, but the raster trace came back as ~1 mm steps. The
   generator smooths the ring and rescales it so the bead is still exactly the

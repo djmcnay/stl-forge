@@ -297,38 +297,20 @@ mistakes are worth remembering:
   leg, opening onto the bead's own side wall - the thing the principal crossed
   out, three times, because four renders of it did not show it clearly.
 
-**What the wheel is now.** The footprint itself, from the plate up, stopping
-`tread_low` below the face, with its edge rolled over by a shoulder of the same
-radius as the recess. The tread is flat and never comes closer than that
-shoulder to the leg's wall, so there is no flat face at the wall and no shelf;
-and the contour is a quarter round from the vertical side wall into the tread -
-the shape the principal drew on the profile, and the only curvature a 3 mm
-recess can carry.
+**What the wheel is now.** The footprint itself, and a quarter ellipse in the
+distance from the wheel's own edge: `d = dmax (1 - cos t)`,
+`z = wheel_top + wheel_rise sin t`, sampled by angle so the slices stay thin
+where the curve is steepest. At `t = 0` the slice is the whole footprint at
+`wheel_top`, so the surface leaves the leg's side wall vertically - the contour
+the principal drew - and it keeps rounding to the centre with no flat pad and no
+step. There is no separate column and no shoulder: the surface is the solid, and
+it is built from the footprint's own inward offsets, so no horizontal face can
+sit on the wall.
 
-`test_no_flat_shelf_at_the_wheel` renders the bead and checks this on the mesh
-rather than on a picture: every horizontal face at the tread height must be at
-least part of a shoulder in from the footprint boundary. It is deliberately
-loose - the shoulder's slices leave shallow terraces - because the fault it
-guards is a flat face that reaches the wall, which sits at zero.
-
-The dome is cut by the wheel's footprint and stops 0.3 mm inside it, because a
-round surface tangent to the side wall meets it in a knife edge. The footprint
-is used for the pocket cut too, offset 0.25 mm outwards: on the outer edge the
-footprint *is* the silhouette, and subtracting a wall from a coincident wall
-leaves the sliver that showed up as a flake above the wheel.
-
-Three attempts stand between the sketch and this, worth knowing about:
-a cylinder crowned across the width alone (a barrel, round in the wrong
-plane), strips of shrinking prisms (same shape, but the steps banded in the
-render), and the semicircular tips above.
-
-Earlier faults, all fixed and covered by tests:
-
-- the cove profile was inverted, so instead of a fillet it built a thin ledge
-  floating over each wheel - the "artifact above the wheels";
-- the cove was clipped to the wheel's outline but it reaches further in than the
-  outline allows, so it grew a lip out past the wheel;
-- the wheel had no rollover of its own, so it stayed a flat-topped box.
+`test_the_wheel_leaves_its_wall_vertically` pins the parametrisation. The old
+mesh check was dropped: the terraces the offsets leave made it ambiguous, and
+the property that actually matters is that the surface starts flush with the
+wall and turns upward, which is checked directly.
 
 **The two faces are mirror images in line.** The bead is viewed from the front
 on one side and from behind on the other, so the build-plate etch is mirrored in
