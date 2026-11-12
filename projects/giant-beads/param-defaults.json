@@ -125,11 +125,11 @@
     "wheel_height": 2.0,
     "seam_height": 2,
     "$fn": 128,
-    "construction": "built from rear-bead-sketch.json via tools/bead_scad.py; family height width/2; 2 mm top-face edge fillet, flat build-plate bottom; one etch depth on both faces; lights and waist seam raised by height/30, spare tyre height/10, steel wheel height/15, each with a 1 mm roundover and base cove; road-wheel treads recessed by height/20 with a quarter-round back to the face; bottom carries the raised levels as flat etch outlines",
+    "construction": "built from rear-bead-sketch.json via tools/bead_scad.py; family height width/2; 2 mm top-face edge fillet, flat build-plate bottom carrying the raised levels as mirrored etch outlines; one etch depth on both faces; lights and waist seam raised by height/30, spare tyre height/10, steel wheel height/15, each with a 1 mm roundover and base cove; road wheels recessed height/20 below the chassis line with a 2x cove back up to it; raised detail and etched boxes nudged inboard to clear the face fillet",
     "pad_fillet": 1,
     "pad_cove": 1,
     "tread_low": 3,
-    "tread_fillet": 3
+    "tread_cove": 6
   },
   "bead_heart_scad": {
     "width": 120,

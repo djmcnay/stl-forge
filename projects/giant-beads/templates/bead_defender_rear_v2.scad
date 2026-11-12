@@ -55,8 +55,9 @@ seam_height = height / 30;
 pad_fillet = min(1.0, seam_height / 2);   // roundover on a pad's top edge
 pad_cove = min(1.0, seam_height / 2);     // concave fillet where it meets the face
 tread_low = height / 20;           // how far the road wheels sit below the face
-tread_fillet = tread_low;          // quarter-round from the recess floor to the
-                                   // face: tangent at both ends
+tread_cove = 2 * tread_low;        // the rolled blend where a wheel meets the
+                                   // chassis line: bigger than the step, so it
+                                   // reads as a tyre tucking under the body
 
 // ---- derived ----------------------------------------------------------
 R_throat = hole_diameter / 2;
@@ -77,7 +78,7 @@ assert(tyre_height > wheel_height && wheel_height > 0,
        "the tyre must stand proud of the steel wheel");
 assert(0 < pad_fillet && pad_fillet < lights_height,
        "pad roundover must fit inside the shallowest raised level");
-assert(0 < tread_low && tread_low < H / 2 && tread_fillet > 0);
+assert(0 < tread_low && tread_low < H / 2 && tread_cove > 0);
 assert(seam_height > 0 && lights_height > 0);
 assert(len(SILHOUETTE) >= 3, "no silhouette in the data file");
 
@@ -219,23 +220,47 @@ module raised_detail() {
     lamps();
 }
 
-// ---- road-wheel treads ------------------------------------------------
-// The wheels sit behind the rear, so the tread band is cut down to the recess
-// floor and a quarter-round climbs back out to the face.
-function tread_z(i) = tread_low * i / n_round;
-function tread_inset(i) = tread_fillet - sqrt(max(0.0001, tread_fillet *
-                                                 tread_fillet -
-                                                 tread_z(i) * tread_z(i)));
+// ---- road wheels ------------------------------------------------------
+// The chassis line is the bottom of the body.  The two road wheels hang below
+// it, so each is a column of its own: the body is cut back to `wheel_top` over
+// the wheel footprint, and the wheel fills that footprint up to `wheel_top`.
+// They are therefore recessed below the face, and the step at the chassis line
+// is the line the principal marked.  A rolled cove of radius `tread_cove`
+// climbs from the wheel face to that line, which is what makes the wheel read
+// as a tyre going up under the body instead of a flat tab.
+wheel_top = H - tread_low;
+n_tread = 2 * n_fillet;
+// width of the cove at a height h above the wheel face: a quarter circle of
+// radius tread_cove, truncated where the step runs out
+function cove_w(h) = tread_cove - sqrt(max(0.0001, tread_cove * tread_cove
+                                           - min(h, tread_cove) *
+                                             min(h, tread_cove)));
 
-// The cut itself: at the recess floor the whole footprint comes out, and the
-// removed area shrinks as it climbs, leaving a quarter-round of material along
-// the edge up to the face.  Stacked insets, so the fillet is exact.
-module tread_recess() {
-    plateau = H - tread_low;
-    for (i = [0 : n_round - 1])
-        translate([0, 0, plateau + tread_z(i)])
-            linear_extrude(height = tread_z(i + 1) - tread_z(i) + 0.005)
-                offset(r = -tread_inset(i + 1)) tread_2d();
+// removes the body over the wheel footprint, so the wheels are what is left
+module wheel_cutout() {
+    translate([0, 0, wheel_top - 0.05])
+        linear_extrude(height = tread_low + 0.05) tread_2d();
+}
+
+module wheel_solid() {
+    linear_extrude(height = wheel_top) tread_2d();
+}
+
+// Additive cove: at the wheel face it reaches tread_cove in from the chassis
+// line, and it vanishes where the step ends.
+module wheel_cove() {
+    for (i = [0 : n_tread - 1]) {
+        h0 = tread_low * i / n_tread;
+        h1 = tread_low * (i + 1) / n_tread;
+        d = cove_w(h0);
+        translate([0, 0, wheel_top + h0])
+            linear_extrude(height = h1 - h0 + 0.005)
+                intersection() {
+                    tread_2d();
+                    translate([0, TREAD_Y - d, 0])
+                        square([2 * width, d + 0.05]);
+                }
+    }
 }
 
 // ---- cuts -------------------------------------------------------------
@@ -243,13 +268,17 @@ module etch_cuts() {
     // top face: down from the face
     translate([0, 0, H - etch_depth])
         linear_extrude(height = etch_depth + 0.1) etch_face_2d();
-    // build plate: up from the bottom, flat face plus the raised outlines
+    // build plate: up from the bottom, flat face plus the raised outlines.
+    // Mirrored in x: turn the bead over and you are looking at the car from the
+    // other side, so the number plate must stay on the same hand as the raised
+    // face, and the offset spare must offset the other way.
     translate([0, 0, -0.1])
         linear_extrude(height = etch_depth + 0.1)
-            union() {
-                etch_face_2d();
-                outline_raised_2d();
-            }
+            mirror([1, 0, 0])
+                union() {
+                    etch_face_2d();
+                    outline_raised_2d();
+                }
     // the wheel detail sits on the raised steel wheel, so it is cut from the
     // wheel's own top rather than from the body face
     translate([0, 0, H + wheel_height - etch_depth])
@@ -267,11 +296,15 @@ module etch_cuts() {
 module bead() {
     difference() {
         union() {
-            body_solid();
+            difference() {
+                body_solid();
+                wheel_cutout();
+            }
+            wheel_solid();
+            wheel_cove();
             raised_detail();
         }
         etch_cuts();
-        tread_recess();
         // string hole: through the width, at mid-thickness (family convention)
         translate([0, 0, H / 2])
             rotate([0, 90, 0])

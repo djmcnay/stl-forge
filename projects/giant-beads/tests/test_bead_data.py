@@ -69,6 +69,53 @@ def test_silhouette_is_cleaned_but_faithful(generated):
         assert abs(a[0] - b[0]) + abs(a[1] - b[1]) > 1e-6
 
 
+def test_tread_is_one_footprint_per_road_wheel(generated):
+    """The chassis line separates two wheels, not one band across the bottom."""
+    _text, frame, data, doc = generated
+    assert len(data["tread"]) == 2
+    line = bead_scad.Frame(doc)
+    tread_y = data["tread_y"]
+    for loop in data["tread"]:
+        ys = [p[1] for p in loop]
+        assert max(ys) <= tread_y + 1e-6, "footprint crosses the chassis line"
+        assert min(ys) < tread_y - 5, "footprint is not below the chassis line"
+    xs = sorted((min(p[0] for p in loop), max(p[0] for p in loop))
+                for loop in data["tread"])
+    assert xs[0][1] < 0 < xs[1][0], "the wheels must not meet in the middle"
+
+
+def test_raised_detail_clears_the_face_fillet(generated):
+    """Nothing raised may hang over the rounded shoulder of the face."""
+    _text, frame, data, doc = generated
+    ring = frame.ring(doc["silhouette"][:-1])
+    want = bead_scad.FILLET_MM
+    for l in data["lights"]:
+        d = bead_scad.edge_distance((l[0], l[1]), ring)
+        assert d >= want + l[2] + bead_scad.PAD_COVE_MM - 1e-3, (
+            "lamp at %.1f,%.1f overhangs the fillet" % (l[0], l[1]))
+
+
+def test_etched_boxes_clear_the_face_fillet(generated):
+    _text, frame, data, doc = generated
+    ring = frame.ring(doc["silhouette"][:-1])
+    want = bead_scad.FILLET_MM + bead_scad.FACE_MARGIN_MM
+    for part in doc["parts"]:
+        if part["kind"] != "round_rect":
+            continue
+        box, _ = bead_scad.nudge_box(frame.box_mm(part["box"]), ring, want)
+        for cx, cy in ((box[0], box[1]), (box[2], box[1]),
+                       (box[2], box[3]), (box[0], box[3])):
+            assert bead_scad.edge_distance((cx, cy), ring) >= want - 1e-3, (
+                part["id"] + " sits on the filleted shoulder")
+
+
+def test_the_two_faces_are_mirrored():
+    """Turn the bead over and you see the car from the other side."""
+    text = TEMPLATE.read_text()
+    plate = text[text.index("build plate"):text.index("wheel detail sits")]
+    assert "mirror([1, 0, 0])" in plate, "the build-plate etch is not mirrored"
+
+
 def test_every_level_produced_something(generated):
     _, _, data, doc = generated
     levels = {p["level"] for p in doc["parts"]}
@@ -155,6 +202,8 @@ def test_template_declares_the_family_parameters():
     for name, div in (("lights_height", 30), ("tyre_height", 10),
                       ("wheel_height", 15), ("seam_height", 30)):
         assert re.search(rf"(?m)^{name}\s*=\s*height\s*/\s*{div};", text), name
-    # the road wheels sit behind the rear: a recess with a fillet back to the face
+    # the road wheels sit behind the rear: a recess rolled back up to the face
     assert re.search(r"(?m)^tread_low\s*=\s*height\s*/\s*20;", text)
-    assert re.search(r"(?m)^tread_fillet\s*=\s*tread_low;", text)
+    assert re.search(r"(?m)^tread_cove\s*=\s*2\s*\*\s*tread_low;", text)
+    # the chassis line comes from the sketch, not from a number typed here
+    assert "TREAD_Y" in text and "wheel_cutout" in text

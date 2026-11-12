@@ -256,15 +256,21 @@ template turns that data into a bead.
   holes, 5 nuts, hub), which is cut at the raised wheel's own height.
 - **The bottom carries no relief at all.** It sits on the plate, so it is flat
   apart from grooves: every raised level is repeated there as a flat etch
-  outline, and nothing stands up.
+  outline, and nothing stands up. That etch is **mirrored in x**, because the
+  bead is seen from behind on that side: the plate stays on the same hand and
+  the offset spare offsets the other way.
 - **Four raised levels** on the top face, each a fraction of the bead
   thickness: lights `height / 30` (domes), spare tyre `height / 10`,
   steel wheel `height / 15`, waist seam `height / 30`. Each has a 1 mm
   roundover on its top edge and a 1 mm cove where it meets the face. The bumper
   cross member is flush with the car, so it is not raised.
-- **The road wheels sit behind the rear**: their tread bands are recessed by
-  `height / 20` with a quarter-round back up to the face, so they read as
-  wheels set forward rather than as part of the rear panel.
+- **The road wheels sit behind the rear**: the chassis line runs across the
+  bottom of the body, and each wheel below it is sunk by `height / 20` and
+  rolled back up with a cove of twice that radius, so they read as tyres
+  tucking under the body rather than as part of the rear panel.
+- **Detail clears the face fillet.** The 2 mm fillet pulls the flat face in by
+  2 mm, so the upper lamps and alpine windows are nudged inboard by the
+  generator until they sit wholly on the flat face (reported on every run).
 - **String hole** through the width at mid-thickness, family default 20 mm.
 
 `width`, `height`, `hole_diameter`, `fillet_radius` and `etch_depth`

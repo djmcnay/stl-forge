@@ -276,9 +276,27 @@ thickness:
 | waist seam | height / 30 | 2.0 mm |
 
 Every raised pad has a 1 mm roundover on its top edge and a 1 mm cove where it
-meets the face. The road wheels are recessed by `height / 20` (3 mm) with a
-quarter-round back up to the face, because on the real car they sit ahead of
-the rear panel: the legs of the silhouette are lower than the body.
+meets the face.
+
+**The road wheels** are a separate solid each, because on the real car they sit
+ahead of the rear panel. The chassis line runs across the bottom of the body
+(derived from the trace: the profile below it *is* the two wheels, and comes
+back as two loops, not one band). Each wheel is sunk `height / 20` (3 mm) below
+the face and rolled back up to that line with a cove of twice that radius, so
+it reads as a tyre tucking under the body rather than a flat tab.
+
+**The two faces are mirror images in line.** The bead is viewed from the front
+on one side and from behind on the other, so the build-plate etch is mirrored in
+x: the number plate stays on the same hand as the raised face, and the offset
+spare offsets the other way.
+
+**Detail is nudged inboard to clear the face fillet.** The 2 mm edge fillet
+pulls the flat face in by 2 mm all the way round, so anything drawn tighter than
+that to the outline overhangs the rounded shoulder. `bead_scad.py` measures each
+raised dome and each etched box against the outline and slides it towards the
+centre line until it clears - the smallest move that keeps it on the flat face.
+On the rear that is the two upper lamps (3.4 mm each) and both alpine windows
+(1.2 mm); the report prints every move.
 
 The tyre is an annulus (outer edge to the steel wheel's edge), so the wheel sits
 as a disc inside it and the two steps read. The bumper cross member stays flush

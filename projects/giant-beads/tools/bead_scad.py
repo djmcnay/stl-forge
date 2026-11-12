@@ -40,8 +40,19 @@ TEMPLATES = os.path.join(PROJECT, "templates")
 DEFAULT_VIEW = "rear"
 ARC_STEP_DEG = 7.5          # corner sampling for rounded rectangles
 OUTLINE_TOL_MM = 0.2        # see simplify(): removes the pixel-trace wobble
-TREAD_TOP_PX = 1132         # the bumper's bottom edge: below it the profile is
-                            # the road wheels, which sit behind the rear
+TREAD_TOP_PX = 1132         # the chassis line: below it the profile is the two
+                            # road wheels, which sit behind the rear
+TREAD_SPLIT_MM = 0.3        # the clip must clear the chassis line itself, or a
+                            # sliver of the middle band comes with it
+
+# ---- clearance from the outline ----------------------------------------
+# The template rounds the face edge with `fillet_radius`, which pulls the flat
+# face in by that much all the way round.  Anything drawn closer than that to
+# the outline ends up overhanging the rounded shoulder, so a feature is pushed
+# inwards until it clears the fillet plus half as much again.
+FILLET_MM = 2.0             # matches fillet_radius in the template
+FACE_MARGIN_MM = FILLET_MM / 2   # extra margin on etched lines
+PAD_COVE_MM = 1.0           # matches pad_cove in the template
 
 
 # ---- pixel frame -> millimetre frame -----------------------------------
@@ -64,6 +75,22 @@ class Frame:
 
     def r(self, v):
         return round(v * self.scale, 3)
+
+    def px(self, mx, my):
+        """Millimetres back to source pixels, for primitives that need them."""
+        return [round(mx / self.scale + self.cx, 3),
+                round(self.cy - my / self.scale, 3)]
+
+    def box_mm(self, box):
+        """A pixel box as millimetres, y up: [x0, y0, x1, y1]."""
+        x0, y0, x1, y1 = box
+        a, b = self.xy(x0, y0), self.xy(x1, y1)
+        return [a[0], b[1], b[0], a[1]]
+
+    def box_px(self, box):
+        x0, y0, x1, y1 = box
+        a, b = self.px(x0, y0), self.px(x1, y1)
+        return [a[0], b[1], b[0], a[1]]
 
     def ring(self, pts):
         return [self.xy(x, y) for x, y in pts]
@@ -105,18 +132,34 @@ def simplify(pts, tol):
 
 
 def clip_below(pts, y):
-    """Keep the part of a closed polygon at or below the line y (mm)."""
-    out = []
+    """The closed loops of a polygon at or below the line y (mm).
+
+    A shape that crosses the line more than twice comes back as several loops -
+    the rear's two road wheels, for instance, which the chassis line separates
+    from the body between them.
+    """
+    pieces, run = [], []
     n = len(pts)
     for i in range(n):
         a, b = pts[i], pts[(i + 1) % n]
         a_in, b_in = a[1] <= y, b[1] <= y
         if a_in:
-            out.append(a)
-        if a_in != b_in:
+            if not run:
+                run = [[round(a[0], 3), round(a[1], 3)]]
+            else:
+                run.append([round(a[0], 3), round(a[1], 3)])
+            if not b_in:
+                t = (y - a[1]) / (b[1] - a[1])
+                run.append([round(a[0] + t * (b[0] - a[0]), 3), y])
+                pieces.append(run)
+                run = []
+        elif b_in:
             t = (y - a[1]) / (b[1] - a[1])
-            out.append([round(a[0] + t * (b[0] - a[0]), 3), y])
-    return out
+            run = [[round(a[0] + t * (b[0] - a[0]), 3), y],
+                   [round(b[0], 3), round(b[1], 3)]]
+    if len(run) > 2:
+        pieces.append(run)
+    return [p for p in pieces if len(p) >= 3]
 
 
 def round_rect_loop(frame, box, radius):
@@ -158,13 +201,84 @@ def ring_array(group, frame):
     return out
 
 
+def _seg_dist(p, a, b):
+    ax, ay = a
+    bx, by = b
+    dx, dy = bx - ax, by - ay
+    L2 = dx * dx + dy * dy
+    t = 0.0 if L2 == 0 else max(0.0, min(1.0, ((p[0] - ax) * dx
+                                               + (p[1] - ay) * dy) / L2))
+    return math.hypot(p[0] - (ax + t * dx), p[1] - (ay + t * dy))
+
+
+def edge_distance(pt, ring):
+    return min(_seg_dist(pt, ring[i], ring[(i + 1) % len(ring)])
+               for i in range(len(ring)))
+
+
+def nudge_inside(centre, radius, ring, clearance):
+    """Move a circle along +x/-x until it clears `clearance` from the outline.
+
+    The nearest point of the outline gives the direction to move in; the circle
+    is pushed until its edge is `clearance` away, so a feature drawn tight
+    against the flank stops hanging over the filleted shoulder.  Vertical
+    nudging is deliberately not attempted: up and down is where the windows and
+    lamps *belong*.
+    """
+    want = clearance + radius
+    for _ in range(60):
+        d = edge_distance(centre, ring)
+        if d >= want - 1e-6:
+            return centre, True
+        # step away from the nearest outline point, in x only: up and down is
+        # where these features belong
+        i = min(range(len(ring)),
+                key=lambda k: _seg_dist(centre, ring[k], ring[(k + 1) % len(ring)]))
+        a, b = ring[i], ring[(i + 1) % len(ring)]
+        dx, dy = b[0] - a[0], b[1] - a[1]
+        L2 = dx * dx + dy * dy
+        t = 0.0 if L2 == 0 else max(0.0, min(1.0, ((centre[0] - a[0]) * dx
+                                                   + (centre[1] - a[1]) * dy) / L2))
+        nearest = (a[0] + t * dx, a[1] + t * dy)
+        away = -1.0 if nearest[0] > centre[0] else 1.0
+        centre = [centre[0] + away * max(0.02, want - d), centre[1]]
+    return centre, edge_distance(centre, ring) >= want - 1e-6
+
+
+def nudge_box(box, ring, clearance):
+    """Slide a rectangle towards the centre line until it clears the outline."""
+    x0, y0, x1, y1 = box
+    moved = 0.0
+    for _ in range(40):
+        corners = [[x0, y0], [x1, y0], [x1, y1], [x0, y1]]
+        if min(edge_distance(c, ring) for c in corners) >= clearance:
+            break
+        # which side is closer to the outline?
+        left = min(edge_distance(c, ring) for c in (corners[0], corners[3]))
+        right = min(edge_distance(c, ring) for c in (corners[1], corners[2]))
+        step = 0.1
+        if left <= right:
+            x0 += step
+            x1 += step
+            moved += step
+        else:
+            x0 -= step
+            x1 -= step
+            moved -= step
+    return [x0, y0, x1, y1], moved
+
+
 def collect(doc, frame):
     """Sort the sketch parts into the arrays the SCAD template consumes."""
     sil = simplify(frame.ring(doc["silhouette"][:-1]), OUTLINE_TOL_MM)
     out = dict(silhouette=sil,
-               tread=[clip_below(sil, frame.xy(0, TREAD_TOP_PX)[1])],
+               tread=clip_below(sil, frame.xy(0, TREAD_TOP_PX)[1]
+                                - TREAD_SPLIT_MM),
+               tread_y=round(frame.xy(0, TREAD_TOP_PX)[1] - TREAD_SPLIT_MM, 3),
                strokes=[], rings=[], wheel_rings=[], tyre=[], wheel=[],
-               seam=[], lights=[])
+               seam=[], lights=[], nudges=[])
+    silhouette = frame.ring(doc["silhouette"][:-1])
+
     for part in doc["parts"]:
         pid, level, kind = part["id"], part["level"], part["kind"]
         # detail sitting on the raised steel wheel is cut at the wheel's height
@@ -183,8 +297,13 @@ def collect(doc, frame):
                     a, b = lines[i], lines[i + 1]
                     out["seam"].append(frame.ring([a[0], a[1], b[1], b[0]]))
         elif kind == "round_rect":
-            out["strokes"].append(round_rect_loop(frame, part["box"],
-                                                  part["radius"]))
+            # the clearance pass works in millimetres, like the outline
+            box_mm, moved = nudge_box(frame.box_mm(part["box"]), silhouette,
+                                      FILLET_MM + FACE_MARGIN_MM)
+            box = frame.box_px(box_mm) if abs(moved) > 0.01 else part["box"]
+            out["strokes"].append(round_rect_loop(frame, box, part["radius"]))
+            if abs(moved) > 0.01:
+                out["nudges"].append("%s moved %+.2f mm" % (pid, moved))
         elif kind == "ring_array":
             (out["wheel_rings"] if on_wheel else out["rings"]).extend(
                 ring_array(part, frame))
@@ -199,7 +318,20 @@ def collect(doc, frame):
         elif kind == "circles" and level == "lights":
             for c_px, r_px in zip(part["centres"], part["radii"]):
                 c = frame.xy(*c_px)
-                out["lights"].append([c[0], c[1], frame.r(r_px)])
+                r = frame.r(r_px)
+                # the cove is part of the dome's footprint, so the target is
+                # the face fillet only: this is the smallest move that keeps
+                # the whole raised shape on the flat face
+                c, ok = nudge_inside(c, r + PAD_COVE_MM, silhouette, FILLET_MM)
+                if not ok:
+                    raise SystemExit("lamp at %.1f,%.1f cannot clear the face "
+                                     "fillet - shrink it or move it by hand"
+                                     % (c[0], c[1]))
+                out["lights"].append([c[0], c[1], r])
+                shift = c[0] - frame.xy(*c_px)[0]
+                if abs(shift) > 0.01:
+                    out["nudges"].append("lamp at %+.0f,%+.0f moved %+.2f mm"
+                                         % (c_px[0], c_px[1], shift))
 
     # the tyre pad is an annulus: its outer edge minus the steel wheel's edge
     if len(out["tyre"]) == 1 and len(out["wheel"]) == 1:
@@ -286,6 +418,9 @@ def text_of(doc, frame, data, view_name):
     chunks.append(emit_list("RAISED_SEAM", data["seam"],
                             comment="waist seam pads, one closed polygon each"))
     chunks.append("")
+    chunks.append("TREAD_Y = %s;   // the chassis line: bottom of the body"
+                  % fmt(data["tread_y"]))
+    chunks.append("")
     chunks.append(emit_list("TYRE_TREAD", data["tread"],
                             comment="road-wheel footprint: the profile below "
                                     "the bumper, where the wheels sit"))
@@ -340,6 +475,8 @@ def report(res, view_name=DEFAULT_VIEW):
     print("  %d profile points (%d before the %.2f mm wobble clean-up)"
           % (len(res["data"]["silhouette"]),
              len(res["doc"]["silhouette"]) - 1, OUTLINE_TOL_MM))
+    for note in res["data"]["nudges"]:
+        print("  cleared to fit the face fillet: " + note)
     for key, label in (("strokes", "etched polylines"),
                        ("rings", "etched rings"),
                        ("wheel_rings", "rings on the steel wheel"),
