@@ -121,16 +121,16 @@
     "etch_depth": 0.6,
     "etch_w": 1.0,
     "lights_height": 2,
-    "tyre_height": 3.0,
-    "wheel_height": 2.0,
+    "tyre_height": 6.0,
+    "wheel_height": 4.0,
     "seam_height": 2,
     "$fn": 128,
-    "construction": "built from rear-bead-sketch.json via tools/bead_scad.py; family height width/2; 1 mm top-face edge fillet, flat build-plate bottom carrying the raised levels as mirrored etch outlines; one etch depth on both faces; lights and waist seam raised by height/30, spare tyre height/10, steel wheel height/15, each with a 1 mm roundover and base cove; road wheels recessed height/20 below the chassis line, own face edge rolled 3 mm, cove of 2x the step back up to the line; outline smoothed and rescaled to the family width; lamps 3 mm inboard, etched boxes clear of the fillet",
+    "construction": "built from rear-bead-sketch.json via tools/bead_scad.py; family height width/2; 1 mm top-face edge fillet, flat build-plate bottom carrying the raised levels as mirrored etch outlines; one etch depth on both faces; lights and waist seam raised by height/30, spare tyre height/10, steel wheel height/15, each with a 1 mm roundover and base cove; road wheels are a curved rectangle in the face (no semicircle: the outline is the trace) and round in profile - a column recessed height/20 below the chassis line, crowned across the tread by a true cylinder so the cross-section is a circular arc, apex just under the face plane; outline smoothed and rescaled to the family width; lamps 3 mm inboard, etched boxes clear of the fillet",
     "pad_fillet": 1,
     "pad_cove": 1,
     "tread_low": 3,
-    "tread_cove": 6,
-    "tread_shoulder": 3
+    "crown_rise": 2.8,
+    "wheel_top": 57
   },
   "bead_heart_scad": {
     "width": 120,

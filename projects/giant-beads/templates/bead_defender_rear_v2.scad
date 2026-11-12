@@ -26,8 +26,10 @@
                    its own height, rounded over at the top and filleted where
                    it meets the face
       treads       the road wheels sit behind the rear, so their tread bands are
-                   recessed by height / 20 with a quarter-round back up to the
-                   face: lower than the body, rounded like a wheel
+                   recessed by height / 20.  A tyre seen from behind is a curved
+                   rectangle, not a circle; it is round in profile, so each one
+                   is a column crowned across the tread: back at the shoulders,
+                   swelling out to just under the face on the centre line
 */
 
 include <bead_defender_rear_data.scad>
@@ -55,11 +57,6 @@ seam_height = height / 30;
 pad_fillet = min(fillet_radius, seam_height / 2);  // roundover on a pad's top edge
 pad_cove = min(fillet_radius, seam_height / 2);    // concave cove at its foot
 tread_low = height / 20;           // how far the road wheels sit below the face
-tread_cove = 2 * tread_low;        // the rolled blend where a wheel meets the
-                                   // chassis line: bigger than the step, so it
-                                   // reads as a tyre tucking under the body
-tread_shoulder = tread_cove / 2;   // roundover on the wheel's own face edge, so
-                                   // it is a tyre and not a tab
 
 // ---- derived ----------------------------------------------------------
 R_throat = hole_diameter / 2;
@@ -80,7 +77,9 @@ assert(tyre_height > wheel_height && wheel_height > 0,
        "the tyre must stand proud of the steel wheel");
 assert(0 < pad_fillet && pad_fillet < lights_height,
        "pad roundover must fit inside the shallowest raised level");
-assert(0 < tread_low && tread_low < H / 2 && tread_cove > 0);
+assert(0 < tread_low && tread_low < H / 2);
+assert(len(TREAD_CROWN) == len(TYRE_TREAD),
+       "every road wheel needs a crown centre line");
 assert(seam_height > 0 && lights_height > 0);
 assert(len(SILHOUETTE) >= 3, "no silhouette in the data file");
 
@@ -92,6 +91,8 @@ module sil_2d() polygon(points = sc(SILHOUETTE));
 module tread_2d() {
     for (t = TYRE_TREAD) polygon(points = sc(t));
 }
+
+module tread_one_2d(k) polygon(points = sc(TYRE_TREAD[k]));
 
 // A stroked polyline: a capsule per segment, which keeps the ends round.
 module stroke(pts, w = etch_w) {
@@ -226,61 +227,56 @@ module raised_detail() {
 // The chassis line is the bottom of the body.  The two road wheels hang below
 // it, so each is a column of its own: the body is cut back to `wheel_top` over
 // the wheel footprint, and the wheel fills that footprint up to `wheel_top`.
-// They are therefore recessed below the face, and the step at the chassis line
-// is the line the principal marked.  A rolled cove of radius `tread_cove`
-// climbs from the wheel face to that line, which is what makes the wheel read
-// as a tyre going up under the body instead of a flat tab.
-wheel_top = H - tread_low;
-n_tread = 2 * n_fillet;
-// Width of the cove at a height h above the wheel face.  The arc of radius
-// tread_cove is tangent to the wheel face at the end away from the chassis line
-// and climbs towards that line; truncated where the step runs out.  Read it as
-// "how far the roll reaches in from the line", so it is widest on the floor.
-function cove_w(h) = tread_cove - sqrt(max(0.0001, tread_cove * tread_cove
-                                           - (tread_cove - min(h, tread_cove))
-                                             * (tread_cove - min(h, tread_cove))));
+// The step at the chassis line is the line the principal marked.
+//
+// Looked at straight on, a tyre is a curved rectangle - no car has wheels that
+// read as a circle from behind.  It is round in *profile*: across the tread the
+// surface is a circular crown that sits `crown_rise` back at the shoulders and
+// swells out to just under the face plane on the centre line, so the bead holds
+// a tyre rather than a flat tab.
+wheel_top = H - tread_low;         // shoulder level: the recessed wheel face
+crown_rise = tread_low - 0.2;      // apex just under the face plane
 
-// removes the body over the wheel footprint, so the wheels are what is left
+// Radius of a crown that rises `rise` across a half width `hw`: horizontal at
+// the centre line, standing on the shoulders.
+function crown_r(hw, rise) = (hw * hw + rise * rise) / (2 * rise);
+crown_fn = 4 * $fn;                // the tread is the one curve the eye reads
+
+// Removes the body over the wheel footprint, so the wheels are what is left.
+// The footprint runs a hair wider than the tyre: on the outer edge it is the
+// silhouette itself, and subtracting a wall from a wall leaves slivers.
 module wheel_cutout() {
     translate([0, 0, wheel_top - 0.05])
-        linear_extrude(height = tread_low + 0.05) tread_2d();
+        linear_extrude(height = tread_low + 0.15)
+            offset(r = 0.25) tread_2d();
 }
 
-// The wheel is a column with its face edge rolled over all the way round: that
-// is what makes it read as a wheel from behind rather than a flat tab.
-module wheel_solid() {
-    linear_extrude(height = wheel_top - tread_shoulder) tread_2d();
-    for (i = [0 : n_tread - 1]) {
-        t0 = tread_shoulder * i / n_tread;
-        t1 = tread_shoulder * (i + 1) / n_tread;
-        r0 = tread_shoulder - sqrt(max(0.0001, tread_shoulder * tread_shoulder
-                                       - t0 * t0));
-        translate([0, 0, wheel_top - tread_shoulder + t0])
-            linear_extrude(height = t1 - t0 + 0.005)
-                offset(r = -r0) tread_2d();
+module wheel_column(k) {
+    linear_extrude(height = wheel_top) tread_one_2d(k);
+}
+
+// The crown is an exact cylinder lying along the wheel's vertical axis: cut it
+// with the footprint and the tread is a true circular arc in profile.  Flat
+// strips would do it too, but the steps show up as banding on the finished
+// bead, and this is the one curve on the model the eye reads as a wheel.
+module wheel_crown(k) {
+    xc = TREAD_CROWN[k][0] * S;
+    // the crown stops a hair inside the footprint: tangent to the outline the
+    // cylinder meets the side wall in a knife edge, which nothing can print
+    hw = max(TREAD_CROWN[k][1] * S - 0.3, 0.5);
+    r = crown_r(hw, crown_rise);
+    intersection() {
+        linear_extrude(height = H) tread_one_2d(k);
+        translate([xc, 0, wheel_top + crown_rise - r])
+            rotate([90, 0, 0])
+                cylinder(h = 4 * DATA_HEIGHT, r = r, center = true, $fn = crown_fn);
     }
 }
 
-// Additive cove: it reaches tread_cove in from the chassis line at the wheel
-// face and vanishes where the step ends, so the wheel rolls up into the body.
-// The cove is never outside the wheel footprint.
-module wheel_cove() {
-    for (i = [0 : n_tread - 1]) {
-        h0 = tread_low * i / n_tread;
-        h1 = tread_low * (i + 1) / n_tread;
-        d = cove_w(h0);
-        translate([0, 0, wheel_top + h0])
-            linear_extrude(height = h1 - h0 + 0.005)
-                intersection() {
-                    // The cove has to fit entirely within the wheel's flat face:
-                    // the face is already rolled back by tread_shoulder, and the
-                    // cove reaches tread_cove further in, so the wheel's outline
-                    // must be shrunk by both before clipping.  Without that the
-                    // cove grows a lip out past the wheel and hangs in the air.
-                    offset(r = -(tread_shoulder + tread_cove)) tread_2d();
-                    translate([-width, TREAD_Y - d, 0])
-                        square([2 * width, d + 0.05]);
-                }
+module wheel_solid() {
+    for (k = [0 : len(TYRE_TREAD) - 1]) {
+        wheel_column(k);
+        wheel_crown(k);
     }
 }
 
@@ -304,14 +300,6 @@ module etch_cuts() {
     // wheel's own top rather than from the body face
     translate([0, 0, H + wheel_height - etch_depth])
         linear_extrude(height = etch_depth + 0.1) etch_wheel_2d();
-    // the silhouette runs through the tread plateau: etch it there too, so the
-    // groove keeps the same depth on both levels
-    translate([0, 0, H - tread_low - etch_depth])
-        linear_extrude(height = etch_depth + 0.2)
-            intersection() {
-                etch_face_2d();
-                tread_2d();
-            }
 }
 
 module bead() {
@@ -322,7 +310,6 @@ module bead() {
                 wheel_cutout();
             }
             wheel_solid();
-            wheel_cove();
             raised_detail();
         }
         etch_cuts();

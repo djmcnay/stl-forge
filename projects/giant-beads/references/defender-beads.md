@@ -283,25 +283,33 @@ meets the face.
 ahead of the rear panel. The chassis line runs across the bottom of the body
 (derived from the trace: the profile below it *is* the two wheels, and comes
 back as two loops, not one band). Each wheel is sunk `height / 20` (3 mm) below
-the face, its own face edge is rolled over by half that again so it reads as a
-tyre rather than a tab, and a cove of twice the step rolls it back up to the
-chassis line.
+the face.
 
-**Each wheel ends in a semicircle.** The trace drew the bottom of each wheel like
-a mud flap - straight sides, flat bottom, small corner radii. A wheel seen from
-behind is the bottom of a circle, so `bead_scad.py` rebuilds every run of the
-outline below the chassis line as a semicircular tip of radius half its width
-(8.8 mm on the rear). This is the one place the generator changes the shape
-rather than deriving it, so it is confined to the tips and reported on every
-run.
+**The wheel is a curved rectangle in the face and a wheel in profile.** Two
+mistakes are worth remembering:
 
-Three faults on the way there, all now fixed and covered by tests:
+- *Out of the face* a tyre is a tread band - near-straight sides, the traced
+  round bottom. Reworking the outline into a semicircle made it read as a mud
+  flap, and it broke the rule that the trace is the geometry. The outline is
+  now exactly the trace again, checked by `test_the_outline_is_the_trace`.
+- *In profile* it is a cylinder. The tread is crowned across its width with a
+  true cylinder of radius `crown_r(hw, tread_low - 0.2)`, which leaves about
+  17.8 mm on the rear: recessed 2.8 mm at the shoulders, rising to 0.2 mm under
+  the face plane on the centre line. A horizontal cut across the wheel is
+  therefore a circular arc - the principal's pink line - rather than a flat tab.
+
+The crown is cut by the wheel's footprint and stops 0.3 mm inside it, because a
+cylinder tangent to the side wall meets it in a knife edge. The footprint is
+used for the pocket cut too, offset 0.25 mm outwards: on the outer edge the
+footprint *is* the silhouette, and subtracting a wall from a coincident wall
+leaves the sliver that showed up as a flake above the wheel.
+
+Earlier faults, all fixed and covered by tests:
 
 - the cove profile was inverted, so instead of a fillet it built a thin ledge
   floating over each wheel - the "artifact above the wheels";
 - the cove was clipped to the wheel's outline but it reaches further in than the
-  outline allows, so it grew a lip out past the wheel. It is now clipped at
-  `tread_shoulder + tread_cove` inside the wheel footprint;
+  outline allows, so it grew a lip out past the wheel;
 - the wheel had no rollover of its own, so it stayed a flat-topped box.
 
 **The two faces are mirror images in line.** The bead is viewed from the front

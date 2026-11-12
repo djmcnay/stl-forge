@@ -85,38 +85,61 @@ def test_silhouette_is_cleaned_but_faithful(generated):
         assert abs(a[0] - b[0]) + abs(a[1] - b[1]) > 1e-6
 
 
-def test_each_wheel_ends_in_a_semicircle(generated):
-    """A wheel seen from behind is the bottom of a circle."""
-    _text, frame, data, doc = generated
-    assert data["wheel_tips"] == 2
-    line = data["tread_y"]
-    for loop in data["tread"]:
-        tip = [p for p in loop if p[1] < line - 4]
-        xs = [p[0] for p in tip]
-        ys = [p[1] for p in tip]
-        r = (max(xs) - min(xs)) / 2.0
-        cx = (min(xs) + max(xs)) / 2.0
-        cy = min(ys) + r             # millimetres, y up: the tip is the low end
-        arc = [p for p in tip if p[1] < cy - 1e-6]
-        assert len(arc) >= 6, "no arc points"
-        for p in arc:
-            assert abs(math.hypot(p[0] - cx, p[1] - cy) - r) < 0.35, (
-                "wheel tip is not circular at %.1f,%.1f" % (p[0], p[1]))
+def test_the_outline_is_the_trace(generated):
+    """No creative licence: the profile is the principal's drawing, cleaned.
+
+    The one thing that broke this was a generator pass that rebuilt the wheel
+    tips as semicircles - a tyre seen from behind is a curved rectangle, not a
+    circle - so the outline is now checked against the trace it came from.
+    """
+    _, frame, data, _ = generated
+    raw_path = bead_scad.viewdata.out_paths(
+        bead_scad.viewdata.load("rear"))["sketch_json"]
+    raw = frame.ring(json.load(open(raw_path))["silhouette"][:-1])
+    # the clean-up can round a tight corner by about a millimetre; an invented
+    # feature (the old semicircular tips) was out by four
+    tol = 1.3
+    for p in raw:
+        assert bead_scad.edge_distance(p, data["silhouette"]) <= tol, (
+            "the outline has left the trace at %.1f,%.1f" % (p[0], p[1]))
+    for p in data["silhouette"]:
+        assert bead_scad.edge_distance(p, raw) <= tol, (
+            "the outline has invented a point at %.1f,%.1f" % (p[0], p[1]))
 
 
-def test_nothing_hangs_outside_the_wheel(generated):
-    """The recess roll must stay inside the wheel, not grow a lip on its edge."""
-    _text, _frame, data, _doc = generated
-    reach = bead_scad.TREAD_SHOULDER_MM + 2 * bead_scad.TREAD_LOW_MM
-    for loop in data["tread"]:
-        pts = loop
-        for i in range(len(pts)):
-            a, b = pts[i], pts[(i + 1) % len(pts)]
-            assert math.hypot(b[0] - a[0], b[1] - a[1]) > 1e-6
-    # the cove is clipped at this inset in the template; keep the two in step
+def test_the_wheel_is_crowned_in_profile(generated):
+    """Round in profile: the tread is a cylinder, not a flat tab."""
     text = TEMPLATE.read_text()
-    assert "offset(r = -(tread_shoulder + tread_cove)) tread_2d();" in text, (
-        "the cove must be clipped inside the wheel face (reach %.1f mm)" % reach)
+    _frame, data = generated[1], generated[2]
+    assert len(data["tread_crown"]) == len(data["tread"]) == 2
+    rise = bead_scad.TREAD_LOW_MM - 0.2
+    for (xc, hw), loop in zip(data["tread_crown"], data["tread"]):
+        xs = [p[0] for p in loop]
+        assert xc == pytest.approx((min(xs) + max(xs)) / 2.0, abs=0.01)
+        assert hw == pytest.approx((max(xs) - min(xs)) / 2.0, abs=0.01)
+        # a crown that rises less than its half width still bulges like a tyre
+        assert hw > 4.0 and rise > 0
+        assert (hw * hw + rise * rise) / (2 * rise) > hw
+    # the template builds that crown as an exact cylinder, not stacked strips
+    assert re.search(
+        r"(?m)^function crown_r\(hw, rise\) = "
+        r"\(hw \* hw \+ rise \* rise\) / \(2 \* rise\);", text)
+    assert re.search(r"cylinder\(h = 4 \* DATA_HEIGHT, r = r, center = true",
+                     text)
+    # the apex must stay under the face plane, or the wheel stops being recessed
+    assert re.search(r"(?m)^crown_rise\s*=\s*tread_low\s*-\s*0\.2;", text)
+
+
+def test_the_crown_is_clipped_by_the_footprint(generated):
+    """The tyre may not swell out past the wheel it belongs to."""
+    text = TEMPLATE.read_text()
+    block = text[text.index("module wheel_crown"):text.index("module wheel_solid")]
+    assert "intersection()" in block, "the crown is not clipped"
+    assert "tread_one_2d(k)" in block, "the crown is not clipped by the footprint"
+    for loop in generated[2]["tread"]:
+        for i in range(len(loop)):
+            a, b = loop[i], loop[(i + 1) % len(loop)]
+            assert math.hypot(b[0] - a[0], b[1] - a[1]) > 1e-6
 
 
 def test_tread_is_one_footprint_per_road_wheel(generated):
@@ -271,8 +294,9 @@ def test_template_declares_the_family_parameters():
     for name, div in (("lights_height", 30), ("tyre_height", 10),
                       ("wheel_height", 15), ("seam_height", 30)):
         assert re.search(rf"(?m)^{name}\s*=\s*height\s*/\s*{div};", text), name
-    # the road wheels sit behind the rear: a recess rolled back up to the face
+    # the road wheels sit behind the rear, rounded in profile by a crown
     assert re.search(r"(?m)^tread_low\s*=\s*height\s*/\s*20;", text)
-    assert re.search(r"(?m)^tread_cove\s*=\s*2\s*\*\s*tread_low;", text)
+    assert re.search(r"(?m)^wheel_top\s*=\s*H\s*-\s*tread_low;", text)
     # the chassis line comes from the sketch, not from a number typed here
-    assert "TREAD_Y" in text and "wheel_cutout" in text
+    assert "wheel_cutout" in text and "TYRE_TREAD" in text
+    assert "TREAD_Y" in Path(bead_scad.data_path("rear")).read_text()
