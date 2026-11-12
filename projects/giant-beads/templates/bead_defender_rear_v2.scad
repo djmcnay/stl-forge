@@ -56,7 +56,10 @@ seam_height = height / 30;
 
 // ---- edge treatment ---------------------------------------------------
 pad_fillet = min(fillet_radius, seam_height / 2);  // roundover on a pad's top edge
-pad_cove = min(fillet_radius, seam_height / 2);    // concave cove at its foot
+pad_cove = 0.2;                    // fillet at a pad's foot: the family's
+                                   // approved 0.2 mm rim (letter beads use the
+                                   // same).  At 1 mm it spread every lamp,
+                                   // seam and the spare into a flat saucer.
 tread_low = height / 20;           // how far the road wheels sit below the face
 
 // ---- derived ----------------------------------------------------------
@@ -213,7 +216,7 @@ module pad(h) {
         translate([0, 0, H + cove_h(i)])
             linear_extrude(height = cove_h(i + 1) - cove_h(i) + 0.005)
                 difference() {
-                    offset(r = cove_out(i) + 0.01) children();
+                    offset(r = cove_out(i) + 0.001) children();
                     children();
                 }
 }

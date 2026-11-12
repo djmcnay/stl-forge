@@ -284,9 +284,11 @@ template turns that data into a bead.
   20 mm) with the family's fillet-well mouth - a quarter-round gravitational
   well at both entrances - shared with the other beads through
   `templates/bead_common.scad`.
-- **No hard lines.** Every pad meets the face in a fillet that is widest on the
-  face (the cove), and the drop from the body's face into the wheel recess is a
-  quarter round, so the bottom of the cross member is not a step.
+- **No hard lines, and no saucers.** Every pad meets the face in a 0.2 mm
+  fillet - the family's own rim figure; at 1 mm every lamp, seam and the spare
+  stood in a flat disc 40% wider than the part itself. The drop from the body's
+  face into the wheel recess is a quarter round, so the bottom of the cross
+  member is not a step.
 - **The bottom only shows what the face shows.** The build-plate etch repeats
   the face's lines mirrored, but the spare wheel hides part of the door and the
   window, so those grooves stop at the spare tyre's rim.

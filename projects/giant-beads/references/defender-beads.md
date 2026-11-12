@@ -312,7 +312,15 @@ mesh check was dropped: the terraces the offsets leave made it ambiguous, and
 the property that actually matters is that the surface starts flush with the
 wall and turns upward, which is checked directly.
 
-**The saucers were an inverted cove.** `cove_out(i)` used
+**The saucers were an inverted cove, then a cove that was simply too big.**
+The first fault was the sign: it grew outwards as it rose. The second was the
+size: `pad_cove` was 1 mm, so a 2.5 mm lamp wore a skirt that reached 3.5 mm -
+40% of its own radius - which reads as a flat disc, not a fillet. It is now
+0.2 mm, the family's own rim figure (the letter beads were dialled to 0.2 mm for
+the same reason), so the blend is a hairline: the measured lamp profile runs
+61.99 at the centre, 60.63 at its own radius 2.4, and reaches the face at 2.70.
+
+**The saucers, first fault.** `cove_out(i)` used
 `pad_cove - sqrt(pad_cove^2 - cove_h^2)`, which is 0 on the face and `pad_cove`
 at the top of the blend: the ring grew outwards as it rose, so every lamp, every
 seam and the steel wheel stood in a flat disc a millimetre off the face. The
