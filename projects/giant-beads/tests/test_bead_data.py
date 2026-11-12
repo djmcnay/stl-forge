@@ -107,35 +107,34 @@ def test_the_outline_is_the_trace(generated):
             "the outline has invented a point at %.1f,%.1f" % (p[0], p[1]))
 
 
-def test_the_wheel_is_crowned_in_profile(generated):
-    """Round in profile: the tread is a cylinder, not a flat tab."""
+def test_the_wheel_is_round_in_profile(generated):
+    """A squashed tyre: a dome, not a flat tab and not a circle from behind."""
     text = TEMPLATE.read_text()
     _frame, data = generated[1], generated[2]
     assert len(data["tread_crown"]) == len(data["tread"]) == 2
     rise = bead_scad.TREAD_LOW_MM - 0.2
-    for (xc, hw), loop in zip(data["tread_crown"], data["tread"]):
+    for (xc, hw, yd), loop in zip(data["tread_crown"], data["tread"]):
         xs = [p[0] for p in loop]
+        ys = [p[1] for p in loop]
         assert xc == pytest.approx((min(xs) + max(xs)) / 2.0, abs=0.01)
         assert hw == pytest.approx((max(xs) - min(xs)) / 2.0, abs=0.01)
-        # a crown that rises less than its half width still bulges like a tyre
-        assert hw > 4.0 and rise > 0
-        assert (hw * hw + rise * rise) / (2 * rise) > hw
-    # the template builds that crown as an exact cylinder, not stacked strips
-    assert re.search(
-        r"(?m)^function crown_r\(hw, rise\) = "
-        r"\(hw \* hw \+ rise \* rise\) / \(2 \* rise\);", text)
-    assert re.search(r"cylinder\(h = 4 \* DATA_HEIGHT, r = r, center = true",
-                     text)
+        # the dome has to reach the whole wheel to die into the recess floor
+        assert yd == pytest.approx(data["tread_y"] - min(ys), abs=0.01)
+        assert hw > 4.0 and yd > 10.0 and rise > 0
+    # the template builds that dome as a squashed sphere, not stacked strips
+    assert re.search(r"(?m)^function dome_scale\(rise, reach_frac\) = "
+                     r"rise / dome_c\(reach_frac\);", text)
+    assert re.search(r"scale\(\[a, b, cz\]\) sphere\(r = 1", text)
     # the apex must stay under the face plane, or the wheel stops being recessed
     assert re.search(r"(?m)^crown_rise\s*=\s*tread_low\s*-\s*0\.2;", text)
 
 
-def test_the_crown_is_clipped_by_the_footprint(generated):
+def test_the_dome_is_clipped_by_the_footprint(generated):
     """The tyre may not swell out past the wheel it belongs to."""
     text = TEMPLATE.read_text()
-    block = text[text.index("module wheel_crown"):text.index("module wheel_solid")]
-    assert "intersection()" in block, "the crown is not clipped"
-    assert "tread_one_2d(k)" in block, "the crown is not clipped by the footprint"
+    block = text[text.index("module wheel_dome"):text.index("module wheel_solid")]
+    assert "intersection()" in block, "the dome is not clipped"
+    assert "tread_one_2d(k)" in block, "the dome is not clipped by the footprint"
     for loop in generated[2]["tread"]:
         for i in range(len(loop)):
             a, b = loop[i], loop[(i + 1) % len(loop)]

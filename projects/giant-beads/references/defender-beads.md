@@ -292,17 +292,25 @@ mistakes are worth remembering:
   round bottom. Reworking the outline into a semicircle made it read as a mud
   flap, and it broke the rule that the trace is the geometry. The outline is
   now exactly the trace again, checked by `test_the_outline_is_the_trace`.
-- *In profile* it is a cylinder. The tread is crowned across its width with a
-  true cylinder of radius `crown_r(hw, tread_low - 0.2)`, which leaves about
-  17.8 mm on the rear: recessed 2.8 mm at the shoulders, rising to 0.2 mm under
-  the face plane on the centre line. A horizontal cut across the wheel is
-  therefore a circular arc - the principal's pink line - rather than a flat tab.
+- *In profile* it is round. The bead is a squashed 3D model of the car, so the
+  wheel is a squashed tyre: a dome (`wheel_dome`) whose apex sits on the wheel's
+  centre line, on the chassis line, 0.2 mm under the face plane, and which dies
+  into the recess floor at the sides and at the bottom of its own footprint. A
+  cut across the wheel and a cut down it are both circular arcs - the
+  principal's pink line - rather than a flat tab. The dome is a unit sphere
+  scaled by `(hw / dome_t, yd / dome_t, crown_rise / dome_c(dome_t))` with
+  `dome_t = 0.55`, so its footprint reach and its drop are the same fraction.
 
-The crown is cut by the wheel's footprint and stops 0.3 mm inside it, because a
-cylinder tangent to the side wall meets it in a knife edge. The footprint is
-used for the pocket cut too, offset 0.25 mm outwards: on the outer edge the
+The dome is cut by the wheel's footprint and stops 0.3 mm inside it, because a
+round surface tangent to the side wall meets it in a knife edge. The footprint
+is used for the pocket cut too, offset 0.25 mm outwards: on the outer edge the
 footprint *is* the silhouette, and subtracting a wall from a coincident wall
 leaves the sliver that showed up as a flake above the wheel.
+
+Three attempts stand between the sketch and this, worth knowing about:
+a cylinder crowned across the width alone (a barrel, round in the wrong
+plane), strips of shrinking prisms (same shape, but the steps banded in the
+render), and the semicircular tips above.
 
 Earlier faults, all fixed and covered by tests:
 

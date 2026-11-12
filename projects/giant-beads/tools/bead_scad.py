@@ -344,14 +344,16 @@ def collect(doc, frame):
     sil = normalise_span(sil, frame.width_mm)
     tread_y = round(frame.xy(0, TREAD_TOP_PX)[1] - TREAD_SPLIT_MM, 3)
     tread = clip_below(sil, tread_y)
-    # The wheel is a curved rectangle in the face and a cylinder in profile:
-    # the template crowns each footprint across its width, so it needs the
-    # centre line and half width of every road wheel.
+    # The wheel is a curved rectangle in the face and a tyre in profile: the
+    # template builds each one as a dome, so it needs the centre line, half
+    # width and depth below the chassis line of every road wheel.
     crown = []
     for loop in tread:
         xs = [p[0] for p in loop]
+        ys = [p[1] for p in loop]
         crown.append([round((min(xs) + max(xs)) / 2.0, 3),
-                      round((max(xs) - min(xs)) / 2.0, 3)])
+                      round((max(xs) - min(xs)) / 2.0, 3),
+                      round(tread_y - min(ys), 3)])
     out = dict(silhouette=sil, tread=tread, tread_crown=crown, tread_y=tread_y,
                strokes=[], rings=[], wheel_rings=[], tyre=[], wheel=[],
                seam=[], lights=[], nudges=[])
@@ -506,7 +508,7 @@ def text_of(doc, frame, data, view_name):
                                     "the bumper, where the wheels sit"))
     chunks.append("")
     chunks.append(emit_list("TREAD_CROWN", data["tread_crown"],
-                            comment="road-wheel crown: centre x, half width"))
+                            comment="road-wheel dome: centre x, half width, depth"))
     chunks.append("")
     chunks.append(emit_list("LIGHTS", data["lights"],
                             comment="round lamps: centre and radius"))

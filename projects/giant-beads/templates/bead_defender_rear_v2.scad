@@ -230,21 +230,21 @@ module raised_detail() {
 // The step at the chassis line is the line the principal marked.
 //
 // Looked at straight on, a tyre is a curved rectangle - no car has wheels that
-// read as a circle from behind.  It is round in *profile*: across the tread the
-// surface is a circular crown that sits `crown_rise` back at the shoulders and
-// swells out to just under the face plane on the centre line, so the bead holds
-// a tyre rather than a flat tab.
+// read as a circle from behind.  The bead is a squashed 3D model of the car,
+// though, and in the other two directions the wheel has to be round: it is a
+// squashed tyre.  Each wheel is a dome that peaks on its centre line at the
+// chassis line and dies into the recess floor at the sides and at the bottom,
+// so a cut across it is a circular arc and a cut down it is a circular arc.
 wheel_top = H - tread_low;         // shoulder level: the recessed wheel face
 crown_rise = tread_low - 0.2;      // apex just under the face plane
+dome_t = 0.55;                     // how far out the dome reaches at full drop
 
-// Radius of a crown that rises `rise` across a half width `hw`: horizontal at
-// the centre line, standing on the shoulders.
-function crown_r(hw, rise) = (hw * hw + rise * rise) / (2 * rise);
-crown_fn = 4 * $fn;                // the tread is the one curve the eye reads
+// A dome that drops `rise` at `reach` from its apex: the ellipsoid's height
+// that does it, and the factor that turns a unit sphere into that ellipsoid.
+function dome_c(reach_frac) = 1 - sqrt(1 - reach_frac * reach_frac);
+function dome_scale(rise, reach_frac) = rise / dome_c(reach_frac);
 
-// Removes the body over the wheel footprint, so the wheels are what is left.
-// The footprint runs a hair wider than the tyre: on the outer edge it is the
-// silhouette itself, and subtracting a wall from a wall leaves slivers.
+// removes the body over the wheel footprint, so the wheels are what is left
 module wheel_cutout() {
     translate([0, 0, wheel_top - 0.05])
         linear_extrude(height = tread_low + 0.15)
@@ -255,28 +255,29 @@ module wheel_column(k) {
     linear_extrude(height = wheel_top) tread_one_2d(k);
 }
 
-// The crown is an exact cylinder lying along the wheel's vertical axis: cut it
-// with the footprint and the tread is a true circular arc in profile.  Flat
-// strips would do it too, but the steps show up as banding on the finished
-// bead, and this is the one curve on the model the eye reads as a wheel.
-module wheel_crown(k) {
+// The dome.  Its apex sits on the wheel's centre line, on the chassis line,
+// just under the face plane; scaled by (a, b, cz) the unit sphere becomes the
+// squashed tyre.  Anything outside the footprint is clipped away and anything
+// that would dip below the floor is already inside the column, so the relief
+// fades out cleanly where the tyre meets the edge of its own footprint.
+module wheel_dome(k) {
     xc = TREAD_CROWN[k][0] * S;
-    // the crown stops a hair inside the footprint: tangent to the outline the
-    // cylinder meets the side wall in a knife edge, which nothing can print
-    hw = max(TREAD_CROWN[k][1] * S - 0.3, 0.5);
-    r = crown_r(hw, crown_rise);
+    hw = max(TREAD_CROWN[k][1] * S - 0.3, 0.5);   // never a knife edge
+    yd = max(TREAD_CROWN[k][2] * S, 1.0);
+    a = hw / dome_t;
+    b = yd / dome_t;
+    cz = dome_scale(crown_rise, dome_t);
     intersection() {
         linear_extrude(height = H) tread_one_2d(k);
-        translate([xc, 0, wheel_top + crown_rise - r])
-            rotate([90, 0, 0])
-                cylinder(h = 4 * DATA_HEIGHT, r = r, center = true, $fn = crown_fn);
+        translate([xc, TREAD_Y, wheel_top + crown_rise - cz])
+            scale([a, b, cz]) sphere(r = 1, $fn = 2 * $fn);
     }
 }
 
 module wheel_solid() {
     for (k = [0 : len(TYRE_TREAD) - 1]) {
         wheel_column(k);
-        wheel_crown(k);
+        wheel_dome(k);
     }
 }
 
