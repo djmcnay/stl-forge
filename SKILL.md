@@ -38,6 +38,14 @@ When tuning a template's silhouette against reference images the
 principal supplied (metric choice vs defect class, region-aware
 threshold calibration, vector measurement, known-answer self-tests),
 read `utilities/references/shape-acceptance.md`.
+When building a bead from a traced view of a vehicle (rear done; front and
+profile to come) - or when a bead comes back from review with "this is still
+wrong" - read `projects/giant-beads/references/bead-build-checklist.md` first.
+It is the order of work, the catalogue of the thirteen faults that cost six
+review rounds on the rear bead, and the measurement that catches each one. The
+short version: measure the delivered file with
+`projects/giant-beads/tools/stl_check.py`; never claim a fix from a render.
+
 When changing or re-parameterising the heart-bead family (the bubble dial
 mapping, the bead-spec bell-mouth string hole, face fillets, or its
 measured verification bands), read `projects/giant-beads/references/heart-bead.md`.

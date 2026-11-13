@@ -293,6 +293,12 @@ template turns that data into a bead.
   the face's lines mirrored, but the spare wheel hides part of the door and the
   window, so those grooves stop at the spare tyre's rim.
 
+**Before building the front or the profile view, read
+[`references/bead-build-checklist.md`](references/bead-build-checklist.md)** -
+the order of work, every fault that came back from review on the rear bead, and
+the measurement that catches each one. Measured facts come from
+`tools/stl_check.py`, not from a render.
+
 `width`, `height`, `hole_diameter`, `fillet_radius` and `etch_depth`
 (`0.6 * detail_relief`) are the family parameters; the raised heights are
 derived from `height`. Rebuild the geometry with

@@ -12,6 +12,18 @@ photo ──▶ traced overlay ──▶ part map ──▶ (principal signs off
                                                         model .scad ──▶ STL + previews
 ```
 
+`stl_check.py` is the last step of every walk, and the first one after any
+review comment:
+
+```
+python3 projects/giant-beads/tools/stl_check.py <delivered>.stl --band 56.9:57.1
+```
+
+It reports shells (must be 1), degenerate facets, and horizontal faces by
+height. That is how a shelf, a saucer or a floating piece is found: a flat face
+at a recess height sitting on a part's boundary shows up as area in the band,
+and a render will not show it at all.
+
 ## The rule that governs everything
 
 **The principal's trace is the geometry. Nothing here redraws it.**

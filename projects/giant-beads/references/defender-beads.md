@@ -1,5 +1,9 @@
 # Defender bead pair — references and decisions
 
+**Building the other views?** `references/bead-build-checklist.md` is the
+generalised order of work plus the catalogue of faults this rear bead came back
+with. Read it before starting the front or the profile.
+
 ## Local reference files
 
 - `references/defender/side.png` — authoritative side-view reference supplied by the principal (carsized, Defender 90 2007 side view).
